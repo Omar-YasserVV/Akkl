@@ -1,0 +1,3 @@
+Soon i will create the prisma model and the server package
+try to impalement the MicroServices setup
+and we should make sure that we work with turporepo
