@@ -1,0 +1,1 @@
+here will be the shared data between the server and client side

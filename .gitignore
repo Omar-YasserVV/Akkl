@@ -1,0 +1,9 @@
+.env
+node_modules
+dist
+.vscode
+.qodo
+.turbo
+dist
+.next
+build

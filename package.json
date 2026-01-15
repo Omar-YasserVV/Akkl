@@ -1,0 +1,14 @@
+{
+  "name": "akkl-monorepo",
+  "private": true,
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "generate": "turbo run generate",
+    "clean": "rm -rf node_modules **/*/node_modules"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0"
+  }
+}

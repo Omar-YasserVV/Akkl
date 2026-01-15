@@ -1,0 +1,11 @@
+packages:
+  # Client Apps
+  - "packages/client/*"
+  - "packages/client/_shared/*" # Include the shared frontend code
+
+  # Server Apps
+  - "packages/server/*"
+  - "packages/server/_shared/*" # Include the shared backend code (Prisma)
+
+  # Universal Shared Libs
+  - "packages/libs/*"
