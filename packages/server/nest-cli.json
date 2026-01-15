@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/server/src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "webpack": true,
+    "tsConfigPath": "apps/server/tsconfig.app.json"
+  },
+  "monorepo": true,
+  "root": "apps/server",
+  "projects": {
+    "server": {
+      "type": "application",
+      "root": "apps/server",
+      "entryFile": "main",
+      "sourceRoot": "apps/server/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/server/tsconfig.app.json"
+      }
+    },
+    "svc-auth": {
+      "type": "application",
+      "root": "apps/svc-auth",
+      "entryFile": "main",
+      "sourceRoot": "apps/svc-auth/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/svc-auth/tsconfig.app.json"
+      }
+    },
+    "svc-booking": {
+      "type": "application",
+      "root": "apps/svc-booking",
+      "entryFile": "main",
+      "sourceRoot": "apps/svc-booking/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/svc-booking/tsconfig.app.json"
+      }
+    },
+    "svc-catalog": {
+      "type": "application",
+      "root": "apps/svc-catalog",
+      "entryFile": "main",
+      "sourceRoot": "apps/svc-catalog/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/svc-catalog/tsconfig.app.json"
+      }
+    },
+    "svc-operations": {
+      "type": "application",
+      "root": "apps/svc-operations",
+      "entryFile": "main",
+      "sourceRoot": "apps/svc-operations/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/svc-operations/tsconfig.app.json"
+      }
+    },
+    "svc-staffing": {
+      "type": "application",
+      "root": "apps/svc-staffing",
+      "entryFile": "main",
+      "sourceRoot": "apps/svc-staffing/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/svc-staffing/tsconfig.app.json"
+      }
+    },
+    "svc-supply-chain": {
+      "type": "application",
+      "root": "apps/svc-supply-chain",
+      "entryFile": "main",
+      "sourceRoot": "apps/svc-supply-chain/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/svc-supply-chain/tsconfig.app.json"
+      }
+    },
+    "svc-tenant": {
+      "type": "application",
+      "root": "apps/svc-tenant",
+      "entryFile": "main",
+      "sourceRoot": "apps/svc-tenant/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/svc-tenant/tsconfig.app.json"
+      }
+    }
+  }
+}
