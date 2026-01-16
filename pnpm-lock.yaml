@@ -9,8 +9,14 @@ importers:
   .:
     devDependencies:
       turbo:
-        specifier: ^2.0.0
+        specifier: ^2.7.4
         version: 2.7.4
+
+  packages/client/desktop-app: {}
+
+  packages/client/mobile-app: {}
+
+  packages/client/web-app: {}
 
   packages/server:
     dependencies:

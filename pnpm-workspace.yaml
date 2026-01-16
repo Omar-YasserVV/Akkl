@@ -1,11 +1,17 @@
+# packages:
+#   # Client Apps
+#   - "packages/client/*"
+#   - "packages/client/_shared/*" # Include the shared frontend code
+
+#   # Server Apps
+#   - "packages/server/*"
+#   - "packages/server/_shared/*" # Include the shared backend code (Prisma)
+
+#   # Universal Shared Libs
+#   - "packages/libs/*"
+
 packages:
-  # Client Apps
-  - "packages/client/*"
-  - "packages/client/_shared/*" # Include the shared frontend code
-
-  # Server Apps
-  - "packages/server/*"
-  - "packages/server/_shared/*" # Include the shared backend code (Prisma)
-
-  # Universal Shared Libs
-  - "packages/libs/*"
+  - "packages/server" # Your backend
+  - "packages/client/*" # All apps inside client (web, mobile, etc.)
+  - "packages/libs/*" # Shared internal packages
+  - "libs/*" # Any other global libs
