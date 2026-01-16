@@ -22,7 +22,11 @@
   "dependencies": {
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
+    "@nestjs/microservices": "^11.1.12",
     "@nestjs/platform-express": "^11.0.1",
+    "@prisma/adapter-pg": "^7.2.0",
+    "pg": "^8.17.1",
+    "prisma": "^7.2.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
   },
@@ -68,7 +72,11 @@
     "coverageDirectory": "./coverage",
     "testEnvironment": "node",
     "roots": [
-      "<rootDir>/apps/"
-    ]
+      "<rootDir>/apps/",
+      "<rootDir>/libs/"
+    ],
+    "moduleNameMapper": {
+      "^@app/shared(|/.*)$": "<rootDir>/libs/shared/src/$1"
+    }
   }
 }
