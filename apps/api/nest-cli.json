@@ -19,13 +19,13 @@
         "tsConfigPath": "apps/api/tsconfig.app.json"
       }
     },
-    "svc-auth": {
-      "type": "application",
-      "root": "apps/svc-auth",
-      "entryFile": "main",
-      "sourceRoot": "apps/svc-auth/src",
+    "shared": {
+      "type": "library",
+      "root": "libs/shared",
+      "entryFile": "index",
+      "sourceRoot": "libs/shared/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/svc-auth/tsconfig.app.json"
+        "tsConfigPath": "libs/shared/tsconfig.lib.json"
       }
     }
   }
