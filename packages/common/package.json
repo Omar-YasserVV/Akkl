@@ -1,0 +1,11 @@
+{
+  "name": "@repo/common",
+  "version": "1.0.0",
+  "main": "./dist/index.js",
+  "dependencies": {
+    "class-validator": "latest",
+    "class-transformer": "latest",
+    "@nestjs/common": "latest",
+    "@nestjs/core": "latest"
+  }
+}
