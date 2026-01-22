@@ -1,33 +1,20 @@
 {
-  "name": "akkl",
+  "name": "Akkl",
   "private": true,
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types",
-    "dev:api-gateway": "cd apps/api-gateway && pnpm run dev",
-    "dev:auth": "cd apps/auth-service && pnpm run dev",
-    "start:dev": "concurrently \"pnpm dev:api-gateway\" \"pnpm dev:auth\" ",
-    "push:db": "cd packages/db && pnpm prisma db push",
-    "generate:db": "cd packages/db && pnpm prisma generate"
+    "check-types": "turbo run check-types"
   },
   "devDependencies": {
-    "@types/node": "^25.0.9",
-    "@types/pg": "^8.16.0",
     "prettier": "^3.7.4",
-    "turbo": "^2.7.4",
+    "turbo": "^2.7.5",
     "typescript": "5.9.2"
   },
   "packageManager": "pnpm@9.0.0",
   "engines": {
     "node": ">=18"
-  },
-  "dependencies": {
-    "@nestjs/common": "^11.1.12",
-    "@nestjs/jwt": "^11.0.2",
-    "@nestjs/microservices": "^11.1.12",
-    "concurrently": "^9.2.1"
   }
 }
