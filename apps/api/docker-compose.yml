@@ -1,0 +1,34 @@
+services:
+  kafka:
+    image: apache/kafka:latest
+    container_name: kafka-broker
+    ports:
+      - '9001:9020'
+    environment:
+      # --- CONNECTION SETTINGS ---
+      - KAFKA_NODE_ID=1
+      - KAFKA_PROCESS_ROLES=broker,controller
+      - KAFKA_LISTENERS=PLAINTEXT://:9020,CONTROLLER://:9093
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9001
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@localhost:9093
+      - KAFKA_CLUSTER_ID=6B065F5C-8D4C-4D9D-9B8A-3E9E9C9F9A9B
+
+      # --- 24-HOUR DELETE SETTINGS ---
+      - KAFKA_LOG_RETENTION_MS=86400000
+      - KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS=300000
+      - KAFKA_LOG_ROLL_MS=43200000
+
+      # --- STABILITY SETTINGS ---
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
+      - KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=0
+    volumes:
+      # For apache/kafka images, data is stored in /var/lib/kafka/data
+      - kafka_data:/var/lib/kafka/data
+
+volumes:
+  kafka_data:
+    driver: local
