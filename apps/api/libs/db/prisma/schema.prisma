@@ -19,14 +19,23 @@ model SystemAdmin {
   lastLogin DateTime?
 }
 
-model Owner {
+model User {
   id          Int          @id @default(autoincrement())
   email       String       @unique
   password    String
   fullName    String
+  image     String?
+  role       UserRole     @default(CUSTOMER)
   restaurants Restaurant[]
+  reservations     Reservation[]
+  phone      String       @unique
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+}
+
+enum UserRole {
+  CUSTOMER
+  BUSINESS_OWNER
 }
 
 model Restaurant {
@@ -34,7 +43,7 @@ model Restaurant {
   name      String     @unique
   logoUrl   String?
   ownerId   Int
-  owner     Owner      @relation(fields: [ownerId], references: [id])
+  user     User      @relation(fields: [ownerId], references: [id])
   branches  Branch[]
   menuItems MenuItem[] // The global "Master Menu" for the brand
   createdAt DateTime   @default(now())
@@ -209,8 +218,8 @@ model Reservation {
   depositAmount   Decimal  @db.Decimal(10, 2)
   isPaid          Boolean  @default(false)
   
-  customerId      Int
-  customer        Customer @relation(fields: [customerId], references: [id])
+  userId      Int
+  user        User @relation(fields: [userId], references: [id])
   tableId         Int
   table           Table    @relation(fields: [tableId], references: [id])
   branchId        Int
@@ -219,9 +228,18 @@ model Reservation {
   createdAt       DateTime @default(now())
 }
 
-model Customer {
-  id           Int           @id @default(autoincrement())
-  name         String
-  phone        String        @unique
-  reservations Reservation[]
+// model Customer {
+//   id           Int           @id @default(autoincrement())
+//   name         String
+//   phone        String        @unique
+//   reservations Reservation[]
+// }
+
+// ------------------------------------------------------
+
+
+model TokenBlacklist {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  createdAt DateTime @default(now())
 }
