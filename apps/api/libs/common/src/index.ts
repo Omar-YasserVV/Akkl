@@ -5,3 +5,4 @@ export * from './common.service';
 export * from './dtos/UserDto/create.user.dto';
 export * from './dtos/UserDto/login.dto';
 export * from './dtos/UserDto/update.user.dto';
+export * from './dtos/UserDto/complete-google-signup.dto';

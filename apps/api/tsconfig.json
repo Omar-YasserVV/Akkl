@@ -26,7 +26,8 @@
       "@app/common": ["libs/common/src"],
       "@app/common/*": ["libs/common/src/*"],
       "@app/db": ["libs/db/src"],
-      "@app/db/*": ["libs/db/src/*"]
+      "@app/db/*": ["libs/db/src/*"],
+      "@prisma/client": ["libs/db/prisma/client/client"]
     }
   }
 }

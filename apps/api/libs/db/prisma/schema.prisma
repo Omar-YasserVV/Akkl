@@ -1,6 +1,7 @@
 generator client {
   provider = "prisma-client"
-  output   = "../generated/prisma"
+  output   = "../generated/client"
+  moduleFormat = "cjs"
 }
 
 datasource db {
@@ -24,13 +25,17 @@ model User {
   email       String       @unique
   password    String
   fullName    String
+  username    String       @unique
   image     String?
   role       UserRole     @default(CUSTOMER)
   restaurants Restaurant[]
   reservations     Reservation[]
   phone      String       @unique
+  otpCode   String?
+  otpExpires DateTime?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+
 }
 
 enum UserRole {

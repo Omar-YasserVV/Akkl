@@ -1,5 +1,4 @@
 import {
-  IsEmail,
   IsNotEmpty,
   IsString,
   MinLength,
@@ -9,21 +8,18 @@ import {
 } from 'class-validator';
 import { UserRole } from '../../../../db/generated/client/client';
 
-export class CreateUserDto {
-  @IsEmail()
-  email: string;
+export class CompleteGoogleSignupDto {
+  @IsString()
+  @IsNotEmpty()
+  token: string;
 
   @IsString()
-  @MinLength(8, { message: 'Password must be at least 8 characters long' })
+  @MinLength(8)
   password: string;
 
   @IsString()
   @IsNotEmpty()
-  fullName: string;
-
-  @IsString()
-  @IsNotEmpty()
-  username: string;
+  passwordConfirmation: string;
 
   @IsPhoneNumber()
   @IsNotEmpty()
@@ -31,7 +27,7 @@ export class CreateUserDto {
 
   @IsOptional()
   @IsString()
-  image?: string;
+  username: string;
 
   @IsOptional()
   @IsEnum(UserRole)
