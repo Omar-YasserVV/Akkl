@@ -1,41 +1,9 @@
-I have some error in prisma i will solve it tomorrow
-or at the night
-but i think it will be tomorrow
+I'm fucken tired from that fucken sick prisma
+.
+.
+.
+I solved the error everything is good now
+so anyown test the apis and if there is any errors tell me 
 
-this is the error that i will solve it 
-[1] Error: Cannot find module '@prisma/client/runtime/client'
-[1] Require stack:
-[1] - D:\VS_Language\js\Akkl\apps\api\dist\apps\svc-auth\libs\db\generated\prisma\internal\class.js
-[1] - D:\VS_Language\js\Akkl\apps\api\dist\apps\svc-auth\libs\db\generated\prisma\client.js
-[1] - D:\VS_Language\js\Akkl\apps\api\dist\apps\svc-auth\libs\db\src\prisma.service.js
-[1] - D:\VS_Language\js\Akkl\apps\api\dist\apps\svc-auth\libs\db\src\index.js
-[1] - D:\VS_Language\js\Akkl\apps\api\dist\apps\svc-auth\apps\svc-auth\src\svc-auth.service.js
-[1] - D:\VS_Language\js\Akkl\apps\api\dist\apps\svc-auth\apps\svc-auth\src\svc-auth.controller.js
-[1] - D:\VS_Language\js\Akkl\apps\api\dist\apps\svc-auth\apps\svc-auth\src\svc-auth.module.js
-[1] - D:\VS_Language\js\Akkl\apps\api\dist\apps\svc-auth\apps\svc-auth\src\main.js
-[1]     at Function._resolveFilename (node:internal/modules/cjs/loader:1383:15)
-[1]     at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
-[1]     at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
-[1]     at Function._load (node:internal/modules/cjs/loader:1192:37)
-[1]     at TracingChannel.traceSync (node:diagnostics_channel:322:14)
-[1]     at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
-[1]     at Module.require (node:internal/modules/cjs/loader:1463:12)
-[1]     at require (node:internal/modules/helpers:147:16)
-[1]     at Object.<anonymous> (D:\VS_Language\js\Akkl\apps\api\libs\db\generated\prisma\internal\class.ts:14:1)     
-[1]     at Module._compile (node:internal/modules/cjs/loader:1706:14) {
-[1]   code: 'MODULE_NOT_FOUND',
-[1]   requireStack: [
-[1]     'D:\\VS_Language\\js\\Akkl\\apps\\api\\dist\\apps\\svc-auth\\libs\\db\\generated\\prisma\\internal\\class.js',
-[1]     'D:\\VS_Language\\js\\Akkl\\apps\\api\\dist\\apps\\svc-auth\\libs\\db\\generated\\prisma\\client.js',       
-[1]     'D:\\VS_Language\\js\\Akkl\\apps\\api\\dist\\apps\\svc-auth\\libs\\db\\src\\prisma.service.js',
-[1]     'D:\\VS_Language\\js\\Akkl\\apps\\api\\dist\\apps\\svc-auth\\libs\\db\\src\\index.js',
-[1]     'D:\\VS_Language\\js\\Akkl\\apps\\api\\dist\\apps\\svc-auth\\apps\\svc-auth\\src\\svc-auth.service.js',     
-[1]     'D:\\VS_Language\\js\\Akkl\\apps\\api\\dist\\apps\\svc-auth\\apps\\svc-auth\\src\\svc-auth.controller.js',  
-[1]     'D:\\VS_Language\\js\\Akkl\\apps\\api\\dist\\apps\\svc-auth\\apps\\svc-auth\\src\\svc-auth.module.js',      
-[1]     'D:\\VS_Language\\js\\Akkl\\apps\\api\\dist\\apps\\svc-auth\\apps\\svc-auth\\src\\main.js'
-[1]   ]
-[1] }
-[1]
-[1] Node.js v22.20.0
 
-after it i will start to implement the rest of the code and make new Microservice
+I will start at the restaurant part and the rest at the night or maybe tomorrow

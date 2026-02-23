@@ -17,12 +17,11 @@ import { AuthGuard } from '@nestjs/passport';
 import { SvcAuthService } from './svc-auth.service';
 import { LoginDto, CreateUserDto, CompleteGoogleSignupDto } from '@app/common';
 
-@Controller('auth')
+@Controller()
 export class SvcAuthController {
   constructor(private readonly svcAuthService: SvcAuthService) {}
 
   @MessagePattern({ cmd: 'signup' })
-  @Post('signup')
   async signup(
     @Request() req,
     @Response() res,
@@ -50,7 +49,6 @@ export class SvcAuthController {
   }
 
   @MessagePattern({ cmd: 'login' })
-  @Post('login')
   async login(@Request() req, @Response() res, @Payload() LoginDto: LoginDto) {
     const result = await this.svcAuthService.login(LoginDto);
     res.cookie('access_token', result?.access_token, {
@@ -74,12 +72,10 @@ export class SvcAuthController {
   }
 
   @MessagePattern({ cmd: 'google' })
-  @Get('google')
   @UseGuards(AuthGuard('google'))
   async googleAuth() {}
 
   @MessagePattern({ cmd: 'google-callback' })
-  @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   async googleAuthCallback(@Req() req, @Res() res) {
     const user = req.user;
@@ -109,7 +105,6 @@ export class SvcAuthController {
   }
 
   @MessagePattern({ cmd: 'complete-google-signup' })
-  @Post('complete-google-signup')
   async completeGoogleSignup(
     @Response() res,
     @Body() completeDto: CompleteGoogleSignupDto,
@@ -134,13 +129,11 @@ export class SvcAuthController {
   }
 
   @MessagePattern({ cmd: 'forgot-password' })
-  @Post('forgot-password')
   async forgotPassword(@Body('email') email: string) {
     return this.svcAuthService.forgotPassword(email);
   }
 
   @MessagePattern({ cmd: 'reset-password' })
-  @Post('reset-password')
   async resetPassword(@Body() resetDto: any) {
     return this.svcAuthService.verifyOtpAndReset(resetDto);
   }
