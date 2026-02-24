@@ -1,48 +1,58 @@
-import { Body, Controller, Get, Inject, Post } from '@nestjs/common';
-import { AppService } from './app.service';
+import { Body, Controller, Get, Inject, Post, Res, HttpStatus } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { LoginDto } from '@app/common';
-import { CreateUserDto } from '@app/common';
+import { Response } from 'express';
+import { LoginDto, CreateUserDto } from '@app/common';
+import { lastValueFrom } from 'rxjs';
 
-@Controller()
+@Controller('auth')
 export class AppController {
   constructor(
     @Inject('AUTH_SERVICE') private readonly authService: ClientProxy,
   ) {}
 
-  @Post('auth/signup')
-  async signup(@Body() data: CreateUserDto) {
-    console.log('worked from the signup');
-    return this.authService.send({ cmd: 'signup' }, data);
+  // Helper to set cookies
+  private setAuthCookies(res: Response, result: any) {
+    res.cookie('access_token', result?.access_token, {
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 1000 * 60 * 60 * 7,
+    });
+    res.cookie('refresh_token', result?.refresh_token, {
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+    });
   }
 
-  @Post('auth/login')
-  async login(@Body() data: LoginDto) {
-    console.log('worked from the login');
-    return this.authService.send({ cmd: 'login' }, data);
+  @Post('signup')
+  async signup(@Body() data: CreateUserDto, @Res() res: Response) {
+    const result = await lastValueFrom(this.authService.send({ cmd: 'signup' }, data));
+    this.setAuthCookies(res, result);
+    return res.status(HttpStatus.CREATED).json({ status: 'success', data: { user: result.user } });
   }
 
-  @Get('auth/google')
-  async googleAuth() {
-    return this.authService.send({ cmd: 'google' }, {});
+  @Post('login')
+  async login(@Body() data: LoginDto, @Res() res: Response) {
+    const result = await lastValueFrom(this.authService.send({ cmd: 'login' }, data));
+    this.setAuthCookies(res, result);
+    return res.status(HttpStatus.OK).json({ status: 'success', data: { user: result.user } });
   }
 
-  @Get('auth/google/callback')
-  async googleAuthCallback() {
-    return this.authService.send({ cmd: 'google-callback' }, {});
+  @Post('complete-google-signup')
+  async completeGoogleSignup(@Body() data: any, @Res() res: Response) {
+    const result = await lastValueFrom(this.authService.send({ cmd: 'complete-google-signup' }, data));
+    this.setAuthCookies(res, result);
+    return res.status(HttpStatus.OK).json({ status: 'success', data: result });
   }
 
-  @Post('auth/complete-google-signup')
-  async completeGoogleSignup(@Body() data: any) {
-    return this.authService.send({ cmd: 'complete-google-signup' }, data);
-  }
-
-  @Post('auth/forgot-password')
+  @Post('forgot-password')
   async forgotPassword(@Body('email') email: string) {
     return this.authService.send({ cmd: 'forgot-password' }, email);
   }
 
-  @Post('auth/reset-password')
+  @Post('reset-password')
   async resetPassword(@Body() resetDto: any) {
     return this.authService.send({ cmd: 'reset-password' }, resetDto);
   }

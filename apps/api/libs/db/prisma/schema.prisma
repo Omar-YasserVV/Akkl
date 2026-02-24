@@ -1,6 +1,6 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/client"
+  provider     = "prisma-client"
+  output       = "../generated/client"
   moduleFormat = "cjs"
 }
 
@@ -8,39 +8,30 @@ datasource db {
   provider = "postgresql"
 }
 
-// ------------------------------------------------------
-// 1. SYSTEM & OWNERSHIP (WEB OWNER APP)
-// ------------------------------------------------------
 model SystemAdmin {
-  id        Int @id @default(autoincrement())
-  email     String @unique
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
   password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   lastLogin DateTime?
 }
 
 model User {
-  id          Int          @id @default(autoincrement())
-  email       String       @unique
-  password    String
-  fullName    String
-  username    String       @unique
-  image     String?
-  role       UserRole     @default(CUSTOMER)
-  restaurants Restaurant[]
-  reservations     Reservation[]
-  phone      String       @unique
-  otpCode   String?
-  otpExpires DateTime?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-
-}
-
-enum UserRole {
-  CUSTOMER
-  BUSINESS_OWNER
+  id           Int           @id @default(autoincrement())
+  email        String        @unique
+  password     String
+  fullName     String
+  image        String?
+  role         UserRole      @default(CUSTOMER)
+  phone        String        @unique
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  otpCode      String?
+  otpExpires   DateTime?
+  username     String        @unique
+  reservations Reservation[]
+  restaurants  Restaurant[]
 }
 
 model Restaurant {
@@ -48,40 +39,33 @@ model Restaurant {
   name      String     @unique
   logoUrl   String?
   ownerId   Int
-  user     User      @relation(fields: [ownerId], references: [id])
-  branches  Branch[]
-  menuItems MenuItem[] // The global "Master Menu" for the brand
   createdAt DateTime   @default(now())
-  updatedAt    DateTime         @updatedAt
+  updatedAt DateTime   @updatedAt
+  branches  Branch[]
+  menuItems MenuItem[]
+  user      User       @relation(fields: [ownerId], references: [id])
 }
 
 model Branch {
-  id           Int              @id @default(autoincrement())
-  name         String
-  address      String
-  restaurantId Int
-  restaurant   Restaurant       @relation(fields: [restaurantId], references: [id])
-  
-  // Relations
-  employees    Employee[]
-  haveTables   Boolean          @default(false)
-  tables       Table[]
+  id               Int              @id @default(autoincrement())
+  name             String
+  address          String
+  restaurantId     Int
+  haveTables       Boolean          @default(false)
   haveReservations Boolean          @default(false)
-  reservations Reservation[]
   haveWarehouses   Boolean          @default(false)
-  warehouses   Warehouse[]
-  orders       Order[]
-  expenses     Expense[]
-  shifts       Shift[]
-  branchMenu   BranchMenuItem[] // Branch-specific availability toggle
-
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  restaurant       Restaurant       @relation(fields: [restaurantId], references: [id])
+  branchMenu       BranchMenuItem[]
+  employees        Employee[]
+  expenses         Expense[]
+  orders           Order[]
+  reservations     Reservation[]
+  shifts           Shift[]
+  tables           Table[]
+  warehouses       Warehouse[]
 }
-
-// ------------------------------------------------------
-// 2. THE MENU SYSTEM (BRANCH-SPECIFIC AVAILABILITY)
-// ------------------------------------------------------
 
 model MenuItem {
   id           Int              @id @default(autoincrement())
@@ -89,113 +73,85 @@ model MenuItem {
   description  String?
   basePrice    Decimal          @db.Decimal(10, 2)
   restaurantId Int
-  restaurant   Restaurant       @relation(fields: [restaurantId], references: [id])
-  
-  branchStatus BranchMenuItem[]
-  orderItems   OrderItem[]
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
+  branchStatus BranchMenuItem[]
+  restaurant   Restaurant       @relation(fields: [restaurantId], references: [id])
+  orderItems   OrderItem[]
 }
 
 model BranchMenuItem {
   id          Int      @id @default(autoincrement())
   branchId    Int
-  branch      Branch   @relation(fields: [branchId], references: [id])
   menuItemId  Int
+  isAvailable Boolean  @default(true)
+  branch      Branch   @relation(fields: [branchId], references: [id])
   menuItem    MenuItem @relation(fields: [menuItemId], references: [id])
-
-  isAvailable Boolean  @default(true) // Set to false by Desktop App if out of stock
 
   @@unique([branchId, menuItemId])
 }
 
-// ------------------------------------------------------
-// 3. STAFF & SHIFTS (DESKTOP APP)
-// ------------------------------------------------------
-
 model Employee {
-  id        Int         @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   fullName  String
-  username  String      @unique
+  username  String    @unique
   password  String
-  role      StaffRole   @default(WAITER)
-  salary    Decimal     @db.Decimal(10, 2)
+  role      StaffRole @default(WAITER)
+  salary    Decimal   @db.Decimal(10, 2)
   branchId  Int
-  branch    Branch      @relation(fields: [branchId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  branch    Branch    @relation(fields: [branchId], references: [id])
   shifts    Shift[]
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-}
-
-enum StaffRole {
-  ADMIN
-  CASHIER
-  WAITER
 }
 
 model Shift {
   id         Int       @id @default(autoincrement())
   employeeId Int
-  employee   Employee  @relation(fields: [employeeId], references: [id])
   branchId   Int
-  branch     Branch    @relation(fields: [branchId], references: [id])
   startTime  DateTime  @default(now())
   endTime    DateTime?
   status     String    @default("ACTIVE")
+  branch     Branch    @relation(fields: [branchId], references: [id])
+  employee   Employee  @relation(fields: [employeeId], references: [id])
 }
 
-// ------------------------------------------------------
-// 4. REVENUE & EXPENSES (FINANCIAL ANALYSIS)
-// ------------------------------------------------------
 model Order {
   id          Int         @id @default(autoincrement())
   totalAmount Decimal     @db.Decimal(10, 2)
   branchId    Int
-  branch      Branch      @relation(fields: [branchId], references: [id])
-  items       OrderItem[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+  branch      Branch      @relation(fields: [branchId], references: [id])
+  items       OrderItem[]
 }
 
 model OrderItem {
   id         Int      @id @default(autoincrement())
   orderId    Int
-  order      Order    @relation(fields: [orderId], references: [id])
   menuItemId Int
-  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
   quantity   Int
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+  order      Order    @relation(fields: [orderId], references: [id])
 }
 
 model Expense {
   id          Int         @id @default(autoincrement())
   amount      Decimal     @db.Decimal(10, 2)
   category    ExpenseType
-  description String?     // e.g., "Purchased 100kg flour"
+  description String?
   branchId    Int
-  branch      Branch      @relation(fields: [branchId], references: [id])
   createdAt   DateTime    @default(now())
+  branch      Branch      @relation(fields: [branchId], references: [id])
 }
-
-enum ExpenseType {
-  INGREDIENTS
-  SALARY
-  RENT
-  UTILITIES
-  LOSSES
-  MARKETING
-}
-
-// ------------------------------------------------------
-// 5. CLIENT & ASSETS (MOBILE APP)
-// ------------------------------------------------------
 
 model Table {
   id           Int           @id @default(autoincrement())
   tableNumber  String
   capacity     Int
   branchId     Int
-  branch       Branch        @relation(fields: [branchId], references: [id])
   reservations Reservation[]
+  branch       Branch        @relation(fields: [branchId], references: [id])
 
   @@unique([tableNumber, branchId])
 }
@@ -204,15 +160,15 @@ model Warehouse {
   id       Int             @id @default(autoincrement())
   name     String
   branchId Int
-  branch   Branch          @relation(fields: [branchId], references: [id])
   items    InventoryItem[]
+  branch   Branch          @relation(fields: [branchId], references: [id])
 }
 
 model InventoryItem {
   id          Int       @id @default(autoincrement())
   name        String
   quantity    Float
-  unit        String    // kg, liter, pcs
+  unit        String
   warehouseId Int
   warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
 }
@@ -222,29 +178,37 @@ model Reservation {
   reservationTime DateTime
   depositAmount   Decimal  @db.Decimal(10, 2)
   isPaid          Boolean  @default(false)
-  
-  userId      Int
-  user        User @relation(fields: [userId], references: [id])
   tableId         Int
-  table           Table    @relation(fields: [tableId], references: [id])
   branchId        Int
-  branch          Branch   @relation(fields: [branchId], references: [id])
-
   createdAt       DateTime @default(now())
+  userId          Int
+  branch          Branch   @relation(fields: [branchId], references: [id])
+  table           Table    @relation(fields: [tableId], references: [id])
+  user            User     @relation(fields: [userId], references: [id])
 }
-
-// model Customer {
-//   id           Int           @id @default(autoincrement())
-//   name         String
-//   phone        String        @unique
-//   reservations Reservation[]
-// }
-
-// ------------------------------------------------------
-
 
 model TokenBlacklist {
   id        Int      @id @default(autoincrement())
   token     String   @unique
   createdAt DateTime @default(now())
+}
+
+enum UserRole {
+  CUSTOMER
+  BUSINESS_OWNER
+}
+
+enum StaffRole {
+  ADMIN
+  CASHIER
+  WAITER
+}
+
+enum ExpenseType {
+  INGREDIENTS
+  SALARY
+  RENT
+  UTILITIES
+  LOSSES
+  MARKETING
 }

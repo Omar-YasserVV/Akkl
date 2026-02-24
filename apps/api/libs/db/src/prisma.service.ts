@@ -13,6 +13,11 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
   }
 
   async onModuleInit() {
-    await this.$connect();
+    try {
+      await this.$connect();
+      console.log('Successfully connected to Neon DB');
+    } catch (e) {
+      console.error('Failed to connect to Neon DB:', e);
+    }
   }
 }
