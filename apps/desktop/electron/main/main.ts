@@ -27,6 +27,7 @@ function createWindow() {
     },
   });
   win.maximize(); // fills screen but keeps taskbar & window buttons
+  win.webContents.openDevTools({ mode: "detach" }); // or 'right', 'bottom'
 
   Menu.setApplicationMenu(null);
   // Test active push message to Renderer-process.
@@ -41,7 +42,6 @@ function createWindow() {
     win.loadFile(path.join(RENDERER_DIST, "index.html"));
   }
 }
-
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.

@@ -1,13 +1,19 @@
+import { HashRouter, Routes, Route } from "react-router-dom";
+import Home from "./pages/home/Home";
+import Login from "./pages/auth/Login";
+import { AppBreadcrumb } from "./components/ui/AppBreadcrumb";
 
 function App() {
-
   return (
-    <>
-      <div className="flex h-screen w-screen items-center justify-center bg-gray-100">
-        <h1 className="text-4xl font-bold text-gray-800">Welcome to Akkl Desktop App!</h1>
-      </div>
-    </>
-  )
+    <HashRouter>
+      <AppBreadcrumb />
+
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+      </Routes>
+    </HashRouter>
+  );
 }
 
-export default App
+export default App;
