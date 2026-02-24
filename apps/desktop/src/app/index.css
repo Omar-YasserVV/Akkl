@@ -1,1 +1,62 @@
 @import "tailwindcss";
+
+/* CSS Variables for colors */
+@font-face {
+  font-family: "SF Pro";
+  src: url("./fonts/SF-Pro-Display-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: "SF Pro";
+  src: url("./fonts/SF-Pro-Display-Medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: "SF Pro";
+  src: url("./fonts/SF-Pro-Display-Semibold.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+}
+@font-face {
+  font-family: "SF Pro";
+  src: url("./fonts/SF-Pro-Display-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* -------------------------------
+   2️⃣ CSS Variables
+---------------------------------*/
+:root {
+  --color-primary: #0676fd;
+  --bg-light: #ffffff;
+  --bg-dark: #000000;
+  --text-light: #000000;
+  --text-dark: #ffffff;
+  --font-primary: "SF Pro", sans-serif;
+}
+
+/* -------------------------------
+   3️⃣ Global styles
+---------------------------------*/
+body {
+  font-family: var(--font-primary);
+  @apply bg-[var(--bg-light)] text-[var(--text-light)];
+}
+
+body.dark {
+  @apply bg-[var(--bg-dark)] text-[var(--text-dark)];
+}
+
+/* -------------------------------
+   4️⃣ Primary color utilities
+---------------------------------*/
+.text-primary {
+  color: var(--color-primary);
+}
+
+.bg-primary {
+  background-color: var(--color-primary);
+}

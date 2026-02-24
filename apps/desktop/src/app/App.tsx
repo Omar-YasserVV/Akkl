@@ -1,6 +1,6 @@
 import { HashRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/home/Home";
-import Login from "./pages/auth/Login";
+import SignIn from "./pages/auth/SignIn";
 import { AppBreadcrumb } from "./components/ui/AppBreadcrumb";
 
 function App() {
@@ -10,7 +10,7 @@ function App() {
 
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/sign-in" element={<SignIn />} />
       </Routes>
     </HashRouter>
   );

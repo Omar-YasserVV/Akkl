@@ -14,7 +14,7 @@ export const AppBreadcrumb = () => {
   const mouseX = useMotionValue(20);
   const mouseY = useMotionValue(20);
 
-  const springConfig = { damping: 40, stiffness: 200 };
+  const springConfig = { damping: 50, stiffness: 200 };
   const dx = useSpring(mouseX, springConfig);
   const dy = useSpring(mouseY, springConfig);
 
