@@ -14,7 +14,12 @@
     "@repo/ui": "workspace:*",
     "next": "16.1.0",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "zustand": "^5.0.11",
+    "@tanstack/react-query": "^5.76.0",
+    "@heroui/react": "^2.8.9",
+    "framer-motion": "^12.0.0",
+    "tailwindcss": "^4.1.18"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
