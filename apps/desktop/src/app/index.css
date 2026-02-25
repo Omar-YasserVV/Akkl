@@ -27,28 +27,10 @@
 }
 
 /* -------------------------------
-   2️⃣ CSS Variables
----------------------------------*/
-:root {
-  --color-primary: #1a71ff;
-  --color-secondary: #367aff;
-  --bg-light: #ffffff;
-  --bg-dark: #000000;
-  --text-light: #000000;
-  --text-dark: #ffffff;
-  --font-primary: "SF Pro", sans-serif;
-}
-
-/* -------------------------------
    3️⃣ Global styles
 ---------------------------------*/
 body {
   font-family: var(--font-primary);
-  @apply bg-[var(--bg-light)] text-[var(--text-light)];
-}
-
-body.dark {
-  @apply bg-[var(--bg-dark)] text-[var(--text-dark)];
 }
 
 /* -------------------------------
