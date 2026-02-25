@@ -21,6 +21,8 @@ let win: BrowserWindow | null;
 
 function createWindow() {
   win = new BrowserWindow({
+    width: 1440,
+    height: 968,
     icon: path.join(process.env.VITE_PUBLIC, "Logo.ico"),
     title: "Akkl",
     webPreferences: {
