@@ -1,5 +1,5 @@
 @import "tailwindcss";
-
+@import "@repo/tailwind-config";
 /* CSS Variables for colors */
 @font-face {
   font-family: "SF Pro";
