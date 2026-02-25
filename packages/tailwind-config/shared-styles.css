@@ -1,0 +1,80 @@
+@import "tailwindcss";
+@plugin './hero.ts';
+@source '../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* OKLCH is great for consistent perceived brightness */
+  --background: oklch(0.98 0 0);
+  --foreground: oklch(0.15 0.02 260);
+  --card: oklch(0.97 0 0);
+  --card-foreground: oklch(0.15 0.02 260);
+  --popover: oklch(0.98 0 0);
+  --popover-foreground: oklch(0.15 0.02 260);
+  --primary: oklch(0.55 0.16 261);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.92 0.02 260);
+  --secondary-foreground: oklch(0.17 0.02 260);
+  --muted: oklch(0.92 0.01 260);
+  --muted-foreground: oklch(0.5 0.01 260);
+  --accent: oklch(0.9 0.05 200);
+  --accent-foreground: oklch(0.18 0.03 260);
+  --destructive: oklch(0.68 0.17 30);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.85 0.01 260);
+  --input: oklch(0.92 0.01 260);
+  --ring: oklch(0.55 0.16 261);
+  --radius: 0.75rem;
+}
+
+.dark {
+  --background: oklch(0.13 0.02 260);
+  --foreground: oklch(0.98 0 0);
+  --card: oklch(0.16 0.02 260);
+  --card-foreground: oklch(0.98 0 0);
+  --popover: oklch(0.16 0.02 260);
+  --popover-foreground: oklch(0.98 0 0);
+  --primary: oklch(0.7 0.12 260); /* Adjusted for dark mode legibility */
+  --primary-foreground: oklch(0.13 0.02 260);
+  --secondary: oklch(0.22 0.02 260);
+  --secondary-foreground: oklch(0.98 0 0);
+  --muted: oklch(0.22 0.02 260);
+  --muted-foreground: oklch(0.65 0 0);
+  --accent: oklch(0.22 0.02 260);
+  --accent-foreground: oklch(0.98 0 0);
+  --destructive: oklch(0.5 0.2 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.25 0.02 260);
+  --input: oklch(0.22 0.02 260);
+  --ring: oklch(0.6 0.15 200);
+}
+
+@theme {
+  /* This maps your variables to tailwind classes like 'bg-primary' */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
