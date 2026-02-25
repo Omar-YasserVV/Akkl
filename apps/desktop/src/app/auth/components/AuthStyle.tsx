@@ -1,4 +1,4 @@
-import { AkklLogin, AkklLoginBackground } from "../../../../assets";
+import { AkklLogin, AkklLoginBackground } from "@/assets";
 
 function AuthStyle() {
   return (
