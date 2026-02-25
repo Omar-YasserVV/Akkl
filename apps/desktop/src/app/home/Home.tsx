@@ -8,13 +8,22 @@ function Home() {
         <h1 className="text-4xl font-bold text-gray-800">
           Welcome to Akkl Desktop App!
         </h1>
-        <Button
-          as={Link}
-          to="/sign-in"
-          className="bg-secondary font-semibold rounded-lg px-3 text-white py-3"
-        >
-          Go to Sign in
-        </Button>
+        <div className="flex gap-5 items-center">
+          <Button
+            as={Link}
+            to="/sign-in"
+            className="bg-secondary font-semibold rounded-lg px-3 text-white py-3"
+          >
+            Go to Sign in
+          </Button>
+          <Button
+            as={Link}
+            to="/dashboard"
+            className="bg-secondary font-semibold rounded-lg px-3 text-white py-3"
+          >
+            Go to Dashboard
+          </Button>
+        </div>
       </div>
     </>
   );
