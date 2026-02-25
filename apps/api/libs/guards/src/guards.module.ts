@@ -1,8 +1,11 @@
 import { Module } from '@nestjs/common';
 import { GuardsService } from './guards.service';
+import { BlackListService } from './services/blacklist.service';
+import { DbModule, PrismaService } from '@app/db';
 
 @Module({
-  providers: [GuardsService],
-  exports: [GuardsService],
+  imports: [DbModule],
+  providers: [GuardsService, BlackListService, PrismaService],
+  exports: [GuardsService, BlackListService],
 })
 export class GuardsModule {}

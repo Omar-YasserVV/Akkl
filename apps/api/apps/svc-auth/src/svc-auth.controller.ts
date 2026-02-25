@@ -1,15 +1,23 @@
-import { Controller } from '@nestjs/common';
+import {
+  Controller,
+  Request,
+  Response,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { SvcAuthService } from './svc-auth.service';
 import { LoginDto, CreateUserDto, CompleteGoogleSignupDto } from '@app/common';
-
+import { BlackListService } from '@app/guards/services/blacklist.service';
+import { tokenDto } from '@app/common/dtos/UserDto/token.dto';
 @Controller()
 export class SvcAuthController {
-  constructor(private readonly svcAuthService: SvcAuthService) {}
+  constructor(
+    private readonly svcAuthService: SvcAuthService,
+    private readonly blackListService: BlackListService,
+  ) {}
 
   @MessagePattern({ cmd: 'signup' })
   async signup(@Payload() data: CreateUserDto) {
-    // Logic only. No res.cookie here!
     return await this.svcAuthService.signup(data);
   }
 
@@ -18,10 +26,17 @@ export class SvcAuthController {
     return await this.svcAuthService.login(data);
   }
 
+  @MessagePattern({ cmd: 'logout' })
+  async handleLogout(@Payload() data: any) {
+    if (data && data.Token) {
+      await this.blackListService.pushBlacklistedToken(data);
+    }
+
+    return { success: true };
+  }
+
   @MessagePattern({ cmd: 'google-callback' })
   async googleAuthCallback(@Payload() user: any) {
-    // Passport logic usually happens at the Gateway level, 
-    // but if handled here, just return the user object.
     return user;
   }
 

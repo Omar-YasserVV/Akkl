@@ -1,17 +1,19 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { RpcException } from '@nestjs/microservices'; // Correct error carrier
+import { RpcException } from '@nestjs/microservices';
 import { comparePasswords, hashPassword } from '../../../utils/argon2';
 import { PrismaService } from '@app/db';
 import * as nodemailer from 'nodemailer';
 import * as jwt from 'jsonwebtoken';
 import { LoginDto, CreateUserDto, CompleteGoogleSignupDto } from '@app/common';
-
+import { BlackListService } from '@app/guards/services/blacklist.service';
+import { tokenDto } from '@app/common/dtos/UserDto/token.dto';
 @Injectable()
 export class SvcAuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly blackListService: BlackListService,
   ) {}
 
   private transporter = nodemailer.createTransport({
@@ -55,8 +57,8 @@ export class SvcAuthService {
     });
     return {
       message: 'Login successful',
-      access_token,
-      refresh_token,
+      access_token: access_token,
+      refresh_token: refresh_token,
       user: { id: user.id, email: user.email },
     };
   }

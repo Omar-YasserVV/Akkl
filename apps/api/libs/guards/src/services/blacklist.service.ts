@@ -2,17 +2,20 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '../../../db/generated/client/client';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '@app/db';
+import { tokenDto } from '@app/common/dtos/UserDto/token.dto';
 
 @Injectable()
 export class BlackListService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async pushBlacklistedToken(token: string) {
-    if (!token) return;
+  async pushBlacklistedToken(data: tokenDto) {
+    console.log('--- Blacklist DB Attempt ---');
+    console.log('Payload:', data);
+    if (!data) return;
 
     try {
       await this.prisma.tokenBlacklist.create({
-        data: { token },
+        data: { token: data.Token },
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {

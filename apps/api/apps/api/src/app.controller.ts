@@ -1,6 +1,15 @@
-import { Body, Controller, Get, Inject, Post, Res, HttpStatus } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Post,
+  Req,
+  Res,
+  HttpStatus,
+} from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { LoginDto, CreateUserDto } from '@app/common';
 import { lastValueFrom } from 'rxjs';
 
@@ -10,7 +19,6 @@ export class AppController {
     @Inject('AUTH_SERVICE') private readonly authService: ClientProxy,
   ) {}
 
-  // Helper to set cookies
   private setAuthCookies(res: Response, result: any) {
     res.cookie('access_token', result?.access_token, {
       httpOnly: true,
@@ -28,21 +36,43 @@ export class AppController {
 
   @Post('signup')
   async signup(@Body() data: CreateUserDto, @Res() res: Response) {
-    const result = await lastValueFrom(this.authService.send({ cmd: 'signup' }, data));
+    const result = await lastValueFrom(
+      this.authService.send({ cmd: 'signup' }, data),
+    );
     this.setAuthCookies(res, result);
-    return res.status(HttpStatus.CREATED).json({ status: 'success', data: { user: result.user } });
+    return res
+      .status(HttpStatus.CREATED)
+      .json({ status: 'success', data: { user: result.user } });
   }
 
   @Post('login')
   async login(@Body() data: LoginDto, @Res() res: Response) {
-    const result = await lastValueFrom(this.authService.send({ cmd: 'login' }, data));
+    const result = await lastValueFrom(
+      this.authService.send({ cmd: 'login' }, data),
+    );
     this.setAuthCookies(res, result);
-    return res.status(HttpStatus.OK).json({ status: 'success', data: { user: result.user } });
+    return res.status(HttpStatus.OK).json({ status: 'success', data: result });
+  }
+
+  @Post('logout')
+  async logout(@Req() req: any, @Res() res: Response) {
+    const refreshToken = req.cookies?.['refresh_token'];
+
+    const result = await lastValueFrom(
+      this.authService.send({ cmd: 'logout' }, { Token: refreshToken }),
+    );
+
+    res.clearCookie('access_token', { httpOnly: true, sameSite: 'strict' });
+    res.clearCookie('refresh_token', { httpOnly: true, sameSite: 'strict' });
+
+    return res.status(HttpStatus.OK).json({ status: 'success', data: result });
   }
 
   @Post('complete-google-signup')
   async completeGoogleSignup(@Body() data: any, @Res() res: Response) {
-    const result = await lastValueFrom(this.authService.send({ cmd: 'complete-google-signup' }, data));
+    const result = await lastValueFrom(
+      this.authService.send({ cmd: 'complete-google-signup' }, data),
+    );
     this.setAuthCookies(res, result);
     return res.status(HttpStatus.OK).json({ status: 'success', data: result });
   }

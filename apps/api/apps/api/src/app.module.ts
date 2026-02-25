@@ -8,7 +8,7 @@ import { AppService } from './app.service';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env', // Path relative to where you run the command
+      envFilePath: '.env',
     }),
     ClientsModule.register([
       {
@@ -24,7 +24,7 @@ import { AppService } from './app.service';
       //       brokers: ['localhost:9001'],
       //     },
       //     consumer: {
-      //       groupId: 'svc-auth-consumer', // Needed even for producers to handle responses
+      //       groupId: 'svc-auth-consumer',
       //     },
       //   },
       // },

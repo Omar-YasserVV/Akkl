@@ -16,7 +16,6 @@ export class JwtAuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    // 1. Get request and response objects from the context
     const httpContext = context.switchToHttp();
     const request = httpContext.getRequest<Request>();
     const response = httpContext.getResponse<Response>();
@@ -28,7 +27,6 @@ export class JwtAuthGuard implements CanActivate {
       throw new UnauthorizedException('No authentication token found');
     }
 
-    // 2. Check Blacklist
     const isInvalid =
       await this.blacklistService.isTokenBlacklisted(refreshToken);
     if (isInvalid) {
@@ -37,14 +35,12 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     try {
-      // 3. Try to verify Access Token
       const decoded = await this.jwtService.verifyAsync(accessToken, {
         secret: process.env.JWT_SECRET,
       });
       request['user'] = decoded;
-      return true; // Access granted
+      return true;
     } catch (error: any) {
-      // 4. Handle Expired Access Token with Refresh Token
       if (error.name === 'TokenExpiredError' && refreshToken) {
         return this.handleRefreshToken(request, response, refreshToken);
       }
@@ -64,7 +60,6 @@ export class JwtAuthGuard implements CanActivate {
 
       const payload = { sub: decodedRefresh.sub };
 
-      // Generate New Tokens
       const newAccessToken = await this.jwtService.signAsync(payload, {
         secret: process.env.JWT_SECRET,
         expiresIn: (process.env.JWT_EXPIRATION_TIME || '7h') as any,
@@ -75,12 +70,10 @@ export class JwtAuthGuard implements CanActivate {
         expiresIn: (process.env.JWT_EXPIRATION_TIME_REFRESH_TOKEN ||
           '7d') as any,
       });
-
-      // Set New Cookies
       this.setCookies(res, newAccessToken, newRefreshToken);
 
       req['user'] = payload;
-      return true; // Access granted after refresh
+      return true;
     } catch {
       this.clearCookies(res);
       throw new UnauthorizedException('Invalid or expired refresh token');
