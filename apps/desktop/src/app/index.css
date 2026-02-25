@@ -30,7 +30,8 @@
    2️⃣ CSS Variables
 ---------------------------------*/
 :root {
-  --color-primary: #0676fd;
+  --color-primary: #1a71ff;
+  --color-secondary: #367aff;
   --bg-light: #ffffff;
   --bg-dark: #000000;
   --text-light: #000000;
@@ -59,4 +60,15 @@ body.dark {
 
 .bg-primary {
   background-color: var(--color-primary);
+}
+.text-secondary {
+  color: var(--color-primary);
+}
+
+.bg-secondary {
+  background-color: var(--color-primary);
+}
+
+.border-secondary {
+  border-color: var(--color-secondary);
 }

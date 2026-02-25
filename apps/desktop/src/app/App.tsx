@@ -1,6 +1,6 @@
 import { HashRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/home/Home";
-import SignIn from "./pages/auth/SignIn";
+import SignIn from "./pages/auth/sign-in/SignIn";
 import { AppBreadcrumb } from "./components/ui/AppBreadcrumb";
 
 function App() {

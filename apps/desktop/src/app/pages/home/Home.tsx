@@ -7,20 +7,12 @@ function Home() {
         <h1 className="text-4xl font-bold text-gray-800">
           Welcome to Akkl Desktop App!
         </h1>
-        <div className="flex gap-3">
-          <Link
-            to="/sign-in"
-            className="bg-primary font-semibold rounded-lg px-3 text-white py-3"
-          >
-            Go to Sign in
-          </Link>
-          <Link
-            to="/sign-up"
-            className="bg-primary font-semibold rounded-lg px-3 text-white py-3"
-          >
-            Go to Sign up
-          </Link>
-        </div>
+        <Link
+          to="/sign-in"
+          className="bg-secondary font-semibold rounded-lg px-3 text-white py-3"
+        >
+          Go to Sign in
+        </Link>
       </div>
     </>
   );
