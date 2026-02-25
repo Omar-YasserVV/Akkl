@@ -21,7 +21,12 @@ function createWindow() {
     }
   });
   win.maximize();
-  win.webContents.openDevTools({ mode: "detach" });
+  win.webContents.on("before-input-event", (event, input) => {
+    if (input.key === "F12") {
+      win == null ? void 0 : win.webContents.toggleDevTools();
+      event.preventDefault();
+    }
+  });
   Menu.setApplicationMenu(null);
   win.webContents.on("did-finish-load", () => {
     win == null ? void 0 : win.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
