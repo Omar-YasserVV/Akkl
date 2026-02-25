@@ -21,8 +21,8 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      " /guards": ["libs/guards/src"],
-      " /guards/*": ["libs/guards/src/*"],
+      "@app/guards": ["libs/guards/src"],
+      "@app/guards/*": ["libs/guards/src/*"],
       "@app/common": ["libs/common/src"],
       "@app/common/*": ["libs/common/src/*"],
       "@app/db": ["libs/db/src"],

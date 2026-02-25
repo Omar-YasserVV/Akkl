@@ -1,16 +1,19 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { RpcException } from '@nestjs/microservices';
 import { comparePasswords, hashPassword } from '../../../utils/argon2';
 import { PrismaService } from '@app/db';
 import * as nodemailer from 'nodemailer';
 import * as jwt from 'jsonwebtoken';
 import { LoginDto, CreateUserDto, CompleteGoogleSignupDto } from '@app/common';
-
+import { BlackListService } from '@app/guards/services/blacklist.service';
+import { tokenDto } from '@app/common/dtos/UserDto/token.dto';
 @Injectable()
 export class SvcAuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly blackListService: BlackListService,
   ) {}
 
   private transporter = nodemailer.createTransport({
@@ -38,7 +41,7 @@ export class SvcAuthService {
       where: { email: data.email },
     });
     if (!user) {
-      throw new Error('Invalid credentials');
+      throw new RpcException({ message: 'Invalid credentials', status: 401 });
     }
 
     const isPasswordValid = await comparePasswords(
@@ -46,20 +49,17 @@ export class SvcAuthService {
       user.password,
     );
     if (!isPasswordValid) {
-      throw new Error('Invalid credentials');
+      throw new RpcException({ message: 'Invalid credentials', status: 401 });
     }
 
     const { access_token, refresh_token } = await this.generateToken({
       sub: user.id,
     });
     return {
-      massage: 'login successful',
+      message: 'Login successful',
       access_token: access_token,
       refresh_token: refresh_token,
-      user: {
-        id: user.id,
-        email: user.email,
-      },
+      user: { id: user.id, email: user.email },
     };
   }
 
@@ -67,27 +67,26 @@ export class SvcAuthService {
     const existingUser = await this.prisma.user.findUnique({
       where: { email: data.email },
     });
+
     if (existingUser) {
-      throw new Error('Email already in use');
+      throw new RpcException({ message: 'Email already in use', status: 409 });
     }
 
     const hashedPassword = await hashPassword(data.password);
-
     const { role, ...userData } = data;
-    const newuser = await this.prisma.user.create({
-      data: { ...userData, password: hashedPassword },
+
+    const newUser = await this.prisma.user.create({
+      data: { ...userData, password: hashedPassword, role: role },
     });
+
     const { access_token, refresh_token } = await this.generateToken({
-      sub: newuser.id,
+      sub: newUser.id,
     });
     return {
-      massage: 'login successful',
-      access_token: access_token,
-      refresh_token: refresh_token,
-      user: {
-        id: newuser.id,
-        email: newuser.email,
-      },
+      message: 'Signup successful',
+      access_token,
+      refresh_token,
+      user: { id: newUser.id, email: newUser.email },
     };
   }
 
@@ -100,33 +99,36 @@ export class SvcAuthService {
       data;
 
     if (password !== passwordConfirmation) {
-      throw new BadRequestException('Passwords do not match');
+      throw new RpcException({
+        message: 'Passwords do not match',
+        status: 400,
+      });
     }
 
     const decoded: any = jwt.verify(token, process.env.JWT_TEMP_SECRET!);
 
-    const { access_token, refresh_token } = await this.generateToken({
-      sub: decoded.id,
-    });
     const hashedPassword = await hashPassword(password);
-
-    const newuser = this.prisma.user.create({
+    const newUser = await this.prisma.user.create({
       data: {
         email: decoded.email,
         password: hashedPassword,
         fullName: decoded.fullName,
-        phone: phone,
+        phone,
         image: decoded.image,
-        role: role,
-        username: username,
+        role,
+        username,
       },
     });
 
+    const { access_token, refresh_token } = await this.generateToken({
+      sub: newUser.id,
+    });
+
     return {
-      massage: 'sighnup successful',
-      access_token: access_token,
-      refresh_token: refresh_token,
-      user: newuser,
+      message: 'Signup successful',
+      access_token,
+      refresh_token,
+      user: newUser,
     };
   }
 

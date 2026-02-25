@@ -1,15 +1,20 @@
-import { Module } from '@nestjs/common';
+import { ConfigurableModuleBuilder, Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
     ClientsModule.register([
       {
         name: 'AUTH_SERVICE',
         transport: Transport.TCP,
-        options: { host: 'auth-service', port: 9010 },
+        options: { host: '127.0.0.1', port: 9010 },
       },
       // {
       //   name: 'KAFKA_SERVICE',
@@ -19,7 +24,7 @@ import { AppService } from './app.service';
       //       brokers: ['localhost:9001'],
       //     },
       //     consumer: {
-      //       groupId: 'svc-auth-consumer', // Needed even for producers to handle responses
+      //       groupId: 'svc-auth-consumer',
       //     },
       //   },
       // },
