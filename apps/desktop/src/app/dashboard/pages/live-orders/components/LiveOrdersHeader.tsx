@@ -23,9 +23,7 @@ const LiveOrdersHeader = () => {
   return (
     <header className="flex justify-between items-end">
       <div>
-        <h2 className="cherry-bomb-one-regular text-primary text-5xl">
-          Live Orders
-        </h2>
+        <h2 className="font-cherry text-primary text-5xl">Live Orders</h2>
         <p className="text-muted-foreground">
           Manage orders from app and restaurant in real-time.
         </p>

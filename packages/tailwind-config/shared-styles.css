@@ -1,11 +1,43 @@
+/* 1. Standard CSS Imports must come first */
+@import url("https://fonts.googleapis.com/css2?family=Cherry+Bomb+One&display=swap");
+
+/* 2. Tailwind Core */
 @import "tailwindcss";
+
+/* 3. Configuration & Plugins */
 @plugin './hero.ts';
 @source '../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
 
+/* 4. Custom Variants */
 @custom-variant dark (&:is(.dark *));
 
+/* 5. Theme Definitions */
+@theme {
+  /* Font Mapping */
+  --font-cherry: "Cherry Bomb One", system-ui;
+
+  /* Color Mapping - Connecting Tailwind names to your CSS variables */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+
+  /* Spacing/Radius Mapping */
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+/* 6. Variables & Base Styles */
 :root {
-  /* OKLCH is great for consistent perceived brightness */
   --background: oklch(100% 0 0);
   --foreground: oklch(0.15 0.02 260);
   --card: oklch(0.97 0 0);
@@ -13,7 +45,7 @@
   --popover: oklch(0.98 0 0);
   --popover-foreground: oklch(0.15 0.02 260);
   --primary: oklch(0.6 0.201 252.89);
-  --primary-foreground: oklch(0.98 0 0); /* White text */
+  --primary-foreground: oklch(0.98 0 0);
   --secondary: oklch(0.92 0.02 260);
   --secondary-foreground: oklch(0.17 0.02 260);
   --muted: oklch(0.92 0.01 260);
@@ -36,7 +68,7 @@
   --popover: oklch(0.16 0.02 260);
   --popover-foreground: oklch(0.98 0 0);
   --primary: oklch(0.7 0.18 252.89);
-  --primary-foreground: oklch(0.13 0.02 260); /* Dark text for contrast */
+  --primary-foreground: oklch(0.13 0.02 260);
   --secondary: oklch(0.22 0.02 260);
   --secondary-foreground: oklch(0.98 0 0);
   --muted: oklch(0.22 0.02 260);
@@ -48,26 +80,6 @@
   --border: oklch(0.25 0.02 260);
   --input: oklch(0.22 0.02 260);
   --ring: oklch(0.7 0.18 252.89);
-}
-
-@theme {
-  /* This maps your variables to tailwind classes like 'bg-primary' */
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
 }
 
 @layer base {

@@ -6,8 +6,8 @@ function MenuManagerHeader() {
     <header className="flex flex-col rounded-lg">
       <div className="flex justify-between items-end">
         <div>
-          <h2 className="cherry-bomb-one-regular text-primary text-5xl mb-2.5">
-            Menu Manager{" "}
+          <h2 className="font-cherry text-primary text-5xl mb-2.5">
+            Menu Manager
           </h2>
           <p className="text-[#808080]">
             Manage your restaurant menu items and categories.{" "}
