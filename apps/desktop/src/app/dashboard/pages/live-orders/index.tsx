@@ -6,12 +6,12 @@ const LiveOrders = () => {
   // Calculate order counts by status
 
   return (
-    <div className="space-y-4.5">
+    <>
       <LiveOrdersHeader />
       <StatsCard />
       <FiltrationCard />
       <OrderList />
-    </div>
+    </>
   );
 };
 

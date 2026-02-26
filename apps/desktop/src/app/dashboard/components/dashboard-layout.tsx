@@ -12,7 +12,7 @@ const DashboardLayout = () => {
         <Sidebar />
         <div className="flex-1 flex flex-col">
           <Topbar />
-          <div className="flex-1 overflow-auto px-4.5 py-6 bg-[#F1F1F1] rounded-lg mr-4.5 mb-4.5">
+          <div className="flex-1 overflow-auto px-4.5 py-6 bg-[#F1F1F1] rounded-lg mr-4.5 mb-4.5 space-y-4.5">
             <Outlet />
           </div>
         </div>
