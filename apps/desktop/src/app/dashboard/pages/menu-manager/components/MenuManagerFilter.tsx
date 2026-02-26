@@ -11,7 +11,7 @@ const MenuManagerFilter = () => {
   const availabilityOptions = ["All", "Available", "Unavailable"];
 
   // Helper to determine button styling based on active state
-  const getBtnClasses = (isActive) =>
+  const getBtnClasses = (isActive: boolean) =>
     `min-w-[20px] h-9 px-4 text-[13.7px] rounded-sm font-medium transition-all ${
       isActive
         ? "bg-primary text-white shadow-md"
@@ -19,7 +19,7 @@ const MenuManagerFilter = () => {
     }`;
 
   return (
-    <div className="flex items-center justify-between mx-3 bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+    <div className="flex items-center justify-between bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
       {/* Category Filter */}
       <div className="flex items-center gap-2">
         <span className="text-[13.7px] font-medium text-[#18181B]">

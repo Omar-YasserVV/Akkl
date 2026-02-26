@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Table,
   TableHeader,
@@ -6,16 +5,16 @@ import {
   TableBody,
   TableRow,
   TableCell,
-  User,
   Chip,
   Button,
 } from "@heroui/react";
-import { Edit, Trash2 } from "lucide-react";
 import { MENU_ITEMS } from "../constants/dummy_constants";
+import { FiEdit } from "react-icons/fi";
+import { FaRegTrashAlt } from "react-icons/fa";
 
 export default function MenuManagerTable() {
   return (
-    <div className="px-3 pb-10 pt-5">
+    <div>
       <Table
         aria-label="Restaurant Menu Table"
         classNames={{
@@ -92,14 +91,14 @@ export default function MenuManagerTable() {
                     variant="light"
                     className="border border-gray-200 rounded-lg min-w-10 h-10"
                   >
-                    <Edit className="w-4 h-4 text-gray-600" />
+                    <FiEdit className="w-4 h-4 text-gray-600" />
                   </Button>
                   <Button
                     isIconOnly
                     variant="light"
                     className="border border-gray-200 rounded-lg min-w-10 h-10"
                   >
-                    <Trash2 className="w-4 h-4 text-danger" />
+                    <FaRegTrashAlt className="w-4 h-4 text-danger" />
                   </Button>
                 </div>
               </TableCell>
