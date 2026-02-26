@@ -4,8 +4,8 @@ import SignIn from "../auth/pages/SignIn";
 import Home from "../home/Home";
 import DashboardLayout from "../dashboard/components/dashboard-layout";
 import Overview from "../dashboard/pages/overview";
-import LiveOrders from "../dashboard/pages/live-orders/LiveOrders";
-import MenuManager from "../dashboard/pages/menu-manager/MenuManager";
+import LiveOrders from "../dashboard/pages/live-orders";
+import MenuManager from "../dashboard/pages/menu-manager";
 export const router = createBrowserRouter([
   {
     path: "/",
