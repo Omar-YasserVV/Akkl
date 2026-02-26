@@ -135,8 +135,11 @@ const Sidebar = () => {
 
         <nav className="flex flex-col gap-1.5">
           {routes.map((route) => {
-            // Compute isActive once per route using shared logic
-            const isActive = getIsActive(route.path, route.name);
+            // Check if current path starts with route path to keep parent active
+            const isActive =
+              route.path === "/dashboard"
+                ? pathname === "/dashboard"
+                : pathname.startsWith(route.path);
 
             const content = (
               <Button
