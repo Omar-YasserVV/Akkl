@@ -3,7 +3,7 @@ import { AkklLogin, AkklLoginBackground } from "@/assets";
 function AuthStyle() {
   return (
     <div
-      className="w-1/2 bg-cover z-[-555] bg-right bg-primary"
+      className="w-1/2 bg-cover bg-right bg-primary min-h-screen"
       style={{
         backgroundImage: `url(${AkklLoginBackground})`,
       }}

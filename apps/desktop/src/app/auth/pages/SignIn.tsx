@@ -1,13 +1,13 @@
 import { useState } from "react";
 import AuthStyle from "../components/AuthStyle";
-import { ChevronLeft, EyeOff } from "lucide-react"; // Optional: lucide-react for icons
+import { ChevronLeft, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 function SignIn() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   return (
-    <div className="relative flex ">
+    <div className="relative flex bg-white">
       <div className="w-1/2 h-screen">
         <div className="full h-screen flex flex-col items-center justify-center px-20">
           <div className="w-full max-w-md">
@@ -28,7 +28,7 @@ function SignIn() {
             <form className="space-y-6">
               {/* Email Field */}
               <div className="relative group">
-                <label className="absolute -top-3 left-4 bg-white px-1 text-sm font-medium text-gray-400 z-10 transition-colors group-focus-within:text-blue-500">
+                <label className="absolute -top-2.75 left-4 bg-white px-1 text-sm font-medium text-gray-400 z-10 transition-colors group-focus-within:text-blue-500">
                   Email
                 </label>
 
@@ -43,7 +43,7 @@ function SignIn() {
 
               {/* Password Field */}
               <div className="relative group">
-                <label className="absolute -top-3 left-4 bg-white px-1 text-sm font-medium text-gray-400 z-10 transition-colors group-focus-within:text-blue-500">
+                <label className="absolute -top-2.75 left-4 bg-white px-1 text-sm font-medium text-gray-400 z-10 transition-colors group-focus-within:text-blue-500">
                   Password
                 </label>
 
