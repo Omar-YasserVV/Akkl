@@ -4,6 +4,7 @@ import SignIn from "../auth/pages/SignIn";
 import Home from "../home/Home";
 import DashboardLayout from "../dashboard/components/dashboard-layout";
 import Overview from "../dashboard/pages/overview";
+import LiveOrders from "../live-orders/LiveOrders";
 
 export const router = createBrowserRouter([
   {
@@ -28,6 +29,11 @@ export const router = createBrowserRouter([
         index: true,
         element: <Overview />,
       },
+      {
+        path: "live-orders",
+        index: false,
+        element: <LiveOrders />,
+      }
     ],
   },
 ]);
