@@ -5,7 +5,7 @@ import Home from "../home/Home";
 import DashboardLayout from "../dashboard/components/dashboard-layout";
 import Overview from "../dashboard/pages/overview";
 import LiveOrders from "../dashboard/pages/live-orders/LiveOrders";
-
+import MenuManager from "../dashboard/pages/menu-manager/MenuManager";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -33,7 +33,22 @@ export const router = createBrowserRouter([
         path: "live-orders",
         index: false,
         element: <LiveOrders />,
-      }
+      },
+      {
+        path: "menu-manager",
+        index: false,
+        element: <MenuManager />,
+      },
+      {
+        path: "warehouse",
+        index: false,
+        element: <LiveOrders />,
+      },
+      {
+        path: "Finance & Reports",
+        index: false,
+        element: <LiveOrders />,
+      },
     ],
   },
 ]);
