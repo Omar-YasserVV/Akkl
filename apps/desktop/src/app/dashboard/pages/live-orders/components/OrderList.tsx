@@ -21,12 +21,12 @@ const columns: Array<{ name: string; uid: ColumnKey; align?: "start" | "center" 
     { name: "Items", uid: "items", align: "start" },
     { name: "Total", uid: "total", align: "start" },
     { name: "Status", uid: "status", align: "start" },
-    { name: "Actions", uid: "actions", align: "end" },
+    { name: "Actions", uid: "actions", align: "start" },
 ];
 
 const statusChipMap: Record<OrderStatus, { label: string; className: string }> = {
     pending: { label: "Pending", className: "bg-amber-100 text-[#746A0C]" },
-    cooking: { label: "Cooking", className: "bg-orange-100 text-orange-800" },
+    cooking: { label: "Cooking", className: "bg-orange-100 text-orange-900" },
     ready: { label: "Ready", className: "bg-green-100 text-green-800" },
 };
 
@@ -80,24 +80,24 @@ const OrderList = () => {
 
         switch (key) {
             case "order#":
-                return <span className="font-semibold text-gray-800">#{order["order#"]}</span>;
+                return <span className="font-semibold text-black">#{order["order#"]}</span>;
             case "customer":
-                return <span className="text-gray-800">{order.customer}</span>;
+                return <span className="text-black">{order.customer}</span>;
             case "source":
                 return <SourceChip source={order.source} />;
             case "items":
                 return (
-                    <span className="text-gray-700">
+                    <span className="text-black">
                         {order.items} {order.items === 1 ? "item" : "items"}
                     </span>
                 );
             case "total":
-                return <span className="text-gray-800 tabular-nums">{formatMoney(order.total)}</span>;
+                return <span className="text-black tabular-nums">{formatMoney(order.total)}</span>;
             case "status":
                 return <StatusChip status={order.status} />;
             case "actions":
                 return (
-                    <div className="flex items-center justify-center gap-3">
+                    <div className="flex items-center gap-3">
                         <button
                             type="button"
                             className="h-9 min-w-[100px] rounded-sm border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700  inline-flex items-center justify-between gap-2"
@@ -139,7 +139,9 @@ const OrderList = () => {
                 removeWrapper
                 classNames={{
                     table: "min-w-full",
-                    th: "rounded-none first:rounded-tl-lg last:rounded-tr-lg bg-neutral-100 text-black text-xs font-semibold py-3 px-6 text-left border-b border-gray-100",
+                    thead: "rounded-b-none",
+                    // Added 'text-left' to ensure headers aren't centered by default
+                    th: "bg-neutral-100 !rounded-none text-black text-xs font-semibold py-3 px-6 text-left border-b border-gray-100",
                     td: "py-5 px-6",
                     tr: "border-b border-gray-100 last:border-0",
                 }}

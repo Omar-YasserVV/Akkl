@@ -25,7 +25,7 @@ const StatsCard = () => {
                     <p className="text-2xl font-bold text-black">{cookingCount}</p>
                 </div>
                 <div className="bg-orange-100 rounded-md p-3 flex items-center justify-center">
-                    <ChefHat className="w-6 h-6 text-rose-900" />
+                    <ChefHat className="w-6 h-6 text-orange-900" />
                 </div>
             </Card>
             <Card className="flex flex-row items-center justify-between border-2 rounded-lg p-4 bg-white border-green-500 w-full">
