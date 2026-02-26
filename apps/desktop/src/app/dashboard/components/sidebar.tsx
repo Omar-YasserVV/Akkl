@@ -1,52 +1,52 @@
 import { useState } from "react";
 import { Button, cn, Tooltip } from "@heroui/react";
-import {
-  ChevronsLeftRight,
-  LayoutDashboard,
-  ShoppingBag,
-  UtensilsCrossed,
-  Warehouse,
-  BarChart3,
-  Settings,
-} from "lucide-react";
+
 import { NavLink, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  LuChartColumnIncreasing,
+  LuChevronsLeftRight,
+  LuHouse,
+  LuSettings,
+  LuShoppingCart,
+  LuUtensilsCrossed,
+  LuWarehouse,
+} from "react-icons/lu";
 
 const Sidebar = () => {
   const { pathname } = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-
   const routes = [
     {
       name: "Overview",
       path: "/dashboard",
-      icon: <LayoutDashboard size={22} />,
+      icon: <LuHouse size={22} />,
     },
     {
       name: "Live Orders",
       path: "/dashboard/live-orders",
-      icon: <ShoppingBag size={22} />,
+      icon: <LuShoppingCart size={22} />,
     },
     {
       name: "Menu Manager",
       path: "/dashboard/menu-manager",
-      icon: <UtensilsCrossed size={22} />,
+      icon: <LuUtensilsCrossed size={22} />,
     },
     {
       name: "Warehouse",
       path: "/dashboard/warehouse",
-      icon: <Warehouse size={22} />,
+      icon: <LuWarehouse size={22} />,
     },
     {
       name: "Finance & Reports",
       path: "/dashboard/finance-reports",
-      icon: <BarChart3 size={22} />,
+      icon: <LuChartColumnIncreasing size={22} />,
     },
     {
       name: "Settings",
       path: "/dashboard/settings",
-      icon: <Settings size={22} />,
+      icon: <LuSettings size={22} />,
     },
   ];
 
@@ -55,8 +55,18 @@ const Sidebar = () => {
       initial={false}
       animate={{ width: isCollapsed ? 80 : 290 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="h-screen flex flex-col bg-background sticky top-0 left-0"
+      className="h-screen flex flex-col bg-background sticky top-0 left-0 z-40"
     >
+      <Button
+        isIconOnly
+        size="sm"
+        variant="light"
+        onPress={() => setIsCollapsed(!isCollapsed)}
+        className="absolute top-6 -right-4.5 "
+      >
+        <LuChevronsLeftRight size={18} />
+      </Button>
+
       {/* Header Section */}
       <div
         className={cn(
@@ -87,32 +97,7 @@ const Sidebar = () => {
             />
           )}
         </AnimatePresence>
-
-        {!isCollapsed && (
-          <Button
-            isIconOnly
-            size="sm"
-            variant="light"
-            onPress={() => setIsCollapsed(true)}
-          >
-            <ChevronsLeftRight size={18} />
-          </Button>
-        )}
       </div>
-
-      {/* Re-expand button when collapsed */}
-      {isCollapsed && (
-        <div className="flex justify-center mb-6">
-          <Button
-            isIconOnly
-            size="sm"
-            variant="flat"
-            onPress={() => setIsCollapsed(false)}
-          >
-            <ChevronsLeftRight size={18} />
-          </Button>
-        </div>
-      )}
 
       {/* Navigation Section */}
       <div className="flex flex-col gap-2 px-3">

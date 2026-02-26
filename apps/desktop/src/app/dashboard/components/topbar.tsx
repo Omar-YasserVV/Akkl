@@ -1,12 +1,12 @@
 import { Avatar, Button, Divider, Input, Badge } from "@heroui/react";
-import { Bell, Search, Globe } from "lucide-react";
+import { LuBell, LuSearch, LuGlobe } from "react-icons/lu";
 
 const Topbar = () => {
   return (
     <div className="h-20 px-8 flex items-center justify-between bg-background/70 backdrop-blur-md sticky top-0 z-30">
       {/* Search Bar - refined width and styling */}
       <Input
-        startContent={<Search size={18} className="text-default-400" />}
+        startContent={<LuSearch size={18} className="text-default-400" />}
         placeholder="Search"
         className="max-w-[460px]"
         classNames={{
@@ -18,7 +18,7 @@ const Topbar = () => {
         {/* Language Switcher - replaced text with icon/label combo */}
         <Button
           variant="light"
-          startContent={<Globe size={18} />}
+          startContent={<LuGlobe size={18} />}
           size="sm"
           className="text-default-600 font-medium"
         >
@@ -34,7 +34,7 @@ const Topbar = () => {
           classNames={{ badge: "top-3 left-3" }}
         >
           <Button isIconOnly variant="light" radius="full" size="md">
-            <Bell size={20} className="text-default-600" />
+            <LuBell size={20} className="text-default-600" />
           </Button>
         </Badge>
 
