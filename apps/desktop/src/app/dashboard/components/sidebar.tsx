@@ -16,6 +16,14 @@ const Sidebar = () => {
   const { pathname } = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
+  // Moved the logic for determining active route out of the routes array.
+  const getIsActive = (routePath: string, name: string) => {
+    if (name === "Overview") {
+      return pathname === "/dashboard";
+    }
+    return pathname.startsWith(routePath);
+  };
+
   const routes = [
     {
       name: "Overview",
