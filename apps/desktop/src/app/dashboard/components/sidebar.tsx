@@ -129,7 +129,9 @@ const Sidebar = () => {
           {routes.map((route) => {
             // Check if current path starts with route path to keep parent active
             const isActive =
-              pathname === route.path || pathname.startsWith(`${route.path}/`);
+              route.path === "/dashboard"
+                ? pathname === "/dashboard"
+                : pathname.startsWith(route.path);
 
             const content = (
               <Button

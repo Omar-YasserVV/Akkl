@@ -1,15 +1,17 @@
-import React from "react";
 import { Card, Button } from "@heroui/react";
-
-type SourceFilter = "all" | "app" | "restaurant";
-type StatusFilter = "all" | "pending" | "confirmed" | "cooking" | "ready" | "completed";
+import {
+    useLiveOrdersFilterStore,
+    type StatusFilter,
+} from "@/store/liveOrdersFilterStore";
 
 const basePillClasses =
     "min-w-[72px] h-9 px-4 rounded-sm text-xs font-medium transition-colors shadow-none";
 
 const FiltrationCard = () => {
-    const [source, setSource] = React.useState<SourceFilter>("all");
-    const [status, setStatus] = React.useState<StatusFilter>("all");
+    const source = useLiveOrdersFilterStore((state) => state.source);
+    const status = useLiveOrdersFilterStore((state) => state.status);
+    const setSource = useLiveOrdersFilterStore((state) => state.setSource);
+    const setStatus = useLiveOrdersFilterStore((state) => state.setStatus);
 
     return (
         <Card className="w-full text-md font-normal rounded-lg bg-white shadow-sm px-6 py-3 flex flex-row items-center justify-between gap-8 border-0">
