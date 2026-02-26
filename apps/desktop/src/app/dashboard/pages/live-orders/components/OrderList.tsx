@@ -15,13 +15,13 @@ type OrderRow = LiveOrder & { id: string };
 type ColumnKey = "order#" | "customer" | "source" | "items" | "total" | "status" | "actions";
 
 const columns: Array<{ name: string; uid: ColumnKey; align?: "start" | "center" | "end" }> = [
-    { name: "Order #", uid: "order#", align: "center" },
-    { name: "Customer", uid: "customer", align: "center" },
-    { name: "Source", uid: "source", align: "center" },
-    { name: "Items", uid: "items", align: "center" },
-    { name: "Total", uid: "total", align: "center" },
+    { name: "Order #", uid: "order#", align: "start" },
+    { name: "Customer", uid: "customer", align: "start" },
+    { name: "Source", uid: "source", align: "start" },
+    { name: "Items", uid: "items", align: "start" },
+    { name: "Total", uid: "total", align: "start" },
     { name: "Status", uid: "status", align: "start" },
-    { name: "Actions", uid: "actions", align: "center" },
+    { name: "Actions", uid: "actions", align: "end" },
 ];
 
 const statusChipMap: Record<OrderStatus, { label: string; className: string }> = {
@@ -133,14 +133,13 @@ const OrderList = () => {
     }, []);
 
     return (
-        <div className="w-full rounded-2xl border border-gray-100 bg-white overflow-hidden shadow-sm">
+        <div className="w-full rounded-lg font-normal text-black border border-gray-100 bg-white overflow-hidden shadow-sm">
             <Table
                 aria-label="Live orders table"
                 removeWrapper
                 classNames={{
                     table: "min-w-full",
-                    // Added 'text-left' to ensure headers aren't centered by default
-                    th: "bg-neutral-100 text-black text-sm font-semibold py-3 px-6 text-left border-b border-gray-100",
+                    th: "rounded-none first:rounded-tl-lg last:rounded-tr-lg bg-neutral-100 text-black text-xs font-semibold py-3 px-6 text-left border-b border-gray-100",
                     td: "py-5 px-6",
                     tr: "border-b border-gray-100 last:border-0",
                 }}
@@ -149,6 +148,7 @@ const OrderList = () => {
                     {(column) => (
                         <TableColumn
                             key={column.uid}
+                            // Ensure align is strictly "start"
                             align={column.align}
                         >
                             {column.name}
@@ -157,9 +157,9 @@ const OrderList = () => {
                 </TableHeader>
                 <TableBody items={orders} emptyContent="No orders yet.">
                     {(item) => (
-                        <TableRow key={item.id} >
+                        <TableRow key={item.id}>
                             {(columnKey) => (
-                                <TableCell align={"center"}>
+                                <TableCell>
                                     {renderCell(item, columnKey)}
                                 </TableCell>
                             )}
