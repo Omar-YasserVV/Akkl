@@ -6,7 +6,7 @@
 
 :root {
   /* OKLCH is great for consistent perceived brightness */
-  --background: oklch(0.98 0 0);
+  --background: oklch(100% 0 0);
   --foreground: oklch(0.15 0.02 260);
   --card: oklch(0.97 0 0);
   --card-foreground: oklch(0.15 0.02 260);
