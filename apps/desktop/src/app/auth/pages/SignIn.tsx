@@ -1,7 +1,8 @@
 import { useState } from "react";
 import AuthStyle from "../components/AuthStyle";
-import { ChevronLeft, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { BiChevronLeft } from "react-icons/bi";
+import { FiEyeOff } from "react-icons/fi";
 
 function SignIn() {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ function SignIn() {
               onClick={() => navigate(-1)}
               className="p-2 bg-[#F1F1F1] rounded-xl mb-8 hover:bg-gray-200 transition-colors cursor-pointer"
             >
-              <ChevronLeft size={24} className="text-[#262626]" />
+              <BiChevronLeft size={24} className="text-[#262626]" />
             </button>
 
             {/* Header */}
@@ -61,7 +62,7 @@ function SignIn() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
                   >
-                    <EyeOff size={22} className="cursor-pointer" />
+                    <FiEyeOff size={22} className="cursor-pointer" />
                   </button>
                 </div>
               </div>
