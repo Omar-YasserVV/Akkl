@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@heroui/react": "^2.8.9",
+    "@heroui/use-infinite-scroll": "^2.2.12",
+    "@react-stately/data": "^3.15.1",
     "@repo/ui": "workspace:*",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-query": "^5.76.0",

@@ -193,6 +193,12 @@ importers:
       '@heroui/react':
         specifier: ^2.8.9
         version: 2.8.9(@types/react@19.2.2)(framer-motion@12.34.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(tailwindcss@4.2.1)
+      '@heroui/use-infinite-scroll':
+        specifier: ^2.2.12
+        version: 2.2.12(react@19.2.4)
+      '@react-stately/data':
+        specifier: ^3.15.1
+        version: 3.15.1(react@19.2.4)
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -1538,6 +1544,11 @@ packages:
 
   '@heroui/use-image@2.1.14':
     resolution: {integrity: sha512-eCxtKOsM1tszBKYqz8qIJwGIxEAUC7ua+6L9vK8JgG6gOC0jEPFGH7keQuPVprzRtG3DmNt90icowqEjnOHdFQ==}
+    peerDependencies:
+      react: ^19.2.0
+
+  '@heroui/use-infinite-scroll@2.2.12':
+    resolution: {integrity: sha512-5yIrw6aP9eH6iU+bQmfixb6QM4qvcwrW3g8jaZJ5ce94nebglLs131B7rSqF/UK8Bp7OXsBM3j1pdBZM7lo/MA==}
     peerDependencies:
       react: ^19.2.0
 
@@ -3363,6 +3374,11 @@ packages:
 
   '@react-stately/combobox@3.12.2':
     resolution: {integrity: sha512-h4YRmzA+s3aMwUrXm6jyWLN0BWWXUNiodArB1wC24xNdeI7S8O3mxz6G2r3Ne8AE02FXmZXs9SD30Mx5vVVuqQ==}
+    peerDependencies:
+      react: ^19.2.0
+
+  '@react-stately/data@3.15.1':
+    resolution: {integrity: sha512-lchubLxCWg1Yswpe9yRYJAjmzP0eTYZe+AQyFJQRIT6axRi9Gs92RIZ7zhwLXxI0vcWpnAWADB9kD4bsos7xww==}
     peerDependencies:
       react: ^19.2.0
 
@@ -10507,6 +10523,11 @@ snapshots:
       '@heroui/use-safe-layout-effect': 2.1.8(react@19.2.4)
       react: 19.2.4
 
+  '@heroui/use-infinite-scroll@2.2.12(react@19.2.4)':
+    dependencies:
+      '@heroui/shared-utils': 2.1.12
+      react: 19.2.4
+
   '@heroui/use-intersection-observer@2.2.14(react@19.2.4)':
     dependencies:
       react: 19.2.4
@@ -12924,6 +12945,12 @@ snapshots:
       '@react-stately/overlays': 3.6.22(react@19.2.4)
       '@react-stately/utils': 3.11.0(react@19.2.4)
       '@react-types/combobox': 3.13.11(react@19.2.4)
+      '@react-types/shared': 3.33.0(react@19.2.4)
+      '@swc/helpers': 0.5.19
+      react: 19.2.4
+
+  '@react-stately/data@3.15.1(react@19.2.4)':
+    dependencies:
       '@react-types/shared': 3.33.0(react@19.2.4)
       '@swc/helpers': 0.5.19
       react: 19.2.4
