@@ -6,7 +6,7 @@ const TopItems = () => {
     { name: "Classic Cheeseburger", percent: 12, upordown: "up" },
     { name: "Spicy Jalapeño Burger", percent: 5, upordown: "down" },
     { name: "Truffle Mushroom Swiss", percent: 28, upordown: "up" },
-    { name: "BBQ Bacon King", percent: 2, upordown: "up" },
+    { name: "BBQ Bacon King", percent: 50, upordown: "up" },
     { name: "Beyond Plant-Based", percent: 15, upordown: "down" },
   ];
 
