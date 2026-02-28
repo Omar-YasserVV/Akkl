@@ -17,20 +17,40 @@ export default function MenuManagerTable() {
     <div>
       <Table
         aria-label="Restaurant Menu Table"
+        layout="fixed" // Add this propss
         classNames={{
           wrapper: "shadow-sm border border-gray-100 p-0 ",
-          th: "bg-neutral-100 text-black text-sm font-semibold !rounded-b-none py-5 px-6 text-left",
+          th: "bg-neutral-100 text-black text-sm font-semibold !rounded-b-none py-5 px-6",
           td: "py-4 border-b border-gray-50",
         }}
       >
         <TableHeader>
-          <TableColumn>Item Name</TableColumn>
-          <TableColumn>Category</TableColumn>
-          <TableColumn>Price</TableColumn>
-          <TableColumn>Prep Time</TableColumn>
-          <TableColumn>Status</TableColumn>
-          <TableColumn>Description</TableColumn>
-          <TableColumn align="center">Actions</TableColumn>
+          {/* Item Name: Takes up remaining space or a larger fixed portion */}
+          <TableColumn className="w-50">Item Name</TableColumn>
+
+          {/* Middle Columns: Compact widths */}
+          <TableColumn align="start" className="w-[13%]">
+            Category
+          </TableColumn>
+          <TableColumn align="center" className="w-[10%]">
+            Price
+          </TableColumn>
+          <TableColumn align="center" className="w-[10%]">
+            Prep Time
+          </TableColumn>
+          <TableColumn align="start" className="w-[10%]">
+            Status
+          </TableColumn>
+
+          {/* Description: Flexes to fill or has a larger width */}
+          <TableColumn align="center" className="w-[25%]">
+            Description
+          </TableColumn>
+
+          {/* Actions: Fixed small width */}
+          <TableColumn align="start" className="w-[18%]">
+            Actions
+          </TableColumn>
         </TableHeader>
         <TableBody>
           {MENU_ITEMS.map((item) => (
@@ -48,44 +68,44 @@ export default function MenuManagerTable() {
                 </div>
               </TableCell>
 
-              {/* Category Chip */}
               <TableCell>
-                <Chip
-                  variant="flat"
-                  className="bg-[#E0F2FE] text-primary border-1 border-primary font-medium border-none"
-                  size="sm"
-                >
-                  {item.category}
-                </Chip>
+                <div className="flex ml-3">
+                  <span
+                    className={`inline-flex items-center rounded-full text-primary bg- px-3 py-1 text-xs font-medium border border-primary/20 bg-primary/10`}
+                  >
+                    {item.category}
+                  </span>
+                </div>
               </TableCell>
 
-              {/* Price */}
-              <TableCell className="text-[#18181B] font-medium">
+              <TableCell className="text-[#18181B] font-medium text-center">
                 ${item.price.toFixed(2)}
               </TableCell>
 
-              {/* Prep Time */}
-              <TableCell className="text-[#18181B]">{item.prepTime}</TableCell>
-
-              {/* Status Chip */}
-              <TableCell>
-                <Chip
-                  variant="flat"
-                  className="bg-[#DCFCE7] text-[#22C55E] font-medium border-none"
-                  size="sm"
-                >
-                  {item.status}
-                </Chip>
+              <TableCell className="text-[#18181B] text-center">
+                {item.prepTime}
               </TableCell>
 
-              {/* Description */}
-              <TableCell className="text-[#808080]">
-                {item.description}
+              <TableCell>
+                <div className="flex">
+                  <Chip
+                    variant="flat"
+                    className="bg-[#DCFCE7] text-[#166534] font-semibold"
+                    size="sm"
+                  >
+                    {item.status}
+                  </Chip>
+                </div>
               </TableCell>
 
-              {/* Actions */}
+              <TableCell className="text-[#808080] text-center">
+                <span className="block truncate max-w-50 mx-auto">
+                  {item.description}
+                </span>
+              </TableCell>
+
               <TableCell>
-                <div className="flex gap-2 justify-center">
+                <div className="flex gap-2 justify-start">
                   <Button
                     isIconOnly
                     variant="light"
