@@ -11,7 +11,7 @@ const FinanceHeader = () => {
     return (
         <header className="flex justify-between items-end">
             <div className="flex flex-col items-start justify-end gap-2">
-                <h2 className="cherry-bomb-one-regular text-primary text-5xl">
+                <h2 className="font-cherry text-primary text-5xl">
                     Finance & Reports
                 </h2>
                 <p className="text-muted-foreground">

@@ -128,7 +128,7 @@ const Sidebar = () => {
                   "w-full h-12 transition-all duration-200",
                   isActive
                     ? "font-semibold bg-primary text-white"
-                    : "font-medium text-default-600",
+                    : "font-medium text-black",
                   isCollapsed
                     ? "min-w-0 px-0 justify-center"
                     : "px-3 justify-start gap-4",
