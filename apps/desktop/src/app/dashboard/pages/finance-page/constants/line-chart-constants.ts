@@ -2,6 +2,12 @@ import { ChartConfig } from "@repo/ui/components/chart";
 import { FaArrowTrendUp, FaArrowTrendDown } from "react-icons/fa6";
 import { FaDollarSign } from "react-icons/fa";
 
+export const daysFilter = [
+    { key: "day", label: "Last 24 hours" },
+    { key: "week", label: "Last 7 days" },
+    { key: "month", label: "Last 30 days" },
+]
+
 export const chartData = [
     { month: "January", revenue: 1200 },
     { month: "February", revenue: 2100 },

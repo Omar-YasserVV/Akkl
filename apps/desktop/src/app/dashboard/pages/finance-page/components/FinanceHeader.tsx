@@ -1,11 +1,6 @@
 import { Button } from "@heroui/react"
 import { Select, SelectItem } from "@heroui/react";
-
-export const daysFilter = [
-    { key: "day", label: "Last 24 hours" },
-    { key: "week", label: "Last 7 days" },
-    { key: "month", label: "Last 30 days" },
-]
+import { daysFilter } from "../constants/line-chart-constants";
 
 const FinanceHeader = () => {
     return (
