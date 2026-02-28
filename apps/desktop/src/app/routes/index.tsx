@@ -6,6 +6,7 @@ import DashboardLayout from "../dashboard/components/dashboard-layout";
 import Overview from "../dashboard/pages/overview";
 import LiveOrders from "../dashboard/pages/live-orders";
 import MenuManager from "../dashboard/pages/menu-manager";
+import FinancePage from "../dashboard/pages/finance-page";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -45,9 +46,9 @@ export const router = createBrowserRouter([
         element: <LiveOrders />,
       },
       {
-        path: "Finance & Reports",
+        path: "finance-reports",
         index: false,
-        element: <LiveOrders />,
+        element: <FinancePage />,
       },
     ],
   },
