@@ -21,7 +21,8 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@repo/ui/*": ["../../packages/ui/src/*"]
     }
   },
   "include": ["src", "electron"],

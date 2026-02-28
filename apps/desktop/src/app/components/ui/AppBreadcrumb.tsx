@@ -7,7 +7,7 @@ import {
   useSpring,
   AnimatePresence,
 } from "framer-motion";
-import { Search, ChevronDown, ChevronUp } from "lucide-react";
+import { BiChevronDown, BiChevronUp, BiSearch } from "react-icons/bi";
 
 export const AppBreadcrumb = () => {
   const location = useLocation();
@@ -39,7 +39,7 @@ export const AppBreadcrumb = () => {
   return (
     <div
       ref={constraintsRef}
-      className="fixed inset-0 pointer-events-none z-[9999]"
+      className="fixed inset-0 pointer-events-none z-9999"
     >
       <motion.div
         drag
@@ -67,7 +67,11 @@ export const AppBreadcrumb = () => {
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="hover:bg-white/10 p-0.5 rounded transition-colors pointer-events-auto"
           >
-            {isCollapsed ? <ChevronDown size={10} /> : <ChevronUp size={10} />}
+            {isCollapsed ? (
+              <BiChevronDown size={10} />
+            ) : (
+              <BiChevronUp size={10} />
+            )}
           </button>
         </div>
 
@@ -115,7 +119,7 @@ export const AppBreadcrumb = () => {
               {/* Search Input Section */}
               <div className="px-3 pb-3 pt-1">
                 <div className="relative flex items-center group">
-                  <Search className="absolute left-2 w-3 h-3 text-white/30 group-focus-within:text-sky-400 transition-colors" />
+                  <BiSearch className="absolute left-2 w-3 h-3 text-white/30 group-focus-within:text-sky-400 transition-colors" />
                   <input
                     type="text"
                     placeholder="Jump to route..."

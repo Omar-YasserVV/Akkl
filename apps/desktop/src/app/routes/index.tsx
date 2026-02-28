@@ -3,7 +3,7 @@ import App from "../App";
 import SignIn from "../auth/pages/SignIn";
 import Home from "../home/Home";
 import DashboardLayout from "../dashboard/components/dashboard-layout";
-import Overview from "../dashboard/pages/overview";
+import { Overview } from "../dashboard/pages/overview";
 import LiveOrders from "../dashboard/pages/live-orders";
 import MenuManager from "../dashboard/pages/menu-manager";
 import FinancePage from "../dashboard/pages/finance-page";
