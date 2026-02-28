@@ -5,6 +5,7 @@ import {
   ChartTooltip,
 } from "@repo/ui/components/chart";
 import { CustomTooltip } from "@repo/ui/components/custom-tooltip";
+import { formatNumber } from "@repo/utils";
 
 const chartData = [
   { month: "January", revenue: 1200 },
@@ -48,14 +49,9 @@ const Chart = () => {
           axisLine={false}
           tickMargin={8}
           tickCount={5}
-          /* Formats as Currency: e.g., $1k, $4.2k */
+          /* Using your utility for compact currency: $1.2k */
           tickFormatter={(value) =>
-            new Intl.NumberFormat("en-US", {
-              style: "currency",
-              currency: "USD",
-              notation: "compact",
-              maximumFractionDigits: 1,
-            }).format(value)
+            formatNumber(value, { isCurrency: true, isCompact: true })
           }
         />
 
@@ -68,7 +64,11 @@ const Chart = () => {
         />
 
         <ChartTooltip
-          cursor={{ stroke: "#1a73e8", strokeWidth: 2, strokeDasharray: "5 5" }} // Vertical dashed line
+          cursor={{
+            stroke: "var(--primary)",
+            strokeWidth: 2,
+            strokeDasharray: "5 5",
+          }}
           content={<CustomTooltip />}
         />
 
@@ -76,10 +76,14 @@ const Chart = () => {
           dataKey="revenue"
           type="natural"
           fill="url(#fillRevenue)"
-          fillOpacity={0.4}
           stroke="var(--color-revenue)"
-          strokeWidth={2}
-          stackId="a"
+          strokeWidth={3}
+          activeDot={{
+            r: 8,
+            fill: "var(--primary)",
+            stroke: "var(--background)",
+            strokeWidth: 4,
+          }}
         />
       </AreaChart>
     </ChartContainer>
