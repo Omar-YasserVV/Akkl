@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { DUMMY_ORDERS, type LiveOrder, type OrderStatus } from "../app/dashboard/pages/live-orders/constants/constants";
 
-export type SourceFilter = "all" | "app" | "restaurant";
+export type SourceFilter = "all" | "App" | "Restaurant";
 export type StatusFilter = "all" | "pending" | "confirmed" | "cooking" | "ready" | "completed";
 
 export type OrderRow = LiveOrder & { id: string };

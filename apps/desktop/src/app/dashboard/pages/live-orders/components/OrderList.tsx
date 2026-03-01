@@ -68,6 +68,14 @@ const StatusSelect = ({
         ? LuChefHat
         : LuCircleCheck;
 
+  const colors = {
+    pending: "status-pill-pending",
+    cooking: "status-pill-cooking",
+    ready: "status-pill-ready",
+  };
+
+  const currentClass = colors[status];
+
   return (
     <Select
       aria-label="Change status"
@@ -81,15 +89,15 @@ const StatusSelect = ({
       size="sm"
       disallowEmptySelection
       classNames={{
-        trigger: `${cfg.className.split(" ").map((c) => `!${c}`).join(" ")} h-8 min-h-8 w-32 px-3 shadow-none`,
-        value: "text-xs font-medium !text-inherit",
-        selectorIcon: "!text-inherit h-3 w-3",
+        trigger: `${currentClass} w-fit min-w-[120px] h-7 min-h-7 px-3 shadow-none border-none transition-none overflow-hidden`,
+        value: "text-xs font-medium text-inherit!",
+        selectorIcon: "text-inherit! h-3 w-3",
         popoverContent: "min-w-[130px] p-1",
       }}
       renderValue={() => (
-        <div className="flex items-center gap-2">
-          <Icon className="h-4 w-4" />
-          <span>{cfg.label}</span>
+        <div className="flex items-center gap-2 text-inherit!">
+          <Icon className="h-4 w-4 text-inherit!" />
+          <span className="text-inherit!">{cfg.label}</span>
         </div>
       )}
     >
@@ -141,7 +149,17 @@ const SourceChip = ({ source }: { source: LiveOrder["source"] }) => {
 
 const OrderList = () => {
   const orders = useLiveOrdersStore((state) => state.orders);
+  const sourceFilter = useLiveOrdersStore((state) => state.source);
+  const statusFilter = useLiveOrdersStore((state) => state.status);
   const updateOrderStatus = useLiveOrdersStore((state) => state.updateOrderStatus);
+
+  const filteredOrders = React.useMemo(() => {
+    return orders.filter((order) => {
+      const matchSource = sourceFilter === "all" || order.source === sourceFilter;
+      const matchStatus = statusFilter === "all" || order.status === statusFilter;
+      return matchSource && matchStatus;
+    });
+  }, [orders, sourceFilter, statusFilter]);
 
   const renderCell = React.useCallback(
     (order: OrderRow, columnKey: React.Key) => {
@@ -231,7 +249,7 @@ const OrderList = () => {
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody items={orders} emptyContent="No orders yet.">
+        <TableBody items={filteredOrders} emptyContent="No orders yet.">
           {(item) => (
             <TableRow key={item.id}>
               {(columnKey) => (

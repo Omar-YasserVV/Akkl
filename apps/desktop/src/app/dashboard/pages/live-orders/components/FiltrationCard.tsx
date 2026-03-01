@@ -1,17 +1,18 @@
 import { Card, Button } from "@heroui/react";
 import {
-    useLiveOrdersFilterStore,
+    useLiveOrdersStore,
     type StatusFilter,
+    type SourceFilter,
 } from "@/store/liveOrdersFilterStore";
 
 const basePillClasses =
     "min-w-[72px] h-9 px-4 rounded-sm text-xs font-medium transition-colors shadow-none";
 
 const FiltrationCard = () => {
-    const source = useLiveOrdersFilterStore((state) => state.source);
-    const status = useLiveOrdersFilterStore((state) => state.status);
-    const setSource = useLiveOrdersFilterStore((state) => state.setSource);
-    const setStatus = useLiveOrdersFilterStore((state) => state.setStatus);
+    const source = useLiveOrdersStore((state) => state.source);
+    const status = useLiveOrdersStore((state) => state.status);
+    const setSource = useLiveOrdersStore((state) => state.setSource);
+    const setStatus = useLiveOrdersStore((state) => state.setStatus);
 
     return (
         <Card className="w-full text-md font-normal rounded-lg bg-white shadow-sm px-6 py-3 flex flex-row items-center justify-between gap-8 border-0">
@@ -30,18 +31,18 @@ const FiltrationCard = () => {
                     <Button
                         radius="sm"
                         size="sm"
-                        className={`${basePillClasses} ${source === "app" ? "bg-primary text-white" : "bg-white text-black"
+                        className={`${basePillClasses} ${source === "App" ? "bg-primary text-white" : "bg-white text-black"
                             }`}
-                        onPress={() => setSource("app")}
+                        onPress={() => setSource("App")}
                     >
                         App Orders
                     </Button>
                     <Button
                         radius="sm"
                         size="sm"
-                        className={`${basePillClasses} ${source === "restaurant" ? "bg-primary text-white" : "bg-white text-black"
+                        className={`${basePillClasses} ${source === "Restaurant" ? "bg-primary text-white" : "bg-white text-black"
                             }`}
-                        onPress={() => setSource("restaurant")}
+                        onPress={() => setSource("Restaurant")}
                     >
                         Restaurant
                     </Button>

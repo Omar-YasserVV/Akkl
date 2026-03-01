@@ -55,3 +55,19 @@ body {
 .border-secondary {
   border-color: var(--color-secondary);
 }
+
+/* Status Pill Utilities */
+.status-pill-pending {
+  background-color: #fef3c7 !important;
+  color: #746a0c !important;
+}
+
+.status-pill-cooking {
+  background-color: #ffedd5 !important;
+  color: #9a3412 !important;
+}
+
+.status-pill-ready {
+  background-color: #dcfce7 !important;
+  color: #166534 !important;
+}
