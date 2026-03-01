@@ -141,7 +141,17 @@ const SourceChip = ({ source }: { source: LiveOrder["source"] }) => {
 
 const OrderList = () => {
   const orders = useLiveOrdersStore((state) => state.orders);
+  const sourceFilter = useLiveOrdersStore((state) => state.source);
+  const statusFilter = useLiveOrdersStore((state) => state.status);
   const updateOrderStatus = useLiveOrdersStore((state) => state.updateOrderStatus);
+
+  const filteredOrders = React.useMemo(() => {
+    return orders.filter((order) => {
+      const matchSource = sourceFilter === "all" || order.source === sourceFilter;
+      const matchStatus = statusFilter === "all" || order.status === statusFilter;
+      return matchSource && matchStatus;
+    });
+  }, [orders, sourceFilter, statusFilter]);
 
   const renderCell = React.useCallback(
     (order: OrderRow, columnKey: React.Key) => {
@@ -231,7 +241,7 @@ const OrderList = () => {
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody items={orders} emptyContent="No orders yet.">
+        <TableBody items={filteredOrders} emptyContent="No orders yet.">
           {(item) => (
             <TableRow key={item.id}>
               {(columnKey) => (
