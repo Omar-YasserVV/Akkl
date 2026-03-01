@@ -2,9 +2,7 @@ import React, { useState, useRef } from "react";
 import {
   Modal,
   ModalContent,
-  ModalHeader,
   ModalBody,
-  ModalFooter,
   Button,
   Input,
   Textarea,
@@ -13,7 +11,8 @@ import {
 } from "@heroui/react";
 import { BiPlus, BiCloudUpload, BiTrash, BiX } from "react-icons/bi";
 import { LuFlame } from "react-icons/lu";
-import { FaUtensils } from "react-icons/fa6";
+import AddModalHeader from "./AddModal/AddModalHeader";
+import AddModalFooter from "./AddModal/AddModalFooter";
 
 interface ItemOption {
   id: string;
@@ -64,22 +63,16 @@ export default function AddMenuItemModal({
     handleFile(file);
   };
 
-  /**
-   * Fix: Updated removeImage to handle Event Propagation
-   * This prevents the parent div's onClick (file trigger) from firing
-   */
   const removeImage = (e: React.MouseEvent | any) => {
     if (e && e.stopPropagation) {
       e.stopPropagation();
     }
     setImagePreview(null);
-    // Reset input value so the same file can be uploaded again if deleted
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
-  // --- List Management (Delete Logic) ---
   const deleteSize = (id: string) => setSizes(sizes.filter((s) => s.id !== id));
   const deleteAddOn = (id: string) =>
     setAddOns(addOns.filter((a) => a.id !== id));
@@ -109,12 +102,7 @@ export default function AddMenuItemModal({
       <ModalContent>
         {(onClose) => (
           <>
-            <ModalHeader className="flex gap-2 items-center text-[#1E293B]">
-              <div className="bg-[#EFF6FF] p-1.5 rounded-lg">
-                <FaUtensils className="w-5 h-5 text-[#2563EB]" />
-              </div>
-              <span className="font-bold text-xl">Add New Menu Item</span>
-            </ModalHeader>
+            <AddModalHeader />
 
             <ModalBody className="py-6 px-8 bg-[#fafafa]">
               {/* BASIC INFO */}
@@ -389,22 +377,7 @@ export default function AddMenuItemModal({
                 </section>
               </div>
             </ModalBody>
-
-            <ModalFooter className="px-8 py-5">
-              <Button
-                variant="light"
-                onPress={onClose}
-                className="font-bold text-[#64748B]"
-              >
-                Cancel
-              </Button>
-              <Button
-                color="primary"
-                className="bg-[#2563EB] font-bold px-10 rounded-xl shadow-lg shadow-blue-200"
-              >
-                Save Item
-              </Button>
-            </ModalFooter>
+            <AddModalFooter onClose={onClose} />
           </>
         )}
       </ModalContent>
