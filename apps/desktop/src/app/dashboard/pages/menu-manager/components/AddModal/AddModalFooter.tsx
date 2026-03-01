@@ -1,6 +1,21 @@
+import { memo } from "react";
+import { useFormContext } from "react-hook-form";
 import { Button, ModalFooter } from "@heroui/react";
+import type { AddMenuItemFormData } from "../../types/types";
 
-function AddModalFooter({ onClose }) {
+interface AddModalFooterProps {
+  onClose: () => void;
+  onSubmit?: (data: AddMenuItemFormData) => void;
+}
+
+function AddModalFooterInner({ onClose, onSubmit }: AddModalFooterProps) {
+  const { handleSubmit } = useFormContext<AddMenuItemFormData>();
+
+  const onValid = (data: AddMenuItemFormData) => {
+    onSubmit?.(data);
+    onClose();
+  };
+
   return (
     <ModalFooter className="px-8 py-5 border-t-[#E2E8F0] rounded-lg">
       <Button
@@ -13,6 +28,7 @@ function AddModalFooter({ onClose }) {
       <Button
         color="primary"
         className="bg-primary text-sm py-6 font-bold px-10 rounded-xl shadow-lg shadow-blue-200"
+        onPress={() => handleSubmit(onValid)()}
       >
         Save Item
       </Button>
@@ -20,4 +36,5 @@ function AddModalFooter({ onClose }) {
   );
 }
 
+const AddModalFooter = memo(AddModalFooterInner);
 export default AddModalFooter;
