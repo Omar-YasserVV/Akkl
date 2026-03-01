@@ -7,20 +7,20 @@ import {
   TableHeader,
   TableRow,
   Tooltip,
+  Select,
+  SelectItem,
 } from "@heroui/react";
 import {
-  DUMMY_ORDERS,
   type LiveOrder,
   type OrderStatus,
 } from "../constants/constants";
-import { LuChefHat, LuClock8 } from "react-icons/lu";
-import { CiCircleCheck } from "react-icons/ci";
+import { useLiveOrdersStore, type OrderRow } from "@/store/liveOrdersFilterStore";
+import { LuChefHat, LuClock8, LuCircleCheck } from "react-icons/lu";
 import { CgSmartphone } from "react-icons/cg";
 import { BiStore } from "react-icons/bi";
 import { FiEdit } from "react-icons/fi";
 import { FaRegTrashAlt } from "react-icons/fa";
 
-type OrderRow = LiveOrder & { id: string };
 type ColumnKey =
   | "order#"
   | "customer"
@@ -35,41 +35,89 @@ const columns: Array<{
   uid: ColumnKey;
   align?: "start" | "center" | "end";
 }> = [
-  { name: "Order #", uid: "order#", align: "start" },
-  { name: "Customer", uid: "customer", align: "start" },
-  { name: "Source", uid: "source", align: "start" },
-  { name: "Items", uid: "items", align: "start" },
-  { name: "Total", uid: "total", align: "start" },
-  { name: "Status", uid: "status", align: "start" },
-  { name: "Actions", uid: "actions", align: "start" },
-];
+    { name: "Order #", uid: "order#", align: "start" },
+    { name: "Customer", uid: "customer", align: "start" },
+    { name: "Source", uid: "source", align: "start" },
+    { name: "Items", uid: "items", align: "start" },
+    { name: "Total", uid: "total", align: "start" },
+    { name: "Status", uid: "status", align: "start" },
+    { name: "Actions", uid: "actions", align: "start" },
+  ];
 
 const statusChipMap: Record<OrderStatus, { label: string; className: string }> =
-  {
-    pending: { label: "Pending", className: "bg-amber-100 text-[#746A0C]" },
-    cooking: { label: "Cooking", className: "bg-orange-100 text-orange-900" },
-    ready: { label: "Ready", className: "bg-green-100 text-green-800" },
-  };
+{
+  pending: { label: "Pending", className: "bg-amber-100 text-[#746A0C]" },
+  cooking: { label: "Cooking", className: "bg-orange-100 text-orange-900" },
+  ready: { label: "Ready", className: "bg-green-100 text-green-800" },
+};
 
 const formatMoney = (value: number) => `$${value.toFixed(2)}`;
 
-const StatusChip = ({ status }: { status: OrderStatus }) => {
+const StatusSelect = ({
+  status,
+  onChange,
+}: {
+  status: OrderStatus;
+  onChange: (status: OrderStatus) => void;
+}) => {
   const cfg = statusChipMap[status];
   const Icon =
     status === "pending"
       ? LuClock8
       : status === "cooking"
         ? LuChefHat
-        : CiCircleCheck;
+        : LuCircleCheck;
+
   return (
-    <span
-      className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${cfg.className}`}
+    <Select
+      aria-label="Change status"
+      selectedKeys={[status]}
+      onSelectionChange={(keys) => {
+        const val = Array.from(keys)[0] as OrderStatus;
+        if (val) onChange(val);
+      }}
+      variant="flat"
+      radius="full"
+      size="sm"
+      disallowEmptySelection
+      classNames={{
+        trigger: `${cfg.className.split(" ").map((c) => `!${c}`).join(" ")} h-8 min-h-8 w-32 px-3 shadow-none`,
+        value: "text-xs font-medium !text-inherit",
+        selectorIcon: "!text-inherit h-3 w-3",
+        popoverContent: "min-w-[130px] p-1",
+      }}
+      renderValue={() => (
+        <div className="flex items-center gap-2">
+          <Icon className="h-4 w-4" />
+          <span>{cfg.label}</span>
+        </div>
+      )}
     >
-      <span className="inline-flex h-4 w-4 items-center justify-center rounded-full">
-        <Icon className="h-4 w-4" />
-      </span>
-      {cfg.label}
-    </span>
+      <SelectItem
+        key="pending"
+        textValue="Pending"
+        startContent={<LuClock8 className="h-4 w-4" />}
+        className="text-amber-700 data-[hover=true]:bg-amber-50"
+      >
+        Pending
+      </SelectItem>
+      <SelectItem
+        key="cooking"
+        textValue="Cooking"
+        startContent={<LuChefHat className="h-4 w-4" />}
+        className="text-orange-900 data-[hover=true]:bg-orange-50"
+      >
+        Cooking
+      </SelectItem>
+      <SelectItem
+        key="ready"
+        textValue="Ready"
+        startContent={<LuCircleCheck className="h-4 w-4" />}
+        className="text-green-800 data-[hover=true]:bg-green-50"
+      >
+        Ready
+      </SelectItem>
+    </Select>
   );
 };
 
@@ -83,7 +131,7 @@ const SourceChip = ({ source }: { source: LiveOrder["source"] }) => {
         (isApp ? "bg-blue-100 text-blue-700" : "bg-purple-100 text-purple-700")
       }
     >
-      <span className="inline-flex h-4 w-4 items-center justify-center rounded-ful">
+      <span className="inline-flex h-4 w-4 items-center justify-center rounded-full">
         <Icon className="h-4 w-4" />
       </span>
       {source}
@@ -92,14 +140,8 @@ const SourceChip = ({ source }: { source: LiveOrder["source"] }) => {
 };
 
 const OrderList = () => {
-  const orders = React.useMemo<OrderRow[]>(
-    () =>
-      DUMMY_ORDERS.map((order, idx) => ({
-        ...order,
-        id: `${order["order#"]}-${order.status}-${idx}`,
-      })),
-    [],
-  );
+  const orders = useLiveOrdersStore((state) => state.orders);
+  const updateOrderStatus = useLiveOrdersStore((state) => state.updateOrderStatus);
 
   const renderCell = React.useCallback(
     (order: OrderRow, columnKey: React.Key) => {
@@ -127,22 +169,15 @@ const OrderList = () => {
             </span>
           );
         case "status":
-          return <StatusChip status={order.status} />;
+          return (
+            <StatusSelect
+              status={order.status}
+              onChange={(newStatus) => updateOrderStatus(order.id, newStatus)}
+            />
+          );
         case "actions":
           return (
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                className="h-9 min-w-[100px] rounded-sm border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700  inline-flex items-center justify-between gap-2"
-                aria-label="Change status"
-              >
-                <span>
-                  {order.status === "pending" || order.status === "cooking"
-                    ? "Cooking"
-                    : "Ready"}
-                </span>
-              </button>
-
               <Tooltip content="Edit">
                 <button
                   type="button"
@@ -168,7 +203,7 @@ const OrderList = () => {
           return null;
       }
     },
-    [],
+    [updateOrderStatus],
   );
 
   return (
