@@ -1,19 +1,14 @@
 import { Card } from "@heroui/react";
-import { DUMMY_ORDERS } from "../constants/constants";
-import { LuChefHat, LuClock8 } from "react-icons/lu";
-import { CiCircleCheck } from "react-icons/ci";
-
-const pendingCount = DUMMY_ORDERS.filter(
-  (order) => order.status === "pending",
-).length;
-const cookingCount = DUMMY_ORDERS.filter(
-  (order) => order.status === "cooking",
-).length;
-const readyCount = DUMMY_ORDERS.filter(
-  (order) => order.status === "ready",
-).length;
+import { useLiveOrdersStore } from "@/store/liveOrdersFilterStore";
+import { LuChefHat, LuClock8, LuCircleCheck } from "react-icons/lu";
 
 const StatsCard = () => {
+  const orders = useLiveOrdersStore((state) => state.orders);
+
+  const pendingCount = orders.filter((order) => order.status === "pending").length;
+  const cookingCount = orders.filter((order) => order.status === "cooking").length;
+  const readyCount = orders.filter((order) => order.status === "ready").length;
+
   return (
     <div className="flex gap-4 items-center">
       <Card className="flex flex-row items-center justify-between border-2 rounded-lg p-4 bg-white border-amber-400 w-full">
@@ -40,7 +35,7 @@ const StatsCard = () => {
           <p className="text-2xl font-bold text-black">{readyCount}</p>
         </div>
         <div className="bg-green-100 rounded-md p-3 flex items-center justify-center">
-          <CiCircleCheck className="w-6 h-6 text-green-800" />
+          <LuCircleCheck className="w-6 h-6 text-green-800" />
         </div>
       </Card>
     </div>
