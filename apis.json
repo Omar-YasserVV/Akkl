@@ -1,77 +1,143 @@
-{
-  "service": "svc-auth",
-  "base_url": "/auth",
-  "endpoints": [
-    {
-      "action": "Local Signup",
-      "method": "POST",
-      "url": "/auth/signup",
-      "description": "Registers a new user and sets access/refresh tokens in cookies.",
-      "body_schema": {
-        "email": "string (Required: Valid email format)",
-        "password": "string (Required: Min 8 chars)",
-        "fullName": "string (Required)",
-        "username": "string (Required)",
-        "phone": "string (Required: Valid phone format)",
-        "image": "string (Optional: URL)",
-        "role": "enum (Optional: CUSTOMER | BUSINESS_OWNER)"
+[
+  {
+    "service": "svc-auth",
+    "base_url": "/auth",
+    "endpoints": [
+      {
+        "action": "Local Signup",
+        "method": "POST",
+        "url": "/auth/signup",
+        "description": "Registers a new user and sets access/refresh tokens in cookies.",
+        "body_schema": {
+          "email": "string (Required: Valid email format)",
+          "password": "string (Required: Min 8 chars)",
+          "fullName": "string (Required)",
+          "username": "string (Required)",
+          "phone": "string (Required: Valid phone format)",
+          "image": "string (Optional: URL)",
+          "role": "enum (Optional: CUSTOMER | BUSINESS_OWNER)"
+        }
+      },
+      {
+        "action": "Local Login",
+        "method": "POST",
+        "url": "/auth/login",
+        "description": "Authenticates user credentials and sets access/refresh tokens in cookies.",
+        "body_schema": {
+          "email": "string (Required)",
+          "password": "string (Required)"
+        }
+      },
+      {
+        "action": "Google Login",
+        "method": "GET",
+        "url": "/auth/google",
+        "description": "Initializes the Google OAuth2 flow via Passport strategy."
+      },
+      {
+        "action": "Google Callback",
+        "method": "GET",
+        "url": "/auth/google/callback",
+        "description": "Handles Google redirection. Returns tempToken for new users or logs in existing users."
+      },
+      {
+        "action": "Complete Google Signup",
+        "method": "POST",
+        "url": "/auth/complete-google-signup",
+        "description": "Finalizes registration for Google users by requiring a password and phone number.",
+        "body_schema": {
+          "token": "string (Required: JWT from Google callback)",
+          "password": "string (Required: Min 8 chars)",
+          "passwordConfirmation": "string (Required: Must match password)",
+          "phone": "string (Required: Valid phone format)",
+          "username": "string (Optional)",
+          "role": "enum (Optional: CUSTOMER | BUSINESS_OWNER)"
+        }
+      },
+      {
+        "action": "Forgot Password",
+        "method": "POST",
+        "url": "/auth/forgot-password",
+        "description": "Generates a 6-digit OTP and sends it to the user's email via Nodemailer.",
+        "body_schema": {
+          "email": "string (Required)"
+        }
+      },
+      {
+        "action": "Reset Password",
+        "method": "POST",
+        "url": "/auth/reset-password",
+        "description": "Verifies the email OTP and updates the user's password in the database.",
+        "body_schema": {
+          "email": "string (Required)",
+          "otp": "string (Required: 6 digits)",
+          "newPassword": "string (Required: Min 8 chars)"
+        }
       }
-    },
-    {
-      "action": "Local Login",
-      "method": "POST",
-      "url": "/auth/login",
-      "description": "Authenticates user credentials and sets access/refresh tokens in cookies.",
-      "body_schema": {
-        "email": "string (Required)",
-        "password": "string (Required)"
+    ]
+  },
+  {
+    "service": "svc-restaurant",
+    "base_url": "/restaurants",
+    "endpoints": [
+      {
+        "action": "Get All Restaurants",
+        "method": "GET",
+        "url": "/restaurants",
+        "description": "Retrieves a list of all restaurants. Protected by JWT and BUSINESS_OWNER role.",
+        "security": "JwtAuthGuard, RolesGuard (BUSINESS_OWNER)"
+      },
+      {
+        "action": "Create Restaurant",
+        "method": "POST",
+        "url": "/restaurants",
+        "description": "Creates a new restaurant associated with the authenticated user ID.",
+        "security": "JwtAuthGuard, RolesGuard (BUSINESS_OWNER)",
+        "body_schema": {
+          "name": "string (Required: Unique)",
+          "logoUrl": "string (Optional: URL)"
+        }
+      },
+      {
+        "name": "Get Restaurant By ID",
+        "method": "GET",
+        "url": "/restaurants/:id",
+        "description": "Fetches detailed information for a specific restaurant by its ID.",
+        "params": {
+          "id": "number (Required)"
+        }
+      },
+      {
+        "name": "Get Restaurants By Owner",
+        "method": "GET",
+        "url": "/restaurants/owner/:userId",
+        "description": "Retrieves all restaurants belonging to a specific owner ID.",
+        "params": {
+          "userId": "number (Required)"
+        }
+      },
+      {
+        "action": "Update Restaurant",
+        "method": "PATCH",
+        "url": "/restaurants/update/:id",
+        "description": "Updates details of an existing restaurant.",
+        "params": {
+          "id": "number (Required)"
+        },
+        "body_schema": {
+          "name": "string (Optional)",
+          "logoUrl": "string (Optional)"
+        }
+      },
+      {
+        "action": "Delete Restaurant",
+        "method": "DELETE",
+        "url": "/restaurants/delete/:id",
+        "description": "Removes a restaurant record from the database.",
+        "params": {
+          "id": "number (Required)"
+        }
       }
-    },
-    {
-      "action": "Google Login",
-      "method": "GET",
-      "url": "/auth/google",
-      "description": "Initializes the Google OAuth2 flow via Passport strategy."
-    },
-    {
-      "action": "Google Callback",
-      "method": "GET",
-      "url": "/auth/google/callback",
-      "description": "Handles Google redirection. Returns tempToken for new users or logs in existing users."
-    },
-    {
-      "action": "Complete Google Signup",
-      "method": "POST",
-      "url": "/auth/complete-google-signup",
-      "description": "Finalizes registration for Google users by requiring a password and phone number.",
-      "body_schema": {
-        "token": "string (Required: JWT from Google callback)",
-        "password": "string (Required: Min 8 chars)",
-        "passwordConfirmation": "string (Required: Must match password)",
-        "phone": "string (Required: Valid phone format)",
-        "username": "string (Optional)",
-        "role": "enum (Optional: CUSTOMER | BUSINESS_OWNER)"
-      }
-    },
-    {
-      "action": "Forgot Password",
-      "method": "POST",
-      "url": "/auth/forgot-password",
-      "description": "Generates a 6-digit OTP and sends it to the user's email via Nodemailer.",
-      "body_schema": {
-        "email": "string (Required)"
-      }
-    },
-    {
-      "action": "Reset Password",
-      "method": "POST",
-      "url": "/auth/reset-password",
-      "description": "Verifies the email OTP and updates the user's password in the database.",
-      "body_schema": {
-        "email": "string (Required)",
-        "otp": "string (Required: 6 digits)",
-        "newPassword": "string (Required: Min 8 chars)"
-      }
-    }
-  ]
-}
+    ]
+  }
+]

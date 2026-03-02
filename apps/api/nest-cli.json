@@ -54,6 +54,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/svc-auth/tsconfig.app.json"
       }
+    },
+    "svc-restaurant": {
+      "type": "application",
+      "root": "apps/svc-restaurant",
+      "entryFile": "main",
+      "sourceRoot": "apps/svc-restaurant/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/svc-restaurant/tsconfig.app.json"
+      }
     }
   }
 }
