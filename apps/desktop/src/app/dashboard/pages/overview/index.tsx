@@ -1,7 +1,7 @@
-import ChartManager from "./components/chart-manager";
-import OverviewHeader from "./components/overview-header";
-import RecentOrdersTable from "./components/recent-orders-table";
-import TopItems from "./components/top-items";
+import ChartManager from "./components/ChartManager";
+import OverviewHeader from "./components/OverviewHeader";
+import RecentOrdersTable from "./components/RecentOrdersTable";
+import TopItems from "./components/TopItems";
 
 const Overview = () => {
   return (
