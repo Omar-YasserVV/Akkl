@@ -1,17 +1,15 @@
 import { Modal, ModalContent, ModalBody } from "@heroui/react";
 import { BiX } from "react-icons/bi";
 import { FormProvider } from "react-hook-form";
-import AddModalHeader from "./AddModal/AddModalHeader";
-import AddModalFooter from "./AddModal/AddModalFooter";
-import { useAddMenuItemForm } from "../hooks/useAddMenuItemForm";
-import { useAddMenuItemModalStore } from "../stores/useAddMenuItemModalStore";
-import BasicInfoSection from "./AddModal/BasicInfoSection";
-import VariationsSection from "./AddModal/VariationsSection";
-import ModifiersSection from "./AddModal/ModifiersSection";
-import DietaryAndAvailabilitySection from "./AddModal/DietaryAndAvailabilitySection";
-import type { AddMenuItemFormData } from "../types/types";
-
-export type { AddMenuItemFormData };
+import AddModalHeader from "./AddModalHeader";
+import AddModalFooter from "./AddModalFooter";
+import { useAddMenuItemForm } from "../../hooks/useAddMenuItemForm";
+import { useAddMenuItemModalStore } from "../../stores/useAddMenuItemModalStore";
+import BasicInfoSection from "./BasicInfoSection";
+import VariationsSection from "./VariationsSection";
+import ModifiersSection from "./ModifiersSection";
+import DietaryAndAvailabilitySection from "./DietaryAndAvailabilitySection";
+import type { AddMenuItemFormData } from "../../types/AddItem";
 
 export interface AddMenuItemModalProps {
   isOpen: boolean;

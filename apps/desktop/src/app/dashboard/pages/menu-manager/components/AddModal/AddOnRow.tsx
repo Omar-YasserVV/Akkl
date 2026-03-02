@@ -1,5 +1,5 @@
 import { useFormContext } from "react-hook-form";
-import { AddMenuItemFormData } from "../AddMenuItemModal";
+import { AddMenuItemFormData } from "../../types/AddItem";
 import { BiTrash } from "react-icons/bi";
 
 export default function AddOnRow({

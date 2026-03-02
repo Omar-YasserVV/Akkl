@@ -3,7 +3,7 @@ import { useFormContext, useFieldArray } from "react-hook-form";
 import { Button } from "@heroui/react";
 import { BiCheckCircle } from "react-icons/bi";
 import { SAUCE_CHOICES } from "../../constants/formConfig";
-import type { AddMenuItemFormData } from "../../types/types";
+import type { AddMenuItemFormData } from "../../types/AddItem";
 import AddOnRow from "./AddOnRow";
 
 function ModifiersSectionInner() {

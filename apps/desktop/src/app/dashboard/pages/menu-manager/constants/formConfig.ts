@@ -1,4 +1,4 @@
-import type { AddMenuItemFormData, SpicinessLevel } from "../types/types";
+import type { AddMenuItemFormData, SpicinessLevel } from "../types/AddItem";
 
 export const ADD_MENU_ITEM_DEFAULT_VALUES: AddMenuItemFormData = {
   itemName: "",

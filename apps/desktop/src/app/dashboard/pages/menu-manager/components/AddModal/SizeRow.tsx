@@ -1,5 +1,5 @@
 import { useFormContext } from "react-hook-form";
-import { AddMenuItemFormData } from "../AddMenuItemModal";
+import { AddMenuItemFormData } from "../../types/AddItem";
 import { Button } from "@heroui/react";
 import { BiTrash } from "react-icons/bi";
 

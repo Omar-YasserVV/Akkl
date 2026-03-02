@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { useFormContext } from "react-hook-form";
 import { Button, ModalFooter } from "@heroui/react";
-import type { AddMenuItemFormData } from "../../types/types";
+import type { AddMenuItemFormData } from "../../types/AddItem";
 
 interface AddModalFooterProps {
   onClose: () => void;

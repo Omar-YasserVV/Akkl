@@ -2,7 +2,7 @@ import { memo } from "react";
 import { useFormContext, Controller } from "react-hook-form";
 import { Switch, Chip } from "@heroui/react";
 import { LuFlame } from "react-icons/lu";
-import type { AddMenuItemFormData, SpicinessLevel } from "../../types/types";
+import type { AddMenuItemFormData, SpicinessLevel } from "../../types/AddItem";
 import {
   DIETARY_TAG_OPTIONS,
   SPICINESS_OPTIONS,

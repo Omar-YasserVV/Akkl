@@ -2,7 +2,7 @@ import { memo } from "react";
 import { useFormContext, useFieldArray } from "react-hook-form";
 import { Button } from "@heroui/react";
 import { BiPlus } from "react-icons/bi";
-import type { AddMenuItemFormData } from "../../types/types";
+import type { AddMenuItemFormData } from "../../types/AddItem";
 import SizeRow from "./SizeRow";
 
 function VariationsSectionInner() {

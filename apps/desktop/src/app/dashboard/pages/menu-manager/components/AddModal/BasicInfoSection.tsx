@@ -4,7 +4,7 @@ import { Input, Textarea, Button } from "@heroui/react";
 import { BiCloudUpload, BiTrash } from "react-icons/bi";
 import { useAddMenuItemModalStore } from "../../stores/useAddMenuItemModalStore";
 import { SHARED_INPUT_CLASS_NAMES } from "../../constants/SharedInputStyle";
-import type { AddMenuItemFormData } from "../../types/types";
+import type { AddMenuItemFormData } from "../../types/AddItem";
 
 function BasicInfoSectionInner() {
   const fileInputRef = useRef<HTMLInputElement>(null);
