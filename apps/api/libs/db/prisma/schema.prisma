@@ -30,6 +30,7 @@ model User {
   otpCode      String?
   otpExpires   DateTime?
   username     String        @unique
+  orders       Order[]
   reservations Reservation[]
   restaurants  Restaurant[]
 }
@@ -106,14 +107,14 @@ model Employee {
 }
 
 model Shift {
-  id         Int       @id @default(autoincrement())
+  id         Int         @id @default(autoincrement())
   employeeId Int
   branchId   Int
-  startTime  DateTime  @default(now())
+  startTime  DateTime    @default(now())
   endTime    DateTime?
-  status     String    @default("ACTIVE")
-  branch     Branch    @relation(fields: [branchId], references: [id])
-  employee   Employee  @relation(fields: [employeeId], references: [id])
+  status     ShiftStatus @default(ACTIVE)
+  branch     Branch      @relation(fields: [branchId], references: [id])
+  employee   Employee    @relation(fields: [employeeId], references: [id])
 }
 
 model Order {
@@ -122,7 +123,10 @@ model Order {
   branchId    Int
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+  userId      Int
+  status      OrderState  @default(PENDING)
   branch      Branch      @relation(fields: [branchId], references: [id])
+  user        User        @relation(fields: [userId], references: [id])
   items       OrderItem[]
 }
 
@@ -131,6 +135,7 @@ model OrderItem {
   orderId    Int
   menuItemId Int
   quantity   Int
+  price      Decimal  @db.Decimal(10, 2)
   menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
   order      Order    @relation(fields: [orderId], references: [id])
 }
@@ -191,6 +196,19 @@ model TokenBlacklist {
   id        Int      @id @default(autoincrement())
   token     String   @unique
   createdAt DateTime @default(now())
+}
+
+enum ShiftStatus {
+  ACTIVE
+  WORKING
+  COMPLETED
+}
+
+enum OrderState {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
 }
 
 enum UserRole {
