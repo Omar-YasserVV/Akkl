@@ -7,6 +7,7 @@ import Overview from "../dashboard/pages/overview";
 import LiveOrders from "../dashboard/pages/live-orders";
 import MenuManager from "../dashboard/pages/menu-manager";
 import FinancePage from "../dashboard/pages/finance-page";
+import NotFound from "../dashboard/pages/not-found/not-found";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -20,12 +21,20 @@ export const router = createBrowserRouter([
         path: "sign-in",
         element: <SignIn />,
       },
+      {
+        path: "*",
+        element: <NotFound />,
+      },
     ],
   },
   {
     path: "/dashboard",
     element: <DashboardLayout />,
     children: [
+      {
+        path: "*",
+        element: <NotFound />,
+      },
       {
         index: true,
         element: <Overview />,
