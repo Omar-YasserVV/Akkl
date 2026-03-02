@@ -8,6 +8,7 @@ import LiveOrders from "../dashboard/pages/live-orders";
 import MenuManager from "../dashboard/pages/menu-manager";
 import FinancePage from "../dashboard/pages/finance-page";
 import NotFound from "../dashboard/pages/not-found/not-found";
+import BulkUploadMenuItems from "../dashboard/pages/menu-manager/bulk-upload-menu-items";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -48,6 +49,11 @@ export const router = createBrowserRouter([
         path: "menu-manager",
         index: false,
         element: <MenuManager />,
+      },
+      {
+        path: "menu-manager/bulk-upload-menu-items",
+        index: false,
+        element: <BulkUploadMenuItems />,
       },
       {
         path: "warehouse",
