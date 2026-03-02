@@ -7,6 +7,7 @@ import Overview from "../dashboard/pages/overview";
 import LiveOrders from "../dashboard/pages/live-orders";
 import MenuManager from "../dashboard/pages/menu-manager";
 import FinancePage from "../dashboard/pages/finance-page";
+import Warehouse from "../dashboard/pages/warehouse";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -43,7 +44,7 @@ export const router = createBrowserRouter([
       {
         path: "warehouse",
         index: false,
-        element: <LiveOrders />,
+        element: <Warehouse />,
       },
       {
         path: "finance-reports",
