@@ -1,13 +1,19 @@
-import { ModalHeader } from "@heroui/react";
+import { Button, ModalHeader } from "@heroui/react";
 import { FaUtensils } from "react-icons/fa";
+import { IoClose } from "react-icons/io5";
 
-function AddModalHeader() {
+function AddModalHeader({ onClose }: { onClose: () => void }) {
   return (
-    <ModalHeader className="flex gap-2 items-center text-[#1E293B] border-[#E2E8F0]">
-      <div className="bg-[#144BB81A] p-2.5 rounded-lg">
-        <FaUtensils className="w-5 h-5 text-primary" />
+    <ModalHeader className=" justify-between items-center">
+      <div className="flex gap-2 items-center text-default-700">
+        <div className="bg-primary/10 p-2.5 rounded-lg">
+          <FaUtensils className="w-5 h-5 text-primary" />
+        </div>
+        <span className="font-bold text-xl">Add New Menu Item</span>
       </div>
-      <span className="font-bold text-xl">Add New Menu Item</span>
+      <Button isIconOnly variant="light" onPress={onClose}>
+        <IoClose size={30} />
+      </Button>
     </ModalHeader>
   );
 }
