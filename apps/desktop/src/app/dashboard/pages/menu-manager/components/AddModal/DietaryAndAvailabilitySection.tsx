@@ -25,10 +25,11 @@ function DietaryAndAvailabilitySectionInner() {
   };
 
   return (
-    <div className="grid grid-cols-2 gap-10">
-      <section className="space-y-8">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+      {/* Left Column: Dietary & Spiciness */}
+      <section className="space-y-10">
         <div>
-          <h3 className="text-[12px] font-bold text-[#64748B] tracking-widest uppercase mb-4">
+          <h3 className="text-xs font-bold text-slate-500 tracking-widest uppercase mb-4">
             Dietary Tags
           </h3>
           <div className="flex flex-wrap gap-2">
@@ -38,14 +39,14 @@ function DietaryAndAvailabilitySectionInner() {
                 <Chip
                   key={opt.id}
                   onClick={() => toggleDietaryTag(opt.id)}
-                  className="cursor-pointer select-none"
+                  className="cursor-pointer select-none transition-all active:scale-95"
                   color="primary"
                   variant={selected ? "solid" : "bordered"}
                   classNames={
                     selected
-                      ? { base: "px-2 font-semibold" }
+                      ? { base: "px-2 font-semibold shadow-sm" }
                       : {
-                          base: "border-[#E2E8F0] text-[#64748B] bg-white font-medium",
+                          base: "border-slate-200 text-slate-500 bg-white font-medium hover:border-blue-200 hover:bg-slate-50",
                         }
                   }
                 >
@@ -55,8 +56,9 @@ function DietaryAndAvailabilitySectionInner() {
             })}
           </div>
         </div>
+
         <div>
-          <h3 className="text-sm font-semibold text-[#334155] mb-4">
+          <h3 className="text-sm font-semibold text-slate-700 mb-4">
             Spiciness Level
           </h3>
           <div className="flex gap-8">
@@ -67,18 +69,24 @@ function DietaryAndAvailabilitySectionInner() {
                   key={opt.id}
                   type="button"
                   onClick={() => setSpiciness(opt.id)}
-                  className="flex flex-col items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer"
+                  className="group flex flex-col items-center gap-2 transition-all"
                 >
                   <div
-                    className={`flex text-xl gap-0.5 ${
-                      isSelected ? "text-[#EF4444]" : "text-[#94A3B8]"
+                    className={`flex text-xl gap-0.5 transition-colors ${
+                      isSelected
+                        ? "text-red-500"
+                        : "text-slate-300 group-hover:text-slate-400"
                     }`}
                   >
                     {Array.from({ length: opt.chiliCount }).map((_, i) => (
-                      <LuFlame key={i} className="w-5 h-5" />
+                      <LuFlame key={i} className="w-5 h-5 fill-current" />
                     ))}
                   </div>
-                  <span className="text-[10px] font-bold text-[#1E293B] uppercase">
+                  <span
+                    className={`text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                      isSelected ? "text-slate-900" : "text-slate-400"
+                    }`}
+                  >
                     {opt.label}
                   </span>
                 </button>
@@ -87,16 +95,18 @@ function DietaryAndAvailabilitySectionInner() {
           </div>
         </div>
       </section>
+
+      {/* Right Column: Availability */}
       <section>
-        <h3 className="text-[12px] font-bold text-[#64748B] tracking-widest uppercase mb-4">
+        <h3 className="text-xs font-bold text-slate-500 tracking-widest uppercase mb-4">
           Availability
         </h3>
-        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 space-y-6 shadow-sm">
-          <div className="flex justify-between items-center">
-            <div className="flex flex-col">
-              <span className="text-sm font-bold text-[#1E293B]">In-Stock</span>
-              <span className="text-[11px] text-[#94A3B8]">
-                Available for ordering now
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-6 shadow-sm">
+          <div className="flex justify-between items-start">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm font-bold text-slate-800">In-Stock</span>
+              <span className="text-[11px] text-slate-400 leading-relaxed">
+                Toggle off to mark item as "Sold Out"
               </span>
             </div>
             <Controller
@@ -112,13 +122,14 @@ function DietaryAndAvailabilitySectionInner() {
               )}
             />
           </div>
-          <div className="flex justify-between items-center">
-            <div className="flex flex-col">
-              <span className="text-sm font-bold text-[#1E293B]">
+
+          <div className="flex justify-between items-start">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm font-bold text-slate-800">
                 Visible on Customer App
               </span>
-              <span className="text-[11px] text-[#94A3B8]">
-                Customers can browse this item
+              <span className="text-[11px] text-slate-400 leading-relaxed">
+                Hides the item from the menu entirely
               </span>
             </div>
             <Controller

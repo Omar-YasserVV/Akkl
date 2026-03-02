@@ -8,8 +8,10 @@ interface AddMenuItemModalUIState {
   reset: () => void;
 }
 
-export const useAddMenuItemModalStore = create<AddMenuItemModalUIState>((set) => ({
-  isDragging: false,
-  setDragging: (value) => set({ isDragging: value }),
-  reset: () => set({ isDragging: false }),
-}));
+export const useAddMenuItemModalStore = create<AddMenuItemModalUIState>(
+  (set) => ({
+    isDragging: false,
+    setDragging: (value) => set({ isDragging: value }),
+    reset: () => set({ isDragging: false }),
+  }),
+);

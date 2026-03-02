@@ -1,5 +1,4 @@
 import { Modal, ModalContent, ModalBody } from "@heroui/react";
-import { BiX } from "react-icons/bi";
 import { FormProvider } from "react-hook-form";
 import AddModalHeader from "./AddModalHeader";
 import AddModalFooter from "./AddModalFooter";
@@ -36,33 +35,25 @@ export default function AddMenuItemModal({
       isOpen={isOpen}
       onOpenChange={(open) => !open && handleClose()}
       size="3xl"
+      hideCloseButton
       scrollBehavior="inside"
-      closeButton={<BiX className="text-2xl" />}
       classNames={{
-        base: "max-h-[95vh] rounded-[20px]",
+        base: "rounded-[20px]",
         header: "border-b py-4",
         footer: "border-t py-4 bg-white",
       }}
     >
       <ModalContent>
-        {(modalOnClose) => {
-          const close = () => {
-            handleClose();
-            modalOnClose();
-          };
-          return (
-            <FormProvider {...methods}>
-              <AddModalHeader />
-              <ModalBody className="py-6 px-8 bg-[#fafafa]">
-                <BasicInfoSection />
-                <VariationsSection />
-                <ModifiersSection />
-                <DietaryAndAvailabilitySection />
-              </ModalBody>
-              <AddModalFooter onClose={close} onSubmit={onSubmit} />
-            </FormProvider>
-          );
-        }}
+        <FormProvider {...methods}>
+          <AddModalHeader onClose={handleClose} />
+          <ModalBody className="py-6 px-8 bg-[#fafafa]">
+            <BasicInfoSection />
+            <VariationsSection />
+            <ModifiersSection />
+            <DietaryAndAvailabilitySection />
+          </ModalBody>
+          <AddModalFooter onClose={close} onSubmit={onSubmit} />
+        </FormProvider>
       </ModalContent>
     </Modal>
   );
