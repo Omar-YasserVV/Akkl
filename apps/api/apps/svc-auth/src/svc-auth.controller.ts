@@ -16,17 +16,17 @@ export class SvcAuthController {
     private readonly blackListService: BlackListService,
   ) {}
 
-  @MessagePattern({ cmd: 'signup' })
+  @MessagePattern('signup')
   async signup(@Payload() data: CreateUserDto) {
     return await this.svcAuthService.signup(data);
   }
 
-  @MessagePattern({ cmd: 'login' })
+  @MessagePattern('login')
   async login(@Payload() data: LoginDto) {
     return await this.svcAuthService.login(data);
   }
 
-  @MessagePattern({ cmd: 'logout' })
+  @MessagePattern('logout')
   async handleLogout(@Payload() data: any) {
     if (data && data.Token) {
       await this.blackListService.pushBlacklistedToken(data);
@@ -35,22 +35,22 @@ export class SvcAuthController {
     return { success: true };
   }
 
-  @MessagePattern({ cmd: 'google-callback' })
+  @MessagePattern('google-callback')
   async googleAuthCallback(@Payload() user: any) {
     return user;
   }
 
-  @MessagePattern({ cmd: 'complete-google-signup' })
+  @MessagePattern('complete-google-signup')
   async completeGoogleSignup(@Payload() completeDto: CompleteGoogleSignupDto) {
     return await this.svcAuthService.finalizeGoogleSignup(completeDto);
   }
 
-  @MessagePattern({ cmd: 'forgot-password' })
+  @MessagePattern('forgot-password')
   async forgotPassword(@Payload() email: string) {
     return this.svcAuthService.forgotPassword(email);
   }
 
-  @MessagePattern({ cmd: 'reset-password' })
+  @MessagePattern('reset-password')
   async resetPassword(@Payload() resetDto: any) {
     return this.svcAuthService.verifyOtpAndReset(resetDto);
   }

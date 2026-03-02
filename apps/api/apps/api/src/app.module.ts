@@ -1,36 +1,36 @@
 import { ConfigurableModuleBuilder, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
+import { RestaurantModule } from './restaurant/restaurant.module';
+import { DbModule } from '@app/db';
+import { GuardsModule } from '@app/guards';
+import { JwtModule } from '@nestjs/jwt';
+import { APP_GUARD } from '@nestjs/core/constants';
+import { RolesGuard } from '@app/guards/role.guard';
 
 @Module({
   imports: [
+    DbModule,
+    AuthModule,
+    RestaurantModule,
+    GuardsModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
     }),
-    ClientsModule.register([
-      {
-        name: 'AUTH_SERVICE',
-        transport: Transport.TCP,
-        options: { host: '127.0.0.1', port: 9010 },
-      },
-      // {
-      //   name: 'KAFKA_SERVICE',
-      //   transport: Transport.KAFKA,
-      //   options: {
-      //     client: {
-      //       brokers: ['localhost:9001'],
-      //     },
-      //     consumer: {
-      //       groupId: 'svc-auth-consumer',
-      //     },
-      //   },
-      // },
-    ]),
+    JwtModule.register({
+      global: true,
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '7h' },
+    }),
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
 })
 export class AppModule {}

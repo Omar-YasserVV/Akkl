@@ -21,13 +21,27 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@app/guards": ["libs/guards/src"],
-      "@app/guards/*": ["libs/guards/src/*"],
-      "@app/common": ["libs/common/src"],
-      "@app/common/*": ["libs/common/src/*"],
-      "@app/db": ["libs/db/src"],
-      "@app/db/*": ["libs/db/src/*"],
-      "@prisma/client": ["libs/db/prisma/client/client"]
+      "@app/common": [
+        "libs/common/src"
+      ],
+      "@app/common/*": [
+        "libs/common/src/*"
+      ],
+      "@app/db": [
+        "libs/db/src"
+      ],
+      "@app/db/*": [
+        "libs/db/src/*"
+      ],
+      "@app/guards": [
+        "libs/guards/src"
+      ],
+      "@app/guards/*": [
+        "libs/guards/src/*"
+      ],
+      "@prisma/client": [
+        "libs/db/prisma/client/client"
+      ]
     }
   }
 }
