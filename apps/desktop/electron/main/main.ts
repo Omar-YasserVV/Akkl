@@ -21,6 +21,8 @@ let win: BrowserWindow | null;
 
 function createWindow() {
   win = new BrowserWindow({
+    width: 1440,
+    height: 968,
     icon: path.join(process.env.VITE_PUBLIC, "Logo.ico"),
     title: "Akkl",
     webPreferences: {
@@ -28,7 +30,13 @@ function createWindow() {
     },
   });
   win.maximize(); // fills screen but keeps taskbar & window buttons
-  win.webContents.openDevTools({ mode: "detach" }); // or 'right', 'bottom'
+  // Do not open DevTools by default. Toggle them with F12 when needed.
+  win.webContents.on("before-input-event", (event, input) => {
+    if (input.key === "F12") {
+      win?.webContents.toggleDevTools();
+      event.preventDefault();
+    }
+  });
 
   Menu.setApplicationMenu(null);
   // Test active push message to Renderer-process.
