@@ -2,35 +2,45 @@ import { Link } from "react-router-dom";
 import { Button } from "@heroui/react";
 import { HiOutlineHome } from "react-icons/hi2";
 import { IoHelpCircleOutline } from "react-icons/io5";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
+
+// 1. Define simple variants for the whole container
+const containerVariants: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      staggerChildren: 0.1, // Elements will pop in one after another
+      ease: "easeOut",
+    },
+  },
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 },
+};
 
 export default function NotFound() {
   return (
-    <main className="h-[85vh] bg-white flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 relative rounded-xl overflow-hidden">
-      {/* Decorative background elements */}
-      <div className="absolute inset-0 pointer-events-none">
-        <motion.div
-          className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -mr-48 -mt-48"
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 1.2, ease: "easeOut" }}
-        />
-        <motion.div
-          className="absolute bottom-0 left-0 w-96 h-96 bg-primary/3 rounded-full blur-3xl -ml-48 -mb-48"
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
-        />
-      </div>
+    <main className="h-[85vh] flex flex-col items-center justify-center px-4 relative rounded-xl overflow-hidden">
+      {/* Subtle Background - simplified to a single fade-in */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="absolute inset-0 pointer-events-none bg-radial-gradient from-primary/5 to-transparent"
+      />
 
-      <div className="relative z-10 w-full max-w-2xl text-center">
-        {/* 404 Heading */}
-        <motion.div
-          initial={{ y: -50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="mb-8"
-        >
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="relative z-10 w-full max-w-2xl text-center"
+      >
+        {/* Each child now just needs the "itemVariants" */}
+        <motion.div variants={itemVariants} className="mb-8">
           <h1 className="font-cherry text-9xl sm:text-[10rem] font-bold text-primary mb-2">
             404
           </h1>
@@ -39,13 +49,7 @@ export default function NotFound() {
           </p>
         </motion.div>
 
-        {/* Subtitle */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-          className="mb-6"
-        >
+        <motion.div variants={itemVariants} className="mb-6">
           <h2 className="text-3xl sm:text-4xl font-cherry font-bold text-gray-900 mb-4">
             This Recipe Has Expired
           </h2>
@@ -55,11 +59,9 @@ export default function NotFound() {
           </p>
         </motion.div>
 
-        {/* Decorative dots */}
+        {/* Simplified decorative line */}
         <motion.div
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
+          variants={itemVariants}
           className="flex items-center justify-center gap-3 my-10"
         >
           <div className="w-12 h-px bg-gray-200" />
@@ -67,43 +69,34 @@ export default function NotFound() {
           <div className="w-12 h-px bg-gray-200" />
         </motion.div>
 
-        {/* Buttons */}
         <motion.div
-          initial={{ y: 30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center mb-12"
+          variants={itemVariants}
+          className="flex justify-center mb-12"
         >
           <Button
             as={Link}
             to="/dashboard"
             size="lg"
             startContent={<HiOutlineHome className="text-xl" />}
-            className="bg-primary hover:bg-primary/90 text-white font-semibold rounded-lg px-6 h-12 transition-all duration-300"
+            className="bg-primary hover:scale-105 active:scale-95 text-white font-semibold rounded-lg px-8 h-12 transition-transform"
           >
             Return to Dashboard
           </Button>
         </motion.div>
 
-        {/* Footer */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
+          variants={itemVariants}
           className="border-t border-gray-200 pt-8 text-center"
         >
           <p className="text-gray-600 text-sm flex items-center justify-center gap-1">
             <IoHelpCircleOutline className="text-lg" />
             Need assistance?{" "}
-            <Link
-              to="#"
-              className="text-primary hover:underline font-semibold transition-colors"
-            >
-              Contact our support team
+            <Link to="#" className="text-primary hover:underline font-semibold">
+              Contact support
             </Link>
           </p>
         </motion.div>
-      </div>
+      </motion.div>
     </main>
   );
 }

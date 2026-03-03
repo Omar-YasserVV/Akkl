@@ -11,7 +11,12 @@ import Warehouse from "../dashboard/pages/warehouse";
 import NotFound from "../dashboard/pages/not-found/not-found";
 export const router = createBrowserRouter([
   {
+    path: "*",
+    element: <NotFound />,
+  },
+  {
     path: "/",
+    errorElement: <NotFound />,
     element: <App />, // The Layout
     children: [
       {
@@ -30,6 +35,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/dashboard",
+    errorElement: <NotFound />,
     element: <DashboardLayout />,
     children: [
       {
