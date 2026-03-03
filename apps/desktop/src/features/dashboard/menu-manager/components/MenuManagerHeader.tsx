@@ -2,7 +2,7 @@ import { Button } from "@heroui/react";
 import { useState } from "react";
 import { BiPlus } from "react-icons/bi";
 import AddMenuItemModal from "./AddModal";
-import Header from "@/app/dashboard/components/shared/header";
+import Header from "@/features/dashboard/components/shared/header";
 
 function MenuManagerHeader() {
   const [isOpen, setIsOpen] = useState(false);

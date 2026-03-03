@@ -1,7 +1,7 @@
 import { Button } from "@heroui/react";
 import { Select, SelectItem } from "@heroui/react";
 import { daysFilter } from "../constants/line-chart-constants";
-import Header from "@/app/dashboard/components/shared/header";
+import Header from "@/features/dashboard/components/shared/header";
 
 const FinanceHeader = () => {
   return (

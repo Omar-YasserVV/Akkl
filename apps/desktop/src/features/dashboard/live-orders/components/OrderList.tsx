@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import {
   Table,
   TableBody,
@@ -10,16 +10,55 @@ import {
   Select,
   SelectItem,
 } from "@heroui/react";
-import {
-  type LiveOrder,
-  type OrderStatus,
-} from "../constants/constants";
-import { useLiveOrdersStore, type OrderRow } from "@/store/liveOrdersFilterStore";
+
 import { LuChefHat, LuClock8, LuCircleCheck } from "react-icons/lu";
 import { CgSmartphone } from "react-icons/cg";
 import { BiStore } from "react-icons/bi";
 import { FiEdit } from "react-icons/fi";
 import { FaRegTrashAlt } from "react-icons/fa";
+
+// --- Types & Mock Data ---
+export type OrderStatus = "pending" | "cooking" | "ready";
+
+export interface LiveOrder {
+  id: string;
+  "order#": string;
+  customer: string;
+  source: "App" | "Store";
+  items: number;
+  total: number;
+  status: OrderStatus;
+}
+
+const MOCK_ORDERS: LiveOrder[] = [
+  {
+    id: "1",
+    "order#": "1001",
+    customer: "John Doe",
+    source: "App",
+    items: 2,
+    total: 25.5,
+    status: "pending",
+  },
+  {
+    id: "2",
+    "order#": "1002",
+    customer: "Jane Smith",
+    source: "Store",
+    items: 1,
+    total: 12.0,
+    status: "cooking",
+  },
+  {
+    id: "3",
+    "order#": "1003",
+    customer: "Bob Wilson",
+    source: "App",
+    items: 4,
+    total: 45.2,
+    status: "ready",
+  },
+];
 
 type ColumnKey =
   | "order#"
@@ -35,23 +74,25 @@ const columns: Array<{
   uid: ColumnKey;
   align?: "start" | "center" | "end";
 }> = [
-    { name: "Order #", uid: "order#", align: "start" },
-    { name: "Customer", uid: "customer", align: "start" },
-    { name: "Source", uid: "source", align: "start" },
-    { name: "Items", uid: "items", align: "start" },
-    { name: "Total", uid: "total", align: "start" },
-    { name: "Status", uid: "status", align: "start" },
-    { name: "Actions", uid: "actions", align: "start" },
-  ];
+  { name: "Order #", uid: "order#", align: "start" },
+  { name: "Customer", uid: "customer", align: "start" },
+  { name: "Source", uid: "source", align: "start" },
+  { name: "Items", uid: "items", align: "start" },
+  { name: "Total", uid: "total", align: "start" },
+  { name: "Status", uid: "status", align: "start" },
+  { name: "Actions", uid: "actions", align: "start" },
+];
 
 const statusChipMap: Record<OrderStatus, { label: string; className: string }> =
-{
-  pending: { label: "Pending", className: "bg-amber-100 text-[#746A0C]" },
-  cooking: { label: "Cooking", className: "bg-orange-100 text-orange-900" },
-  ready: { label: "Ready", className: "bg-green-100 text-green-800" },
-};
+  {
+    pending: { label: "Pending", className: "bg-amber-100 text-[#746A0C]" },
+    cooking: { label: "Cooking", className: "bg-orange-100 text-orange-900" },
+    ready: { label: "Ready", className: "bg-green-100 text-green-800" },
+  };
 
 const formatMoney = (value: number) => `$${value.toFixed(2)}`;
+
+// --- Sub-components ---
 
 const StatusSelect = ({
   status,
@@ -67,13 +108,11 @@ const StatusSelect = ({
       : status === "cooking"
         ? LuChefHat
         : LuCircleCheck;
-
   const colors = {
     pending: "status-pill-pending",
     cooking: "status-pill-cooking",
     ready: "status-pill-ready",
   };
-
   const currentClass = colors[status];
 
   return (
@@ -147,82 +186,92 @@ const SourceChip = ({ source }: { source: LiveOrder["source"] }) => {
   );
 };
 
-const OrderList = () => {
-  const orders = useLiveOrdersStore((state) => state.orders);
-  const sourceFilter = useLiveOrdersStore((state) => state.source);
-  const statusFilter = useLiveOrdersStore((state) => state.status);
-  const updateOrderStatus = useLiveOrdersStore((state) => state.updateOrderStatus);
+// --- Main Component ---
 
-  const filteredOrders = React.useMemo(() => {
+const OrderList = () => {
+  // Prototype States
+  const [orders, setOrders] = useState<LiveOrder[]>(MOCK_ORDERS);
+  const [sourceFilter] = useState<string>("all");
+  const [statusFilter] = useState<string>("all");
+
+  const updateOrderStatus = (id: string, newStatus: OrderStatus) => {
+    setOrders((prev) =>
+      prev.map((order) =>
+        order.id === id ? { ...order, status: newStatus } : order,
+      ),
+    );
+  };
+
+  const deleteOrder = (id: string) => {
+    setOrders((prev) => prev.filter((order) => order.id !== id));
+  };
+
+  const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
-      const matchSource = sourceFilter === "all" || order.source === sourceFilter;
-      const matchStatus = statusFilter === "all" || order.status === statusFilter;
+      const matchSource =
+        sourceFilter === "all" || order.source === sourceFilter;
+      const matchStatus =
+        statusFilter === "all" || order.status === statusFilter;
       return matchSource && matchStatus;
     });
   }, [orders, sourceFilter, statusFilter]);
 
-  const renderCell = React.useCallback(
-    (order: OrderRow, columnKey: React.Key) => {
-      const key = columnKey as ColumnKey;
-
-      switch (key) {
-        case "order#":
-          return (
-            <span className="font-semibold text-black">#{order["order#"]}</span>
-          );
-        case "customer":
-          return <span className="text-black">{order.customer}</span>;
-        case "source":
-          return <SourceChip source={order.source} />;
-        case "items":
-          return (
-            <span className="text-black">
-              {order.items} {order.items === 1 ? "item" : "items"}
-            </span>
-          );
-        case "total":
-          return (
-            <span className="text-black tabular-nums">
-              {formatMoney(order.total)}
-            </span>
-          );
-        case "status":
-          return (
-            <StatusSelect
-              status={order.status}
-              onChange={(newStatus) => updateOrderStatus(order.id, newStatus)}
-            />
-          );
-        case "actions":
-          return (
-            <div className="flex items-center gap-3">
-              <Tooltip content="Edit">
-                <button
-                  type="button"
-                  className="h-9 w-9 rounded-sm border border-gray-100 bg-white text-gray-700 inline-flex items-center justify-center hover:bg-gray-50"
-                  aria-label="Edit order"
-                >
-                  <FiEdit className="h-4 w-4" />
-                </button>
-              </Tooltip>
-
-              <Tooltip color="danger" content="Delete">
-                <button
-                  type="button"
-                  className="h-9 w-9 rounded-sm border border-gray-100 bg-white text-rose-500 inline-flex items-center justify-center hover:bg-rose-50"
-                  aria-label="Delete order"
-                >
-                  <FaRegTrashAlt className="h-4 w-4" />
-                </button>
-              </Tooltip>
-            </div>
-          );
-        default:
-          return null;
-      }
-    },
-    [updateOrderStatus],
-  );
+  const renderCell = useCallback((order: LiveOrder, columnKey: React.Key) => {
+    const key = columnKey as ColumnKey;
+    switch (key) {
+      case "order#":
+        return (
+          <span className="font-semibold text-black">#{order["order#"]}</span>
+        );
+      case "customer":
+        return <span className="text-black">{order.customer}</span>;
+      case "source":
+        return <SourceChip source={order.source} />;
+      case "items":
+        return (
+          <span className="text-black">
+            {order.items} {order.items === 1 ? "item" : "items"}
+          </span>
+        );
+      case "total":
+        return (
+          <span className="text-black tabular-nums">
+            {formatMoney(order.total)}
+          </span>
+        );
+      case "status":
+        return (
+          <StatusSelect
+            status={order.status}
+            onChange={(val) => updateOrderStatus(order.id, val)}
+          />
+        );
+      case "actions":
+        return (
+          <div className="flex items-center gap-3">
+            <Tooltip content="Edit">
+              <button
+                type="button"
+                className="h-9 w-9 rounded-sm border border-gray-100 bg-white text-gray-700 inline-flex items-center justify-center hover:bg-gray-50"
+              >
+                <FiEdit className="h-4 w-4" />
+              </button>
+            </Tooltip>
+            <Tooltip color="danger" content="Delete">
+              <button
+                onClick={() => deleteOrder(order.id)}
+                type="button"
+                className="h-9 w-9 rounded-sm border border-gray-100 bg-white text-rose-500 inline-flex items-center justify-center hover:bg-rose-50"
+              >
+                <FaRegTrashAlt className="h-4 w-4" />
+              </button>
+            </Tooltip>
+          </div>
+        );
+      default:
+        return null;
+    }
+  }, []);
 
   return (
     <div className="w-full rounded-lg font-normal text-black border border-gray-100 bg-white overflow-hidden shadow-sm">
@@ -232,7 +281,6 @@ const OrderList = () => {
         classNames={{
           table: "min-w-full",
           thead: "rounded-b-none",
-          // Added 'text-left' to ensure headers aren't centered by default
           th: "bg-neutral-100 !rounded-none text-black text-xs font-semibold py-3 px-6 text-left border-b border-gray-100",
           td: "py-5 px-6",
           tr: "border-b border-gray-100 last:border-0",
@@ -240,11 +288,7 @@ const OrderList = () => {
       >
         <TableHeader columns={columns}>
           {(column) => (
-            <TableColumn
-              key={column.uid}
-              // Ensure align is strictly "start"
-              align={column.align}
-            >
+            <TableColumn key={column.uid} align={column.align}>
               {column.name}
             </TableColumn>
           )}

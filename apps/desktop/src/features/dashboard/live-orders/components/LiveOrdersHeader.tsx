@@ -1,14 +1,11 @@
 import { Button } from "@heroui/react";
 import { BiPlus } from "react-icons/bi";
-import { useLiveOrdersStore } from "@/store/liveOrdersFilterStore";
 import CreateOrderModal from "./create-order-modal";
-import Header from "@/app/dashboard/components/shared/header";
+import Header from "@/features/dashboard/components/shared/header";
+import { useState } from "react";
 
 const LiveOrdersHeader = () => {
-  const setCreateModalOpen = useLiveOrdersStore(
-    (state) => state.setCreateModalOpen,
-  );
-
+  const [createModalOpen, setCreateModalOpen] = useState(false);
   return (
     <Header
       title="Live Orders"
@@ -24,7 +21,10 @@ const LiveOrdersHeader = () => {
           </Button>
 
           {/* The Modal is now a self-contained component */}
-          <CreateOrderModal />
+          <CreateOrderModal
+            open={createModalOpen}
+            onClose={() => setCreateModalOpen(false)}
+          />
         </>
       }
     />

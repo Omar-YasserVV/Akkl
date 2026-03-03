@@ -1,4 +1,4 @@
-import Header from "@/app/dashboard/components/shared/header";
+import Header from "@/features/dashboard/components/shared/header";
 import {
   Dropdown,
   DropdownTrigger,

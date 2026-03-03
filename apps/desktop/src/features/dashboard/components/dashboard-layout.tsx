@@ -1,7 +1,7 @@
 import { Outlet } from "react-router-dom";
 import Sidebar from "./sidebar";
 import Topbar from "./topbar";
-import { AppBreadcrumb } from "@/app/components/ui/AppBreadcrumb";
+import { AppBreadcrumb } from "@/shared/components/ui/AppBreadcrumb";
 
 const DashboardLayout = () => {
   return (

@@ -1,14 +1,14 @@
 import { createBrowserRouter } from "react-router-dom";
-import App from "../App";
-import SignIn from "../auth/pages/SignIn";
-import Home from "../home/Home";
-import DashboardLayout from "../dashboard/components/dashboard-layout";
-import Overview from "../dashboard/pages/overview";
-import LiveOrders from "../dashboard/pages/live-orders";
-import MenuManager from "../dashboard/pages/menu-manager";
-import FinancePage from "../dashboard/pages/finance-page";
-import Warehouse from "../dashboard/pages/warehouse";
-import NotFound from "../dashboard/pages/not-found/not-found";
+import App from "./App";
+import MenuManager from "@/features/dashboard/menu-manager";
+import FinancePage from "@/features/dashboard/finance-page";
+import Warehouse from "@/features/dashboard/warehouse";
+import NotFound from "./not-found.page";
+import Home from "@/features/home";
+import SignIn from "@/features/auth/sign-in";
+import DashboardLayout from "@/features/dashboard/components/dashboard-layout";
+import Overview from "@/features/dashboard/overview";
+import LiveOrders from "@/features/dashboard/live-orders";
 export const router = createBrowserRouter([
   {
     path: "*",

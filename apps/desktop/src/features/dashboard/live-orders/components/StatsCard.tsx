@@ -1,12 +1,33 @@
+import { useState } from "react";
 import { Card } from "@heroui/react";
-import { useLiveOrdersStore } from "@/store/liveOrdersFilterStore";
 import { LuChefHat, LuClock8, LuCircleCheck } from "react-icons/lu";
 
-const StatsCard = () => {
-  const orders = useLiveOrdersStore((state) => state.orders);
+type OrderStatus = "pending" | "cooking" | "ready";
 
-  const pendingCount = orders.filter((order) => order.status === "pending").length;
-  const cookingCount = orders.filter((order) => order.status === "cooking").length;
+type Order = {
+  id: number;
+  status: OrderStatus;
+};
+
+const StatsCard = () => {
+  // 🔥 Prototype mock data
+  const [orders] = useState<Order[]>([
+    { id: 1, status: "pending" },
+    { id: 2, status: "pending" },
+    { id: 3, status: "cooking" },
+    { id: 4, status: "ready" },
+    { id: 5, status: "ready" },
+    { id: 6, status: "ready" },
+  ]);
+
+  const pendingCount = orders.filter(
+    (order) => order.status === "pending",
+  ).length;
+
+  const cookingCount = orders.filter(
+    (order) => order.status === "cooking",
+  ).length;
+
   const readyCount = orders.filter((order) => order.status === "ready").length;
 
   return (
@@ -20,6 +41,7 @@ const StatsCard = () => {
           <LuClock8 className="w-6 h-6 text-[#746A0C]" />
         </div>
       </Card>
+
       <Card className="flex flex-row items-center justify-between border-2 rounded-lg p-4 bg-white border-orange-500 w-full">
         <div className="flex flex-col gap-2 items-start">
           <p className="text-gray-500 text-sm font-normal">Cooking</p>
@@ -29,6 +51,7 @@ const StatsCard = () => {
           <LuChefHat className="w-6 h-6 text-orange-900" />
         </div>
       </Card>
+
       <Card className="flex flex-row items-center justify-between border-2 rounded-lg p-4 bg-white border-green-500 w-full">
         <div className="flex flex-col gap-2 items-start">
           <p className="text-gray-500 text-sm font-normal">Ready</p>
