@@ -40,7 +40,7 @@ function BasicInfoSectionInner() {
 
   return (
     <section className="mb-10">
-      <h3 className="text-[12px] font-bold text-[#64748B] tracking-widest uppercase pb-4">
+      <h3 className="text-[12px] font-bold text-slate-500 tracking-widest uppercase pb-4">
         Basic Information
       </h3>
       <div className="space-y-6">
@@ -73,7 +73,7 @@ function BasicInfoSectionInner() {
         />
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-[#334155]">
+          <label className="text-sm font-medium text-slate-700">
             Item Image
           </label>
           <div
@@ -82,7 +82,7 @@ function BasicInfoSectionInner() {
             onDragLeave={onDragLeave}
             onDrop={onDrop}
             className={`relative border-2 mt-1 bg-white border-dashed rounded-2xl p-8 flex flex-col items-center justify-center transition-all cursor-pointer 
-              ${isDragging ? "border-blue-500 bg-blue-50" : "border-[#CBD5E1] bg-slate-50/30"} 
+              ${isDragging ? "border-blue-500 bg-blue-50" : "border-slate-300 bg-slate-50/30"} 
               ${imageData ? "border-solid " : "hover:bg-slate-50"}`}
           >
             <input
@@ -118,13 +118,13 @@ function BasicInfoSectionInner() {
               </div>
             ) : (
               <>
-                <div className="bg-[#F1F5F9] p-3 rounded-full shadow-sm mb-3 text-[#64768B]">
+                <div className="bg-slate-100 p-3 rounded-full shadow-sm mb-3 text-slate-500">
                   <BiCloudUpload size={28} />
                 </div>
-                <p className="text-sm font-semibold text-[#0F172A]">
+                <p className="text-sm font-semibold text-slate-900">
                   Click to upload or drag and drop
                 </p>
-                <p className="text-xs text-[#64748B] mt-1">
+                <p className="text-xs text-slate-500 mt-1">
                   PNG, JPG or WEBP (max. 5MB)
                 </p>
               </>

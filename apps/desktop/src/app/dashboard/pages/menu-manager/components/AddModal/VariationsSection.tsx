@@ -15,7 +15,7 @@ function VariationsSectionInner() {
   return (
     <section className="mb-10">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-sm font-semibold text-[#64748B] tracking-widest uppercase">
+        <h3 className="text-[12px] font-bold text-slate-500 tracking-widest uppercase">
           Variations & Sizes
         </h3>
         <Button
@@ -39,8 +39,8 @@ function VariationsSectionInner() {
             />
           ))
         ) : (
-          <div className="text-center rounded-2xl text-[#64748B]">
-            there is no VARIATIONS & SIZES
+          <div className="text-center py-4 rounded-2xl text-slate-500">
+            There are no variations & sizes
           </div>
         )}
       </div>

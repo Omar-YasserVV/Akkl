@@ -15,14 +15,14 @@ export default function SizeRow({
   const size = watch(`sizes.${index}`);
 
   return (
-    <div className="flex items-center gap-4 p-4 bg-white border border-[#E2E8F0] rounded-sm shadow-xs">
-      <span className="flex-1 text-[#1E293B] font-medium text-sm">
+    <div className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-sm shadow-xs">
+      <span className="flex-1 text-slate-800 font-medium text-sm">
         {size?.name ?? ""}
       </span>
       <div className="flex items-center gap-7">
         <div className="flex gap-1">
-          <span className="text-[#94A3B8] text-sm">$</span>
-          <span className="text-[#1E293B] text-sm font-medium">
+          <span className="text-slate-400 text-sm">$</span>
+          <span className="text-slate-800 text-sm font-medium">
             {size?.price ?? ""}
           </span>
         </div>
@@ -30,7 +30,7 @@ export default function SizeRow({
           isIconOnly
           variant="light"
           size="sm"
-          className="text-[#94A3B8] hover:text-danger"
+          className="text-slate-400 hover:text-danger"
           onPress={onRemove}
         >
           <BiTrash size={18} />

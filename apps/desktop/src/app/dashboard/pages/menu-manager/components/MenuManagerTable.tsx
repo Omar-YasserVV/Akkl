@@ -17,40 +17,21 @@ export default function MenuManagerTable() {
     <div>
       <Table
         aria-label="Restaurant Menu Table"
-        layout="fixed" // Add this propss
+        layout="fixed"
         classNames={{
-          wrapper: "shadow-sm border border-gray-100 p-0 ",
-          th: "bg-neutral-100 text-black text-sm font-semibold !rounded-b-none py-5 px-6",
-          td: "py-4 border-b border-gray-50",
+          wrapper: "shadow-sm border border-slate-100 p-0",
+          th: "bg-slate-50 text-zinc-900 text-sm font-semibold !rounded-b-none py-5 px-6",
+          td: "py-4 border-b border-slate-50",
         }}
       >
         <TableHeader>
-          {/* Item Name: Takes up remaining space or a larger fixed portion */}
-          <TableColumn className="w-50">Item Name</TableColumn>
-
-          {/* Middle Columns: Compact widths */}
-          <TableColumn align="start" className="w-[13%]">
-            Category
-          </TableColumn>
-          <TableColumn align="center" className="w-[10%]">
-            Price
-          </TableColumn>
-          <TableColumn align="center" className="w-[10%]">
-            Prep Time
-          </TableColumn>
-          <TableColumn align="start" className="w-[10%]">
-            Status
-          </TableColumn>
-
-          {/* Description: Flexes to fill or has a larger width */}
-          <TableColumn align="center" className="w-[25%]">
-            Description
-          </TableColumn>
-
-          {/* Actions: Fixed small width */}
-          <TableColumn align="start" className="w-[18%]">
-            Actions
-          </TableColumn>
+          <TableColumn>Item Name</TableColumn>
+          <TableColumn align="start">Category</TableColumn>
+          <TableColumn align="center">Price</TableColumn>
+          <TableColumn align="center">Prep Time</TableColumn>
+          <TableColumn align="start">Status</TableColumn>
+          <TableColumn align="center">Description</TableColumn>
+          <TableColumn align="start">Actions</TableColumn>
         </TableHeader>
         <TableBody>
           {MENU_ITEMS.map((item) => (
@@ -62,27 +43,23 @@ export default function MenuManagerTable() {
                     alt={item.name}
                     className="w-11 h-11 rounded-lg object-cover"
                   />
-                  <span className="font-medium text-[#18181B]">
-                    {item.name}
-                  </span>
+                  <span className="font-medium text-zinc-900">{item.name}</span>
                 </div>
               </TableCell>
 
               <TableCell>
                 <div className="flex ml-3">
-                  <span
-                    className={`inline-flex items-center rounded-full text-primary bg- px-3 py-1 text-xs font-medium border border-primary/20 bg-primary/10`}
-                  >
+                  <span className="inline-flex items-center rounded-full text-primary px-3 py-1 text-xs font-medium border border-primary/20 bg-primary/10">
                     {item.category}
                   </span>
                 </div>
               </TableCell>
 
-              <TableCell className="text-[#18181B] font-medium text-center">
+              <TableCell className="text-zinc-900 font-medium text-center">
                 ${item.price.toFixed(2)}
               </TableCell>
 
-              <TableCell className="text-[#18181B] text-center">
+              <TableCell className="text-zinc-900 text-center">
                 {item.prepTime}
               </TableCell>
 
@@ -90,7 +67,7 @@ export default function MenuManagerTable() {
                 <div className="flex">
                   <Chip
                     variant="flat"
-                    className="bg-[#DCFCE7] text-[#166534] font-semibold"
+                    className="bg-green-100 text-green-800 font-semibold"
                     size="sm"
                   >
                     {item.status}
@@ -98,7 +75,7 @@ export default function MenuManagerTable() {
                 </div>
               </TableCell>
 
-              <TableCell className="text-[#808080] text-center">
+              <TableCell className="text-slate-500 text-center">
                 <span className="block truncate max-w-50 mx-auto">
                   {item.description}
                 </span>
@@ -109,14 +86,14 @@ export default function MenuManagerTable() {
                   <Button
                     isIconOnly
                     variant="light"
-                    className="border border-gray-200 rounded-lg min-w-10 h-10"
+                    className="border border-slate-200 rounded-lg min-w-10 h-10"
                   >
-                    <FiEdit className="w-4 h-4 text-gray-600" />
+                    <FiEdit className="w-4 h-4 text-slate-600" />
                   </Button>
                   <Button
                     isIconOnly
                     variant="light"
-                    className="border border-gray-200 rounded-lg min-w-10 h-10"
+                    className="border border-slate-200 rounded-lg min-w-10 h-10"
                   >
                     <FaRegTrashAlt className="w-4 h-4 text-danger" />
                   </Button>

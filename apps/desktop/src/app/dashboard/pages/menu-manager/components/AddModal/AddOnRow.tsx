@@ -15,12 +15,12 @@ export default function AddOnRow({
   const item = watch(`addOns.${index}`);
 
   return (
-    <div className="flex justify-between items-center p-3.5 border-b last:border-0 border-[#F1F5F9] group">
-      <span className="text-sm text-[#475569]">{item?.name ?? ""}</span>
+    <div className="flex justify-between items-center p-3.5 border-b last:border-0 border-slate-100 group">
+      <span className="text-sm text-slate-600">{item?.name ?? ""}</span>
 
       <div className="relative flex items-center ">
-        <div className="flex items-center gap-2 transition-transform duration-300 ease-in-out transform group-hover:-translate-x-7">
-          <span className="text-[#64748B] font-semibold text-sm whitespace-nowrap">
+        <div className="flex items-center gap-2 transition-transform duration-300 logic-in-out transform group-hover:-translate-x-7">
+          <span className="text-slate-500 font-semibold text-sm whitespace-nowrap">
             +{formatNumber(Number(item?.price || 0), { isCurrency: true })}
           </span>
 
