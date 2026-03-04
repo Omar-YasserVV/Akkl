@@ -20,7 +20,7 @@ const OverviewHeader = () => {
     <Header
       title="Overview"
       description="Manage orders from app and restaurant in real-time."
-      action={
+      right={
         <Dropdown>
           <DropdownTrigger>
             <Button

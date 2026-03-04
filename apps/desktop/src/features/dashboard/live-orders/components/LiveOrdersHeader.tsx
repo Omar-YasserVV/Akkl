@@ -10,7 +10,7 @@ const LiveOrdersHeader = () => {
     <Header
       title="Live Orders"
       description="Manage orders from app and restaurant in real-time."
-      action={
+      right={
         <>
           <Button
             onPress={() => setCreateModalOpen(true)}
