@@ -3,25 +3,27 @@ import { ReactNode } from "react";
 type HeaderProps = {
   title: string;
   description: string;
-  action?: ReactNode;
-  before?: ReactNode;
-  className?: string;
+  right?: ReactNode;
+  left?: ReactNode;
+  leftClassName?: string;
+  rightClassName?: string;
 };
 
 const Header = ({
   title,
   description,
-  action,
-  before,
-  className = "",
+  left,
+  right,
+  leftClassName = "",
+  rightClassName = "",
 }: HeaderProps) => {
   return (
-    <header className={`flex justify-between items-end gap-6 ${className}`}>
+    <header className={`flex justify-between items-end gap-6`}>
       {/* 
-      //TODO: Omar/ Refactor this to be more flexible and not rely on the before and action props. Maybe use a more generic approach with slots or something similar.
+        //TODO: Omar&Eyad/ Refactor this to be more flexible and not rely on the before and action props. Maybe use a more generic approach with slots or something similar.
       */}
-      <div className="flex gap-5 items-center justify-center">
-        {before && <div className="mb-3">{before}</div>}
+      <div className="flex gap-4 items-center justify-center">
+        {left && <div className={leftClassName}>{left}</div>}
 
         <div className="space-y-2.5">
           <h2 className="font-cherry text-primary text-5xl leading-tight">
@@ -31,7 +33,7 @@ const Header = ({
         </div>
       </div>
 
-      {action && <div className="pb-1">{action}</div>}
+      {right && <div className={`pb-1 ${rightClassName}`}>{right}</div>}
     </header>
   );
 };

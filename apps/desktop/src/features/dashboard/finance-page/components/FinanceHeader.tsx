@@ -8,7 +8,7 @@ const FinanceHeader = () => {
     <Header
       title="Finance & Reports"
       description="Track revenue, expenses, and profitability."
-      action={
+      right={
         <div className="flex justify-end items-end gap-4">
           <Select
             className="w-36 text-center bg-white rounded-md"

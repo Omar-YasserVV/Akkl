@@ -11,7 +11,7 @@ function MenuManagerHeader() {
     <Header
       title="Menu Manager"
       description="Manage your restaurant menu items and categories."
-      action={
+      right={
         <>
           <div className="flex gap-4">
             <Button
