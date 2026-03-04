@@ -9,6 +9,7 @@ import SignIn from "@/features/auth/sign-in";
 import DashboardLayout from "@/features/dashboard/components/dashboard-layout";
 import Overview from "@/features/dashboard/overview";
 import LiveOrders from "@/features/dashboard/live-orders";
+import BulkUploadMenuItems from "@/features/dashboard/menu-manager/components/bulk-upload-menu-items";
 export const router = createBrowserRouter([
   {
     path: "*",
@@ -55,6 +56,11 @@ export const router = createBrowserRouter([
         path: "menu-manager",
         index: false,
         element: <MenuManager />,
+      },
+      {
+        path: "menu-manager/bulk-upload-menu-items",
+        index: false,
+        element: <BulkUploadMenuItems />,
       },
       {
         path: "warehouse",
