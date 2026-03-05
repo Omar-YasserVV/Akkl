@@ -13,20 +13,16 @@ import { UpdateRestaurantDto } from '@app/common/dtos/RestaurantDto/update.resta
 export class SvcRestaurantService {
   constructor(private readonly prisma: PrismaService) {}
   async CreateRestaurant(userId: number, data: CreateRestaurantDto) {
-    // 1. Safety cast to number
     const ownerId = Number(userId);
 
-    // 2. Check if User exists
     const user = await this.prisma.user.findUnique({
       where: { id: ownerId },
     });
 
     if (!user) {
-      // Use RpcException for microservices
       throw new RpcException({ message: 'User not found', status: 404 });
     }
 
-    // 3. Check for duplicate name
     const existingRestaurant = await this.prisma.restaurant.findUnique({
       where: { name: data.name },
     });
@@ -38,7 +34,6 @@ export class SvcRestaurantService {
       });
     }
 
-    // 4. Create the record
     return await this.prisma.restaurant.create({
       data: {
         name: data.name,
@@ -48,7 +43,11 @@ export class SvcRestaurantService {
     });
   }
   async GetRestaurants() {
-    return await this.prisma.restaurant.findMany();
+    return await this.prisma.restaurant.findMany({
+      include: {
+        branches: true,
+      },
+    });
   }
 
   async GetRestaurantsByOwnerId(ownerId: number) {
