@@ -17,8 +17,8 @@ function BulkUploadMenuItemsHeader() {
           <BiChevronLeft size={24} className="text-[#262626]" />
         </button>
       }
-      title="Menu Manager"
-      description="Manage your restaurant menu items and categories."
+      title="Bulk Upload Menu Items"
+      description="Quickly populate your menu by uploading catalog files."
     />
   );
 }
