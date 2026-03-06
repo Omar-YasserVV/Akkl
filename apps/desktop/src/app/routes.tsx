@@ -9,7 +9,7 @@ import SignIn from "@/features/auth/sign-in";
 import DashboardLayout from "@/features/dashboard/components/dashboard-layout";
 import Overview from "@/features/dashboard/overview";
 import LiveOrders from "@/features/dashboard/live-orders";
-import BulkUploadMenuItems from "@/features/dashboard/menu-manager/bulk-upload-menu-items";
+import BulkUploadMenuItems from "@/features/dashboard/bulk-upload-menu-items";
 export const router = createBrowserRouter([
   {
     path: "*",
