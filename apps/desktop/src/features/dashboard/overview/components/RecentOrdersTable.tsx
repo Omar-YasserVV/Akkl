@@ -42,14 +42,14 @@ const orders = [
     time: "3 hours ago",
   },
   {
-    id: "ORD-7282",
+    id: "ORD-7222",
     customer: "Sarah Chen",
     amount: "$45.00",
     status: "Processing",
     time: "15 mins ago",
   },
   {
-    id: "ORD-7283",
+    id: "ORD-7289",
     customer: "Marcus Wright",
     amount: "$89.20",
     status: "Cancelled",
