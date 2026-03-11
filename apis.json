@@ -1,5 +1,18 @@
 [
   {
+    "project_status": {
+      "important_note": "⚠️ CAUTION: These routes are under active development. If a route fails (404/500), do not panic.",
+      "contact": {
+        "engineer": "Abdelrhman-Fawzy",
+        "platform": "Discord",
+        "discord name": "Devil",
+        "discord_handle": "fawzy.x",
+        "action": "Open a ticket or DM if you hit a blocking error."
+      },
+      "last_updated": "2026-03-11"
+    }
+  },
+  {
     "service": "svc-auth",
     "base_url": "/auth",
     "endpoints": [
@@ -137,6 +150,98 @@
         "params": {
           "id": "number (Required)"
         }
+      }
+    ]
+  },
+  {
+    "service": "svc-branch",
+    "base_url": "/branches",
+    "endpoints": [
+      {
+        "action": "Get All Branches",
+        "method": "GET",
+        "url": "/branches/:restaurantId",
+        "description": "Fetches the initial list of branches for a restaurant.",
+        "params": {
+          "restaurantId": "number (Required)"
+        }
+      },
+      {
+        "action": "Get Branch By ID",
+        "method": "GET",
+        "url": "/branches/:restaurantId/:branchId",
+        "description": "Fetches deep info (menus, staff, tables) for a specific branch.",
+        "params": {
+          "restaurantId": "number (Required)",
+          "branchId": "number (Required)"
+        }
+      },
+      {
+        "action": "Create Branch",
+        "method": "POST",
+        "url": "/branches/:restaurantId",
+        "description": "Adds a new branch and triggers a real-time 'new_branch_added' event.",
+        "params": {
+          "restaurantId": "number (Required)"
+        },
+        "body_schema": {
+          "name": "string",
+          "address": "string",
+          "haveTables": "boolean",
+          "haveReservations": "boolean",
+          "haveWarehouses": "boolean"
+        }
+      },
+      {
+        "action": "Update Branch",
+        "method": "PATCH",
+        "url": "/branches/:restaurantId/:branchId",
+        "description": "Updates branch details and triggers a real-time 'branch_updated' event.",
+        "params": {
+          "restaurantId": "number (Required)",
+          "branchId": "number (Required)"
+        },
+        "body_schema": {
+          "name": "string (Optional)",
+          "address": "string (Optional)",
+          "haveTables": "boolean (Optional)"
+        }
+      },
+      {
+        "action": "Delete Branch",
+        "method": "DELETE",
+        "url": "/branches/:restaurantId/:branchId",
+        "description": "Deletes a branch and triggers a real-time 'branch_deleted' event.",
+        "params": {
+          "restaurantId": "number (Required)",
+          "branchId": "number (Required)"
+        }
+      }
+    ]
+  },
+  {
+    "service": "real-time-events",
+    "protocol": "WebSocket (Socket.io)",
+    "connection_url": "ws://localhost:9000",
+    "description": "The 'Live Feed' for high-throughput data updates without manual refresh.",
+    "events": [
+      {
+        "event": "new_branch_added",
+        "trigger": "When Create Branch is successful",
+        "data_payload": "Complete Branch Object",
+        "ui_action": "Append to list"
+      },
+      {
+        "event": "branch_updated",
+        "trigger": "When Update Branch is successful",
+        "data_payload": "Updated Branch Object",
+        "ui_action": "Replace item in list using ID"
+      },
+      {
+        "event": "branch_deleted",
+        "trigger": "When Delete Branch is successful",
+        "data_payload": "{ id: number, restaurantId: number }",
+        "ui_action": "Remove item from list using ID"
       }
     ]
   }
