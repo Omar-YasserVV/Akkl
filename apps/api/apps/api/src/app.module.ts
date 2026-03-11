@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AuthModule } from './auth/auth.module';
 import { RestaurantModule } from './restaurant/restaurant.module';
+import { BranchModule } from './branch/branch.module';
 import { DbModule } from '@app/db';
 import { GuardsModule } from '@app/guards';
 import { JwtModule } from '@nestjs/jwt';
@@ -14,6 +15,7 @@ import { RolesGuard } from '@app/guards/role.guard';
     DbModule,
     AuthModule,
     RestaurantModule,
+    BranchModule,
     GuardsModule,
     ConfigModule.forRoot({
       isGlobal: true,

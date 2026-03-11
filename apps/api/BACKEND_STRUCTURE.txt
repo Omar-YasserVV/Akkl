@@ -1,0 +1,96 @@
+apps/api\
+├─ apps\
+│  ├─ api\
+│  │  ├─ src\
+│  │  │  ├─ auth\                      - Auth module directory (guards, strategies, controllers for authentication)
+│  │  │  ├─ branch\                    - Branch domain module directory
+│  │  │  │  ├─ branch.controller.ts    - HTTP endpoints for branch resources
+│  │  │  │  ├─ branch.service.ts       - Business logic for branch operations
+│  │  │  │  ├─ branch.module.ts        - Nest module definition for branch
+│  │  │  │  └─ branch.gateway.ts       - WebSocket gateway for real-time branch events
+│  │  │  ├─ restaurant\                - Restaurant domain module directory
+│  │  │  ├─ app.controller.spec.ts     - Unit tests for root app controller
+│  │  │  ├─ app.controller.ts          - Root controller for health/ping routes
+│  │  │  ├─ app.module.ts              - Root application module wiring modules/providers
+│  │  │  ├─ app.service.ts             - Root service for shared app-level logic
+│  │  ��  └─ main.ts                    - App bootstrap (HTTP server entrypoint)
+│  │  ├─ test\
+│  │  │  ├─ app.e2e-spec.ts            - E2E tests for the API gateway app
+│  │  │  └─ jest-e2e.json              - Jest E2E configuration
+│  │  └─ tsconfig.app.json             - TypeScript config for the API gateway app
+│  ├─ svc-auth\
+│  │  ├─ src\
+│  │  │  ├─ strategies\                - Auth strategies (e.g., JWT/local) for svc-auth
+│  │  │  ├─ main.ts                    - Microservice bootstrap for svc-auth
+│  │  │  ├─ svc-auth.controller.spec.ts- Unit tests for svc-auth controller
+│  │  │  ├─ svc-auth.controller.ts     - Message/HTTP handlers for auth service
+│  │  │  ├─ svc-auth.module.ts         - Nest module definition for auth microservice
+│  │  │  └─ svc-auth.service.ts        - Business logic for authentication/identity
+│  │  ├─ test\
+│  │  │  ├─ app.e2e-spec.ts            - E2E tests for svc-auth
+│  │  │  └─ jest-e2e.json              - Jest E2E configuration for svc-auth
+│  │  └─ tsconfig.app.json             - TypeScript config for svc-auth
+│  ├─ svc-branch\
+│  │  ├─ src\
+│  │  │  ├─ menu\                      - Menu feature (controllers, services, module)
+│  │  │  │  ├─ menu.controller.ts      - Endpoints/handlers for menu management
+│  │  │  │  ├─ menu.module.ts          - Nest module for menu feature
+│  │  │  │  └─ menu.service.ts         - Business logic for menu operations
+│  │  │  ├─ orders\                    - Orders feature (controllers, services, module)
+│  │  │  │  ├─ order.controller.ts     - Endpoints/handlers for orders
+│  │  │  │  ├─ order.module.ts         - Nest module for orders feature
+│  │  │  │  └─ order.service.ts        - Business logic for order processing
+│  │  │  ├─ main.ts                    - Microservice bootstrap for svc-branch
+│  │  │  ├─ svc-branch.controller.spec.ts - Unit tests for svc-branch controller
+│  │  │  ├─ svc-branch.controller.ts   - Root controller/handlers for svc-branch
+│  │  │  ├─ svc-branch.module.ts       - Nest module composition for svc-branch
+│  │  │  └─ svc-branch.service.ts      - Core service for branch microservice logic
+│  │  ├─ test\
+│  │  │  ├─ app.e2e-spec.ts            - E2E tests for svc-branch
+│  │  │  └─ jest-e2e.json              - Jest E2E configuration for svc-branch
+│  │  └─ tsconfig.app.json             - TypeScript config for svc-branch
+│  └─ svc-restaurant\
+│     ├─ src\
+│     │  ├─ main.ts                    - Microservice bootstrap for svc-restaurant
+│     │  ├─ svc-restaurant.controller.spec.ts - Unit tests for svc-restaurant controller
+│     │  ├─ svc-restaurant.controller.ts - Root controller/handlers for svc-restaurant
+│     │  ├─ svc-restaurant.module.ts   - Nest module composition for svc-restaurant
+│     │  └─ svc-restaurant.service.ts  - Core service for restaurant microservice logic
+│     ├─ test\
+│     │  ├─ app.e2e-spec.ts            - E2E tests for svc-restaurant
+│     │  └─ jest-e2e.json              - Jest E2E configuration for svc-restaurant
+│     └─ tsconfig.app.json             - TypeScript config for svc-restaurant
+├─ libs\
+│  ├─ common\
+│  │  ├─ src\
+│  │  │  ├─ dtos\                      - Shared DTOs for request/response validation
+│  │  │  │  ├─ MenuDto\                - DTOs for menu resources
+│  │  │  │  │  ├─ menu.create.dto.ts   - Validation schema for creating menus/items
+│  │  │  │  │  └─ menu.update.dto.ts   - Validation schema for updating menus/items
+│  │  │  │  └─ OrderDto\               - DTOs for order resources
+│  │  │  │     ├─ create.order.dto.ts  - Validation schema for creating orders
+│  │  │  │     └─ update.order.dto.ts  - Validation schema for updating orders
+│  │  │  └─ rpc-exception.filter.ts    - Global RPC exception filter for microservices
+│  │  └─ tsconfig.lib.json             - TypeScript config for common library
+│  ├─ db\
+│  │  ├─ generated\                    - Generated DB client/types (e.g., Prisma client)
+│  │  ├─ prisma\
+│  │  │  └─ schema.prisma              - Prisma schema for database models
+│  │  ├─ src\                          - DB utility wrappers/providers
+│  │  ├─ .gitignore                    - Git ignore rules for db lib
+│  │  └─ tsconfig.lib.json             - TypeScript config for db library
+│  └─ guards\
+│     ├─ src\                          - Shared Nest guards (e.g., auth/role guards)
+│     └─ tsconfig.lib.json             - TypeScript config for guards library
+├─ utils\
+│  └─ argon2.ts                        - Password hashing utility using Argon2
+├─ .gitignore                          - Root ignore rules for the backend workspace
+├─ .prettierrc                         - Prettier code formatting configuration
+├─ docker-compose.yml                   - Container orchestration for local/dev services
+├─ eslint.config.mjs                   - ESLint configuration for the backend
+├─ nest-cli.json                       - Nest CLI monorepo/workspace configuration
+├─ package.json                        - NPM package manifest for backend workspace
+├─ prisma.config.ts                    - Prisma generator/config integration for monorepo
+├─ README.md                           - Backend workspace overview and instructions
+├─ tsconfig.build.json                 - TS build options for emitting JS
+└─ tsconfig.json                       - Root TS compiler options for the backend
