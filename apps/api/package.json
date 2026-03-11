@@ -32,7 +32,9 @@
     "@nestjs/microservices": "^11.1.16",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.1.16",
+    "@nestjs/platform-socket.io": "^11.1.16",
     "@nestjs/schedule": "^6.1.1",
+    "@nestjs/websockets": "^11.1.16",
     "@prisma/adapter-pg": "^7.4.2",
     "@prisma/client": "^7.4.2",
     "@prisma/client-runtime-utils": "^7.4.2",
@@ -48,7 +50,8 @@
     "passport-google-oauth20": "^2.0.0",
     "pg": "^8.20.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.2"
+    "rxjs": "^7.8.2",
+    "socket.io": "^4.8.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.4",

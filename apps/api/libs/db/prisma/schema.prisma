@@ -43,7 +43,6 @@ model Restaurant {
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
   branches  Branch[]
-  branchMenu BranchMenuItem[]
   user      User       @relation(fields: [ownerId], references: [id])
 }
 
@@ -79,10 +78,8 @@ model BranchMenuItem {
   discountPrice Decimal?         @db.Decimal(10, 2)
   orders       OrderItem[]
   recipe       Recipe[]
-  restaurantId Int
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
-  restaurant   Restaurant       @relation(fields: [restaurantId], references: [id])
 
   @@unique([branchId, menuItemId])
 }
