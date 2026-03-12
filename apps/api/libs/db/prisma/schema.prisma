@@ -48,6 +48,7 @@ model Restaurant {
 
 model Branch {
   id               Int              @id @default(autoincrement())
+  branchNumber     String
   name             String
   address          String           @unique
   restaurantId     Int
