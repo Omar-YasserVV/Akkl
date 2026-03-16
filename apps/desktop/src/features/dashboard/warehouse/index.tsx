@@ -1,5 +1,11 @@
+import WarehouseHeader from "./components/WarehouseHeader";
+
 const Warehouse = () => {
-  return <div>Warehouse</div>;
+  return (
+    <>
+      <WarehouseHeader />
+    </>
+  );
 };
 
 export default Warehouse;
