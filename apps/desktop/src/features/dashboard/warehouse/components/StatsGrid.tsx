@@ -3,7 +3,7 @@ import { cn, formatNumber } from "@repo/utils";
 import { FaMoneyBills } from "react-icons/fa6";
 import { LuTriangleAlert } from "react-icons/lu";
 import { MdOutlinePendingActions } from "react-icons/md";
-import { LiaExchangeAltSolid } from "react-icons/lia";
+import { FaExchangeAlt } from "react-icons/fa";
 
 const StatsGrid = () => {
   const statuses = [
@@ -32,8 +32,8 @@ const StatsGrid = () => {
     {
       title: "Inventory Turnover",
       value: "4.2x",
-      colorClass: "text-violet-700 bg-violet-700/10",
-      icon: LiaExchangeAltSolid,
+      colorClass: "text-indigo-700 bg-violet-700/10",
+      icon: FaExchangeAlt,
     },
   ];
 
