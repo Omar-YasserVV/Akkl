@@ -1,4 +1,5 @@
 import StatsGrid from "./components/StatsGrid";
+import StorageCapacity from "./components/StorageCapacity";
 import WarehouseHeader from "./components/WarehouseHeader";
 
 const Warehouse = () => {
@@ -6,6 +7,12 @@ const Warehouse = () => {
     <>
       <WarehouseHeader />
       <StatsGrid />
+      <div
+        className="grid
+       grid-cols-3 gap-x-8 gap-y-6"
+      >
+        <StorageCapacity />
+      </div>
     </>
   );
 };

@@ -1,4 +1,4 @@
-import { Card, CardBody } from "@heroui/react";
+import { Card } from "@heroui/react";
 import { cn, formatNumber } from "@repo/utils";
 import { FaMoneyBills } from "react-icons/fa6";
 import { LuTriangleAlert } from "react-icons/lu";
@@ -32,7 +32,7 @@ const StatsGrid = () => {
     {
       title: "Inventory Turnover",
       value: "4.2x",
-      colorClass: "text-indigo-700 bg-violet-700/10",
+      colorClass: "text-indigo-700 bg-indigo-700/10",
       icon: FaExchangeAlt,
     },
   ];
@@ -46,9 +46,9 @@ const StatsGrid = () => {
           <Card
             key={status.title}
             shadow="sm"
-            className="border-none bg-content1"
+            className="border-none bg-content1 p-5"
           >
-            <CardBody className="flex flex-row justify-between p-4">
+            <div className="flex flex-row justify-between ">
               <div className="flex flex-col gap-1">
                 <p className="font-medium text-default-500">{status.title}</p>
                 <p className="font-bold text-2xl">
@@ -79,7 +79,7 @@ const StatsGrid = () => {
               <div className={cn("p-3 rounded-xl h-fit", status.colorClass)}>
                 <Icon size={24} />
               </div>
-            </CardBody>
+            </div>
           </Card>
         );
       })}
