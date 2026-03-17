@@ -8,7 +8,7 @@ const mockStockMovements = [
     product: "Atlantic Salmon",
     date: "Oct 24, 09:15 AM",
     supplier: "Ocean Delights",
-    quantity: "1000",
+    quantity: 1000,
     unit: "kg",
     increase: true,
   },
@@ -17,7 +17,7 @@ const mockStockMovements = [
     product: "Chicken Breast",
     date: "Oct 24, 11:40 AM",
     supplier: "Kitchen Usage",
-    quantity: "250",
+    quantity: 250,
     unit: "kg",
     increase: false,
   },
@@ -26,7 +26,7 @@ const mockStockMovements = [
     product: "Olive Oil",
     date: "Oct 23, 04:20 PM",
     supplier: "Mediterranean Supplies",
-    quantity: "120",
+    quantity: 120,
     unit: "L",
     increase: true,
   },
@@ -35,7 +35,7 @@ const mockStockMovements = [
     product: "Mozzarella Cheese",
     date: "Oct 23, 01:10 PM",
     supplier: "Pizza Station",
-    quantity: "80",
+    quantity: 80,
     unit: "kg",
     increase: false,
   },
@@ -85,8 +85,8 @@ const RecentStockMovement = () => {
                   item.increase ? "text-green-600" : "text-default-500"
                 }`}
               >
-                {item.increase ? "+" : "-"}:
-                {formatNumber(Number(item.quantity.replace(/[^\d.-]/g, "")), {
+                {item.increase ? "+" : "-"}
+                {formatNumber(Number(item.quantity), {
                   weightUnit: item.unit,
                 })}
               </p>
