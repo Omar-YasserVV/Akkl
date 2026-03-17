@@ -1,4 +1,4 @@
-import { Card, Progress } from "@heroui/react";
+import { Card, CardBody, CardHeader, Progress } from "@heroui/react";
 
 const StorageCapacity = () => {
   const storages = [
@@ -16,11 +16,16 @@ const StorageCapacity = () => {
     },
   ];
   return (
-    <Card className="p-5 space-y-4">
-      <div>
+    <Card
+      classNames={{
+        header: "p-5 pb-2",
+        body: "p-5 pt-2",
+      }}
+    >
+      <CardHeader>
         <p className="font-bold text-lg text-primary">Storage Capacity</p>
-      </div>
-      <div className="space-y-4">
+      </CardHeader>
+      <CardBody className="space-y-4">
         {storages.map((storage) => (
           <Progress
             key={storage.title}
@@ -35,7 +40,7 @@ const StorageCapacity = () => {
             showValueLabel
           />
         ))}
-      </div>
+      </CardBody>
     </Card>
   );
 };

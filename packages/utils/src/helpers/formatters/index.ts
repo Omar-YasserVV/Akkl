@@ -9,15 +9,25 @@ export const formatNumber = (
     isCurrency?: boolean;
     isCompact?: boolean;
     decimals?: number;
+    weightUnit?: string;
   } = {},
 ) => {
-  const { isCurrency = false, isCompact = false, decimals = 0 } = options;
+  const {
+    isCurrency = false,
+    isCompact = false,
+    decimals = 0,
+    weightUnit = "kg",
+  } = options;
 
-  return new Intl.NumberFormat("en-US", {
-    ...(isCurrency && { style: "currency", currency: "USD" }),
-    notation: isCompact ? "compact" : "standard",
-    compactDisplay: "short",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: isCompact ? 1 : decimals,
-  }).format(value);
+  return (
+    new Intl.NumberFormat("en-US", {
+      ...(isCurrency && { style: "currency", currency: "USD" }),
+      notation: isCompact ? "compact" : "standard",
+      compactDisplay: "short",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: isCompact ? 1 : decimals,
+    }).format(value) +
+    " " +
+    weightUnit
+  );
 };

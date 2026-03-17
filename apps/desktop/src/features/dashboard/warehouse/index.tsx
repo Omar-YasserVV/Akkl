@@ -1,3 +1,4 @@
+import RecentStockMovement from "./components/RecentStockMovement";
 import StatsGrid from "./components/StatsGrid";
 import StorageCapacity from "./components/StorageCapacity";
 import WarehouseHeader from "./components/WarehouseHeader";
@@ -12,6 +13,7 @@ const Warehouse = () => {
        grid-cols-3 gap-x-8 gap-y-6"
       >
         <StorageCapacity />
+        <RecentStockMovement />
       </div>
     </>
   );

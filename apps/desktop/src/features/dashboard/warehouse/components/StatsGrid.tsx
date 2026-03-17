@@ -1,4 +1,4 @@
-import { Card } from "@heroui/react";
+import { Card, CardBody } from "@heroui/react";
 import { cn, formatNumber } from "@repo/utils";
 import { FaMoneyBills } from "react-icons/fa6";
 import { LuTriangleAlert } from "react-icons/lu";
@@ -46,9 +46,12 @@ const StatsGrid = () => {
           <Card
             key={status.title}
             shadow="sm"
-            className="border-none bg-content1 p-5"
+            className="border-none bg-content1"
+            classNames={{
+              body: "p-5",
+            }}
           >
-            <div className="flex flex-row justify-between ">
+            <CardBody className="flex flex-row justify-between ">
               <div className="flex flex-col gap-1">
                 <p className="font-medium text-default-500">{status.title}</p>
                 <p className="font-bold text-2xl">
@@ -63,7 +66,7 @@ const StatsGrid = () => {
                   <p
                     className={cn(
                       "flex items-center font-medium",
-                      status.increase ? "text-success" : "text-danger",
+                      status.increase ? "text-green-600" : "text-danger",
                     )}
                   >
                     <span>{status.increase ? "+" : "-"}</span>
@@ -79,7 +82,7 @@ const StatsGrid = () => {
               <div className={cn("p-3 rounded-xl h-fit", status.colorClass)}>
                 <Icon size={24} />
               </div>
-            </div>
+            </CardBody>
           </Card>
         );
       })}
