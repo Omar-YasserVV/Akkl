@@ -39,6 +39,15 @@ const mockStockMovements = [
     unit: "kg",
     increase: false,
   },
+  {
+    id: 4,
+    product: "Mozzarella Cheese",
+    date: "Oct 23, 01:10 PM",
+    supplier: "Pizza Station",
+    quantity: 80,
+    unit: "kg",
+    increase: false,
+  },
 ];
 
 const RecentStockMovement = () => {
@@ -48,13 +57,13 @@ const RecentStockMovement = () => {
         header: "p-5",
         body: "p-5",
       }}
-      className="col-span-3"
+      className="col-span-3 row-span-2"
     >
       <CardHeader>
         <p className="font-bold">Recent Stock Movement</p>
       </CardHeader>
       <Divider />
-      <CardBody className="flex flex-col gap-4">
+      <CardBody className="flex flex-col gap-4 overflow-y-auto">
         {mockStockMovements.map((item) => {
           return (
             <div key={item.id} className="flex items-center justify-between">

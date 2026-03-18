@@ -34,7 +34,7 @@ const StorageCapacity = () => {
             classNames={{
               label: "text-primary",
               value: "text-primary",
-              track: "bg-primary/15",
+              track: "bg-primary/15 h-2",
               indicator: "bg-primary",
             }}
             showValueLabel

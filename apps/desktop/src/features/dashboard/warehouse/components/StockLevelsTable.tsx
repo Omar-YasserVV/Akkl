@@ -102,7 +102,7 @@ const StockLevelsTable = () => {
         header: "p-5",
         body: "p-0",
       }}
-      className="col-span-3"
+      className="col-span-3 row-start-1 row-span-3"
     >
       <CardHeader className="justify-between">
         <p className="font-bold capitalize">stock levels</p>
@@ -137,7 +137,7 @@ const StockLevelsTable = () => {
           classNames={{
             wrapper: "rounded-none p-0",
             th: "px-5 !rounded-none py-7 font-bold",
-            td: "px-5 py-5 border-b border-default-100",
+            td: "px-5 py-4 border-b border-default-100",
           }}
         >
           <TableHeader className="rounded-none">
@@ -154,10 +154,11 @@ const StockLevelsTable = () => {
                 <TableCell className="text-default-600">
                   {item.category}
                 </TableCell>
-                <TableCell className="text-default-600">
+                <TableCell className="font-semibold">
                   {formatNumber(item.currentStock, {
                     weightUnit: item.unit,
                     isCompact: true,
+                    unitStyle: "text-default-400",
                   })}
                 </TableCell>
                 <TableCell>
