@@ -11,11 +11,13 @@ const Warehouse = () => {
       <StatsGrid />
       <div
         className="grid
-       grid-cols-3 gap-x-8 gap-y-6"
+       grid-cols-4 grid-rows-5 gap-x-8 gap-y-6 max-h-[calc(100vh-200px)]"
       >
-        <StorageCapacity />
-        <RecentStockMovement />
+        <div className="space-y-6">
+          <StorageCapacity />
+        </div>
         <StockLevelsTable />
+        <RecentStockMovement />
       </div>
     </>
   );
