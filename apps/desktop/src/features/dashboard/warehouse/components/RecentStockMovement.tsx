@@ -48,6 +48,33 @@ const mockStockMovements = [
     unit: "kg",
     increase: false,
   },
+  {
+    id: 4,
+    product: "Mozzarella Cheese",
+    date: "Oct 23, 01:10 PM",
+    supplier: "Pizza Station",
+    quantity: 80,
+    unit: "kg",
+    increase: false,
+  },
+  {
+    id: 4,
+    product: "Mozzarella Cheese",
+    date: "Oct 23, 01:10 PM",
+    supplier: "Pizza Station",
+    quantity: 80,
+    unit: "kg",
+    increase: false,
+  },
+  {
+    id: 4,
+    product: "Mozzarella Cheese",
+    date: "Oct 23, 01:10 PM",
+    supplier: "Pizza Station",
+    quantity: 80,
+    unit: "kg",
+    increase: false,
+  },
 ];
 
 const RecentStockMovement = () => {

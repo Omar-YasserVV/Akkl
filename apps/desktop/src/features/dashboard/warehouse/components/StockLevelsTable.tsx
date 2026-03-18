@@ -134,8 +134,10 @@ const StockLevelsTable = () => {
       <CardBody>
         <Table
           aria-label="Example static collection table"
+          isHeaderSticky
           classNames={{
             wrapper: "rounded-none p-0",
+            base: "max-h-full",
             th: "px-5 !rounded-none py-7 font-bold",
             td: "px-5 py-4 border-b border-default-100",
           }}
