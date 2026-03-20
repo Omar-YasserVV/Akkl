@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@heroui/react";
-import { formatNumber } from "@repo/utils";
+import { NumberFormatter } from "@repo/utils";
 import { FiChevronDown } from "react-icons/fi";
 import { MdOutlineEdit } from "react-icons/md";
 import { Link } from "react-router-dom";
@@ -157,7 +157,7 @@ const StockLevelsTable = () => {
                   {item.category}
                 </TableCell>
                 <TableCell className="font-semibold">
-                  {formatNumber(item.currentStock, {
+                  {NumberFormatter.getNumberOnly(item.currentStock, {
                     weightUnit: item.unit,
                     isCompact: true,
                     unitStyle: "text-default-400",

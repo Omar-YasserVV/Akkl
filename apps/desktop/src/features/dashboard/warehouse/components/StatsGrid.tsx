@@ -1,5 +1,5 @@
 import { Card, CardBody } from "@heroui/react";
-import { cn, formatNumber } from "@repo/utils";
+import { cn, NumberFormatter } from "@repo/utils";
 import { FaMoneyBills } from "react-icons/fa6";
 import { LuTriangleAlert } from "react-icons/lu";
 import { MdOutlinePendingActions } from "react-icons/md";
@@ -56,7 +56,7 @@ const StatsGrid = () => {
                 <p className="font-medium text-default-500">{status.title}</p>
                 <p className="font-bold text-2xl">
                   {typeof status.value === "number"
-                    ? formatNumber(status.value, {
+                    ? NumberFormatter.getNumberOnly(status.value, {
                         isCompact: true,
                       })
                     : status.value}
