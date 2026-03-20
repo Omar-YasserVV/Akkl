@@ -22,79 +22,7 @@ import { FiChevronDown } from "react-icons/fi";
 import { MdOutlineEdit } from "react-icons/md";
 import { Link } from "react-router-dom";
 
-const StockLevelsTable = () => {
-  const movementMock = [
-    {
-      itemName: "Organic Honey Crisp Apples",
-      category: "Produce",
-      currentStock: 450,
-      unit: "kg",
-      status: "IN_STOCK",
-    },
-    {
-      itemName: "Whole Milk (1L)",
-      category: "Dairy",
-      currentStock: 1200,
-      unit: "units",
-      status: "LOW_STOCK",
-    },
-    {
-      itemName: "Frozen Atlantic Salmon",
-      category: "Seafood",
-      currentStock: 85,
-      unit: "cases",
-      status: "IN_STOCK",
-    },
-    {
-      itemName: "Boneless Chicken Breast",
-      category: "Meat",
-      currentStock: 12,
-      unit: "cases",
-      status: "CRITICAL_LOW",
-    },
-    {
-      itemName: "All-Purpose Flour (25kg)",
-      category: "Dry Goods",
-      currentStock: 200,
-      unit: "bags",
-      status: "IN_STOCK",
-    },
-    {
-      itemName: "Salted Butter Blocks",
-      category: "Dairy",
-      currentStock: 0,
-      unit: "units",
-      status: "OUT_OF_STOCK",
-    },
-    {
-      itemName: "Canned Black Beans",
-      category: "Canned Goods",
-      currentStock: 3500,
-      unit: "units",
-      status: "OVERSTOCK",
-    },
-    {
-      itemName: "Fresh Spinach (Pre-packed)",
-      category: "Produce",
-      currentStock: 150,
-      unit: "units",
-      status: "EXPIRING_SOON",
-    },
-    {
-      itemName: "Extra Virgin Olive Oil",
-      category: "Pantry",
-      currentStock: 420,
-      unit: "bottles",
-      status: "IN_STOCK",
-    },
-    {
-      itemName: "Frozen Mixed Vegetables",
-      category: "Frozen",
-      currentStock: 600,
-      unit: "bags",
-      status: "IN_STOCK",
-    },
-  ];
+const StockLevelsTable = ({ data }: { data: any[] }) => {
   const Column = ["Item Name", "Category", "Current Stock", "Status", "Action"];
   return (
     <Card
@@ -150,7 +78,7 @@ const StockLevelsTable = () => {
             ))}
           </TableHeader>
           <TableBody>
-            {movementMock.map((item) => (
+            {data.map((item) => (
               <TableRow key={item.itemName}>
                 <TableCell className="font-medium">{item.itemName}</TableCell>
                 <TableCell className="text-default-600">

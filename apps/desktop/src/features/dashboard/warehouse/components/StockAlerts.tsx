@@ -53,28 +53,10 @@ const StockAlerts = () => {
       minRequired: 10,
       status: "critical" as const,
     },
-    {
-      name: "Bananas",
-      currentStock: 6,
-      minRequired: 15,
-      status: "low" as const,
-    },
-    {
-      name: "Avocados (Hass)",
-      currentStock: 4,
-      minRequired: 10,
-      status: "critical" as const,
-    },
-    {
-      name: "Bananas",
-      currentStock: 6,
-      minRequired: 15,
-      status: "low" as const,
-    },
   ];
   return (
     <Card
-      className=" h-full"
+      className="flex-1"
       classNames={{ header: "p-5 pb-2", body: "p-5 pt-2 " }}
     >
       <CardHeader className="justify-between">

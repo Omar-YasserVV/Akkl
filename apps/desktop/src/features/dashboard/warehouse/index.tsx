@@ -1,7 +1,7 @@
 import RecentStockMovement from "./components/RecentStockMovement";
 import StatsGrid from "./components/StatsGrid";
 import StockAlerts from "./components/StockAlerts";
-import StockLevelsTable from "./components/StockLevelsTable";
+import StockLevelsTableManager from "./components/StockLevelsTableManager";
 import StorageCapacity from "./components/StorageCapacity";
 import WarehouseHeader from "./components/WarehouseHeader";
 
@@ -18,7 +18,7 @@ const Warehouse = () => {
           <StockAlerts />
           <StorageCapacity />
         </div>
-        <StockLevelsTable />
+        <StockLevelsTableManager />
         <RecentStockMovement />
       </div>
     </>
