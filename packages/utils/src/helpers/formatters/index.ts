@@ -1,2 +1,2 @@
-import { formatNumber } from "./formatNumber";
-export { formatNumber };
+import { NumberFormatter } from "./formatNumber";
+export { NumberFormatter };
