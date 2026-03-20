@@ -58,6 +58,7 @@ const StatsGrid = () => {
                   {typeof status.value === "number"
                     ? NumberFormatter.getNumberOnly(status.value, {
                         isCompact: true,
+                        isCurrency: status.title === "Total Stock Value",
                       })
                     : status.value}
                 </p>
