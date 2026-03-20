@@ -1,5 +1,5 @@
 import { Card, CardBody, CardHeader, Divider } from "@heroui/react";
-import { formatNumber } from "@repo/utils";
+import { NumberFormatter } from "@repo/utils";
 import { FiPlusCircle, FiMinusCircle } from "react-icons/fi";
 
 const mockStockMovements = [
@@ -122,7 +122,7 @@ const RecentStockMovement = () => {
                 }`}
               >
                 {item.increase ? "+" : "-"}
-                {formatNumber(Number(item.quantity), {
+                {NumberFormatter.getNumberOnly(Number(item.quantity), {
                   weightUnit: item.unit,
                 })}
               </p>

@@ -5,7 +5,7 @@ import {
   ChartTooltip,
 } from "@repo/ui/components/chart";
 import { CustomTooltip } from "@repo/ui/components/custom-tooltip";
-import { formatNumber } from "@repo/utils";
+import { NumberFormatter } from "@repo/utils";
 
 const chartData = [
   { month: "January", revenue: 1200 },
@@ -25,7 +25,7 @@ const chartConfig = {
 
 const Chart = () => {
   return (
-    <ChartContainer config={chartConfig} className="h-[300px] w-full">
+    <ChartContainer config={chartConfig} className="h-75 w-full">
       <AreaChart accessibilityLayer data={chartData}>
         <defs>
           <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -49,9 +49,11 @@ const Chart = () => {
           axisLine={false}
           tickMargin={8}
           tickCount={5}
-          /* Using your utility for compact currency: $1.2k */
           tickFormatter={(value) =>
-            formatNumber(value, { isCurrency: true, isCompact: true })
+            NumberFormatter.getNumberOnly(value, {
+              isCurrency: true,
+              isCompact: true,
+            })
           }
         />
 
