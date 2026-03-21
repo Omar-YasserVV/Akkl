@@ -34,8 +34,8 @@ export const ControlledAutocomplete = ({
           radius="sm"
           variant="bordered"
           labelPlacement="outside"
-          selectedKey={field.value}
-          onSelectionChange={(key) => field.onChange(key)}
+          value={field.value}
+          onChange={field.onChange}
           isInvalid={!!errors[name]}
           errorMessage={errors[name]?.message as string}
         >
