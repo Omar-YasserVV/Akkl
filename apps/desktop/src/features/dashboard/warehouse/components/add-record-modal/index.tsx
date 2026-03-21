@@ -175,6 +175,7 @@ const AddRecordModal = ({ isOpen, onClose }: AddRecordModalProps) => {
                     render={({ field, fieldState: { error } }) => (
                       <TimeInput
                         {...field}
+                        hourCycle={12}
                         value={
                           field.value
                             ? new Time(field.value.hour, field.value.minute)
