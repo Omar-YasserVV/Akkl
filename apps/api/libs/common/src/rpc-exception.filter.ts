@@ -7,17 +7,17 @@ export class RpcExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
-    console.log('Raw Exception:', exception);
+    const errorResponse = exception.error || exception;
+    
+    const status = errorResponse?.status || 
+                   exception?.status || 
+                   HttpStatus.INTERNAL_SERVER_ERROR;
 
-    let status = HttpStatus.INTERNAL_SERVER_ERROR;
+    const message = errorResponse?.message || 
+                    exception?.message || 
+                    'Internal server error';
 
-    if (exception.status && typeof exception.status === 'number') {
-      status = exception.status;
-    } else if (exception.statusCode && typeof exception.statusCode === 'number') {
-      status = exception.statusCode;
-    }
-
-    const message = exception.message || 'Internal server error';
+    console.error(`[Error ${status}]: ${message}`);
 
     response.status(status).json({
       success: false,

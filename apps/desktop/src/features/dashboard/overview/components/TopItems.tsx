@@ -12,7 +12,7 @@ const TopItems = () => {
 
   return (
     <Card
-      className="border border-default-200 h-[423px] col-span-1 p-6"
+      className="border border-default-200 h-105.75 col-span-1 p-6"
       shadow="none"
     >
       <div className="flex flex-col items-start mb-6 space-y-1">
@@ -40,7 +40,7 @@ const TopItems = () => {
             </div>
 
             {/* Stats Section */}
-            <div className="flex items-center gap-2 min-w-[60px] justify-end">
+            <div className="flex items-center gap-2 min-w-15 justify-end">
               <span className="text-small font-semibold">{item.percent}%</span>
               {item.upordown === "up" ? (
                 <IoArrowUpCircle size={20} className="text-success" />
