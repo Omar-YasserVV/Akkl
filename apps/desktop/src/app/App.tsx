@@ -2,7 +2,6 @@ import { Outlet } from "react-router-dom";
 import { AppBreadcrumb } from "@/shared/components/ui/AppBreadcrumb";
 
 function App() {
-  // 
   return (
     <main>
       <AppBreadcrumb />
