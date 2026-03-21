@@ -123,7 +123,7 @@ const RecentStockMovement = () => {
               >
                 {item.increase ? "+" : "-"}
                 {NumberFormatter.getNumberOnly(Number(item.quantity), {
-                  weightUnit: item.unit,
+                  Unit: item.unit,
                 })}
               </p>
             </div>

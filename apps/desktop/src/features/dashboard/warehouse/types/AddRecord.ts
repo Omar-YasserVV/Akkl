@@ -1,3 +1,5 @@
+import { z } from "zod";
+import { CalendarDate, Time } from "@internationalized/date";
 export type UsageReason =
   | "Kitchen Prep"
   | "Internal Transfer"
@@ -6,28 +8,15 @@ export type UsageReason =
   | "Sample/Testing"
   | "Discrepancy Correction";
 
-export interface UsageRecordFromData {
-  /** Reference to the item in the warehouse catalog (UUID or SKU) */
-  ingredientId: string;
-
-  /** The specific quantity being removed from stock */
-  quantity: number;
-
-  /** Standard unit of measure (e.g., 'kg', 'unit', 'box') */
-  unit: string;
-
-  /** The timestamp when the usage occurred/was recorded */
-  recordedAt: Date | string;
-
-  /** Categorization for accounting/inventory tracking */
-  reason: UsageReason;
-
-  /** Optional metadata for the usage event */
-  notes?: string;
-
-  /** Snapshot of stock levels at the time of entry */
-  stockSnapshot: {
-    current: number;
-    projected: number;
-  };
-}
+export const usageRecordSchema = z.object({
+  ingredientId: z.string().min(1, "Please select an ingredient"),
+  quantity: z.coerce.number().positive("Quantity must be greater than 0"),
+  unit: z.string().min(1, "Unit is required"),
+  recordedAt: z.object({
+    date: z.instanceof(CalendarDate, { message: "Invalid date" }),
+    time: z.instanceof(Time, { message: "Invalid time" }),
+  }),
+  reason: z.string().min(1, "Reason is required"),
+  notes: z.string().optional(),
+});
+export type UsageRecordFromData = z.infer<typeof usageRecordSchema>;
