@@ -1,7 +1,7 @@
 import { Button } from "@heroui/react";
 import { useState } from "react";
 import { BiPlus } from "react-icons/bi";
-import AddMenuItemModal from "./AddModal";
+import AddMenuItemModal from "./add-menu-item-modal";
 import Header from "@/features/dashboard/components/shared/header";
 import { Link } from "react-router-dom";
 
