@@ -9,13 +9,13 @@ import {
 import { FormProvider, Controller } from "react-hook-form";
 import { BiX } from "react-icons/bi";
 
-import { useAddRecordFrom } from "../../hooks/useAddRecordFrom";
 import RecordModalHeader from "./RecordModalHeader";
 import RecordModalFooter from "./RecordModalFooter";
 import { ControlledAutocomplete } from "@/features/dashboard/components/shared/ControlledAutocomplete";
 import { ControlledInput } from "@/features/dashboard/components/shared/ControlledInput";
 import { StockComparison } from "./StockComparison";
 import { CalendarDate, Time } from "@internationalized/date";
+import { useAddRecordForm } from "../../hooks/useAddRecordForm";
 
 export interface AddRecordModalProps {
   isOpen: boolean;
@@ -23,11 +23,30 @@ export interface AddRecordModalProps {
 }
 
 const AddRecordModal = ({ isOpen, onClose }: AddRecordModalProps) => {
-  const methods = useAddRecordFrom();
+  const methods = useAddRecordForm();
 
   const handleClose = () => {
     onClose();
     methods.reset();
+  };
+
+  /**
+   * Mock form submit handler for testing purposes only.
+   * Logs the submitted data, simulates a 2-second async operation,
+   * and then closes the modal and resets the form.
+   * TODO: Replace with actual API submission logic.
+   */
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    methods.handleSubmit(
+      async (data) => {
+        console.log("Form Submitted:", data);
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        handleClose();
+      },
+      (errors) => console.error("Form Errors:", errors),
+    )();
   };
 
   const animals = [
@@ -108,17 +127,12 @@ const AddRecordModal = ({ isOpen, onClose }: AddRecordModalProps) => {
       <ModalContent>
         {(internalClose) => (
           <FormProvider {...methods}>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                methods.handleSubmit(() => console.log("Eyad"))();
-              }}
-            >
+            <form onSubmit={handleSubmit}>
               <RecordModalHeader onClose={internalClose} />
 
               <ModalBody className="py-6 px-8 bg-default-50 grid grid-cols-2 gap-x-4 gap-y-6">
                 <ControlledAutocomplete
-                  name="itemId"
+                  name="ingredientId"
                   label="Select Item"
                   placeholder="Search for an ingredient..."
                   items={animals}
@@ -193,14 +207,14 @@ const AddRecordModal = ({ isOpen, onClose }: AddRecordModalProps) => {
                   label="Reason for Usage"
                   placeholder="Search for a reason..."
                   items={[
-                    { label: "Kitchen Prep", key: "kitchen_prep" },
-                    { label: "Internal Transfer", key: "internal_transfer" },
-                    { label: "Damaged", key: "damaged" },
-                    { label: "Expired", key: "expired" },
-                    { label: "Sample/Testing", key: "sample_testing" },
+                    { label: "Kitchen Prep", key: "Kitchen Prep" },
+                    { label: "Internal Transfer", key: "Internal Transfer" },
+                    { label: "Damaged", key: "Damaged" },
+                    { label: "Expired", key: "Expired" },
+                    { label: "Sample/Testing", key: "Sample/Testing" },
                     {
                       label: "Discrepancy Correction",
-                      key: "discrepancy_correction",
+                      key: "Discrepancy Correction",
                     },
                   ]}
                   className="col-span-1"

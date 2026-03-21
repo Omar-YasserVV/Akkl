@@ -3,7 +3,7 @@ import { UsageRecordFromData, usageRecordSchema } from "../types/AddRecord";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { today, getLocalTimeZone, Time } from "@internationalized/date";
 
-export function useAddRecordFrom() {
+export function useAddRecordForm() {
   return useForm<UsageRecordFromData>({
     resolver: zodResolver(usageRecordSchema),
     defaultValues: {
