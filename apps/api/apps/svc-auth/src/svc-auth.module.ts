@@ -6,6 +6,7 @@ import { GuardsModule } from '@app/guards';
 import { BlackListService } from '@app/guards/services/blacklist.service';
 import { DbModule } from '@app/db';
 import { JwtModule } from '@nestjs/jwt';
+import type { SignOptions } from 'jsonwebtoken';
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { JwtModule } from '@nestjs/jwt';
     JwtModule.register({
       secret: process.env.JWT_SECRET,
       signOptions: {
-        expiresIn: process.env.JWT_EXPIRATION_TIME || ('7h' as any),
+        expiresIn: (process.env.JWT_EXPIRATION_TIME ??
+          '7h') as SignOptions['expiresIn'],
       },
     }),
     GuardsModule,

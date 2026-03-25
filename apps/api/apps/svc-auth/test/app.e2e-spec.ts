@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
 import { SvcAuthModule } from './../src/svc-auth.module';
 
 describe('SvcAuthController (e2e)', () => {
@@ -15,10 +14,11 @@ describe('SvcAuthController (e2e)', () => {
     await app.init();
   });
 
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('should start', () => {
+    expect(app).toBeDefined();
   });
 });

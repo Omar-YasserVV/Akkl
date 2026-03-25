@@ -3,7 +3,6 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { SvcAuthModule } from './svc-auth.module';
 
 async function bootstrap() {
-
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     SvcAuthModule,
     {
@@ -17,4 +16,4 @@ async function bootstrap() {
   await app.listen();
   console.log('svc-auth Microservice is listening...');
 }
-bootstrap();
+void bootstrap();
