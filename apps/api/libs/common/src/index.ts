@@ -13,6 +13,9 @@ export * from './dtos/RestaurantDto/update.restaurant.dto';
 // Branch DTOs
 export * from './dtos/BranchDto/create.branch.dto';
 export * from './dtos/BranchDto/update.branch.dto';
+// Menu DTOs
+export * from './dtos/MenuDto/create.menu.dto';
+export * from './dtos/MenuDto/update.menu.dto';
 // -------------------------------- Filters -------------------------------
 
 export * from './rpc-exception.filter';

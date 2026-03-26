@@ -25,7 +25,7 @@ export class IngredientDetailDto {
 
 export class BranchMenuItemDetailDto {
   @IsNumber()
-  id: number;
+  menuItemId: number;
 
   @IsNumber()
   branchId: number;
