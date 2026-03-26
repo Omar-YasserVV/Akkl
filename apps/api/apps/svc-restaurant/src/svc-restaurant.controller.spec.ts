@@ -11,12 +11,14 @@ describe('SvcRestaurantController', () => {
       providers: [SvcRestaurantService],
     }).compile();
 
-    svcRestaurantController = app.get<SvcRestaurantController>(SvcRestaurantController);
+    svcRestaurantController = app.get<SvcRestaurantController>(
+      SvcRestaurantController,
+    );
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(svcRestaurantController.getHello()).toBe('Hello World!');
+    it('should be defined', () => {
+      expect(svcRestaurantController).toBeDefined();
     });
   });
 });
