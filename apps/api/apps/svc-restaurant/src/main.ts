@@ -17,4 +17,4 @@ async function bootstrap() {
   await app.listen();
   console.log('Restaurant Microservice is listening to TCP port 9011...');
 }
-bootstrap();
+void bootstrap();

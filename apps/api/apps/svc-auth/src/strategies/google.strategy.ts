@@ -1,10 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import {
-  Strategy,
-  VerifyCallback,
-  StrategyOptions,
-} from 'passport-google-oauth20';
+import { Strategy, Profile, VerifyCallback } from 'passport-google-oauth20';
 import { SvcAuthService } from '../svc-auth.service';
 import * as jwt from 'jsonwebtoken';
 
@@ -16,22 +12,35 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       callbackURL: process.env.GOOGLE_CALLBACK!,
       scope: ['email', 'profile'],
-    } as StrategyOptions);
+    });
   }
 
   async validate(
     accessToken: string,
     refreshToken: string,
-    profile: any,
+    profile: Profile,
     done: VerifyCallback,
-  ): Promise<any> {
+  ): Promise<void> {
     const { id, displayName, emails, photos } = profile;
+
+    if (!displayName) {
+      throw new UnauthorizedException('Google account has no display name');
+    }
+
     const email = emails?.[0]?.value;
+    if (!email) {
+      throw new UnauthorizedException('Google account has no email');
+    }
 
     const user = await this.authService.findUserByEmail(email);
 
     if (user) {
-      return done(null, user);
+      done(null, user);
+      return;
+    }
+
+    if (!process.env.JWT_TEMP_SECRET) {
+      throw new Error('JWT_TEMP_SECRET not set');
     }
 
     const tempToken = jwt.sign(
@@ -41,10 +50,10 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         fullName: displayName,
         image: photos?.[0]?.value,
       },
-      process.env.JWT_TEMP_SECRET!,
+      process.env.JWT_TEMP_SECRET,
       { expiresIn: '15m' },
     );
 
-    return done(null, { tempToken });
+    done(null, { tempToken });
   }
 }
