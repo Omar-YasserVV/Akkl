@@ -31,7 +31,6 @@ export class MenuService {
       throw new Error(`Branch with ID ${BranchId} not found`);
     }
 
-    
     return this.prisma.branchMenuItem.create({
       data: {
         ...data,
@@ -41,6 +40,32 @@ export class MenuService {
           create: data.recipe.map((ingredient) => ({ ...ingredient })),
         },
       },
+    });
+  }
+
+  async updateMenuItem(menuItemId: number, data: UpdateBranchMenuItemDto) {
+    const menuItem = await this.prisma.branchMenuItem.findUnique({
+      where: { id: Number(menuItemId) },
+    });
+    if (!menuItem) {
+      throw new Error(`Menu item with ID ${menuItemId} not found`);
+    }
+
+    return this.prisma.branchMenuItem.update({
+      where: { id: Number(menuItemId) },
+      data: {
+        ...data,
+        recipe: {
+          deleteMany: {},
+          create: data.recipe?.map((ingredient) => ({ ...ingredient })) || [],
+        },
+      },
+    });
+  }
+
+  async deleteMenuItem(menuItemId: number) {
+    return this.prisma.branchMenuItem.delete({
+      where: { id: Number(menuItemId) },
     });
   }
 }

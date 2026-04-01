@@ -7,21 +7,22 @@ import {
   Req,
   Res,
   HttpStatus,
-  UseGuards,
+  // UseGuards,
   Param,
   Patch,
   Delete,
 } from '@nestjs/common';
 import {
   ClientKafka,
-  ClientProxy,
-  MessagePattern,
-  Payload,
+  // ClientProxy,
+  // MessagePattern,
+  // Payload,
 } from '@nestjs/microservices';
 import { Response, Request } from 'express';
 import { CreateBranchDto, UpdateBranchDto } from '@app/common';
 import { lastValueFrom } from 'rxjs';
-import { JwtAuthGuard } from '@app/guards/jwt-auth.guard';
+import { BranchMenuItemDetailDto, UpdateBranchMenuItemDto } from '@app/common';
+// import { JwtAuthGuard } from '@app/guards/jwt-auth.guard';
 
 // @UseGuards(JwtAuthGuard)
 @Controller('branches')
@@ -31,7 +32,22 @@ export class BranchController {
   ) {}
 
   async onModuleInit() {
-    const topics = ['get-branches', 'get-branch-by-id', 'create-branch'];
+    const topics = [
+      'get-branches',
+      'get-branch-by-id',
+      'create-branch',
+      'update-branch',
+      'delete-branch',
+      'get-branch-menu',
+      'create-menu-item',
+      'update-menu-item',
+      'delete-menu-item',
+      'get-orders-by-branch',
+      'get-order-by-id',
+      'create-order',
+      'update-order',
+      'delete-order',
+    ];
 
     topics.forEach((topic) => {
       this.branchClient.subscribeToResponseOf(topic);
@@ -39,6 +55,7 @@ export class BranchController {
 
     await this.branchClient.connect();
   }
+
   @Post(':restaurantId')
   async createBranch(
     @Req() req: any,
@@ -99,5 +116,72 @@ export class BranchController {
         branchId,
       }),
     );
+  }
+
+  // Menu endpoints
+
+  @Get(':restaurantId/:branchId/menu')
+  async getBranchMenu(
+    @Param('restaurantId') restaurantId: number,
+    @Param('branchId') branchId: number,
+  ) {
+    return this.branchClient.send('get-branch-menu', {
+      restaurantId,
+      branchId,
+    });
+  }
+
+  @Post(':restaurantId/:branchId/menu')
+  async createMenuItem(
+    @Param('restaurantId') restaurantId: number,
+    @Param('branchId') branchId: number,
+    @Body() data: BranchMenuItemDetailDto,
+  ) {
+    return this.branchClient.send('create-menu-item', {
+      restaurantId,
+      branchId,
+      data,
+    });
+  }
+
+  @Patch(':restaurantId/:branchId/menu/:menuItemId')
+  async updateMenuItem(
+    @Param('restaurantId') restaurantId: number,
+    @Param('branchId') branchId: number,
+    @Param('menuItemId') menuItemId: number,
+    @Body() data: UpdateBranchMenuItemDto,
+  ) {
+    return this.branchClient.send('update-menu-item', {
+      restaurantId,
+      branchId,
+      menuItemId,
+      data,
+    });
+  }
+
+  @Delete(':restaurantId/:branchId/menu/:menuItemId')
+  async deleteMenuItem(
+    @Param('restaurantId') restaurantId: number,
+    @Param('branchId') branchId: number,
+    @Param('menuItemId') menuItemId: number,
+  ) {
+    return this.branchClient.send('delete-menu-item', {
+      restaurantId,
+      branchId,
+      menuItemId,
+    });
+  }
+
+  // Order endpoints
+
+  @Get(':restaurantId/:branchId/orders')
+  async getOrdersByBranch(
+    @Param('restaurantId') restaurantId: number,
+    @Param('branchId') branchId: number,
+  ) {
+    return this.branchClient.send('get-orders-by-branch', {
+      restaurantId,
+      branchId,
+    });
   }
 }
