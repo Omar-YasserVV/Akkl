@@ -1,7 +1,7 @@
 import { Card } from "@heroui/react";
 
-import Chart from "./chart";
 import ChartSelector from "./ChartSelector";
+import Chart from "./Chart";
 
 const ChartManager = () => {
   return (

@@ -1,4 +1,5 @@
 import { Button, cn } from "@heroui/react";
+import { NumberFormatter } from "@repo/utils";
 import { useState } from "react";
 import { FaDollarSign } from "react-icons/fa";
 import { FiUsers } from "react-icons/fi";
@@ -10,7 +11,7 @@ const ChartSelector = () => {
   const charts = [
     {
       title: "Total Revenue",
-      value: "$123,456",
+      value: "123456",
       description: "-12% from last month",
       icon: FaDollarSign,
     },
@@ -50,7 +51,10 @@ const ChartSelector = () => {
               <div className="space-y-1 text-start">
                 <p className="text-default-400 text-sm">{chart.title}</p>
                 <p className="text-2xl font-bold text-zinc-800 dark:text-white">
-                  {chart.value}
+                  {NumberFormatter.getNumberOnly(Number(chart.value || 0), {
+                    isCurrency: chart.title === "Total Revenue",
+                    isCompact: true,
+                  })}
                 </p>
               </div>
               <div
