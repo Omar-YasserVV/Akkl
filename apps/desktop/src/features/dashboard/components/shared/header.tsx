@@ -33,7 +33,7 @@ const Header = ({
         </div>
       </div>
 
-      {right && <div className={`pb-1 ${rightClassName}`}>{right}</div>}
+      {right && <div className={`${rightClassName}`}>{right}</div>}
     </header>
   );
 };

@@ -1,7 +1,7 @@
 import { useFormContext } from "react-hook-form";
 import { AddMenuItemFormData } from "../../types/AddItem";
 import { BiTrash } from "react-icons/bi";
-import { formatNumber } from "@repo/utils";
+import { NumberFormatter } from "@repo/utils";
 
 export default function AddOnRow({
   index,
@@ -21,7 +21,10 @@ export default function AddOnRow({
       <div className="relative flex items-center ">
         <div className="flex items-center gap-2 transition-transform duration-300 logic-in-out transform group-hover:-translate-x-7">
           <span className="text-slate-500 font-semibold text-sm whitespace-nowrap">
-            +{formatNumber(Number(item?.price || 0), { isCurrency: true })}
+            +
+            {NumberFormatter.getNumberOnly(Number(item?.price || 0), {
+              isCurrency: true,
+            })}
           </span>
 
           <button

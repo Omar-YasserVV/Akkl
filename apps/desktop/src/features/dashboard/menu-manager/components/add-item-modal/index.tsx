@@ -50,7 +50,7 @@ export default function AddMenuItemModal({
           return (
             <FormProvider {...methods}>
               <AddModalHeader onClose={OnClose} />
-              <ModalBody className="py-6 px-8 bg-[#fafafa]">
+              <ModalBody className="py-6 px-8 bg-default-50">
                 <BasicInfoSection />
                 <VariationsSection />
                 <ModifiersSection />
