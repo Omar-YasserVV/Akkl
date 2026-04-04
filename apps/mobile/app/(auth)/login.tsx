@@ -1,16 +1,22 @@
+import { ThemedText } from "@/components/themed-text";
+import { ThemedView } from "@/components/themed-view";
 import { AuthContext } from "@/context/auth-context";
 import { useTheme } from "@react-navigation/native";
 import { Link } from "expo-router";
 import { useContext } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, StyleSheet, Text, TextInput } from "react-native";
 
 export default function LoginScreen() {
   const { login } = useContext(AuthContext);
   const { colors } = useTheme();
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.text }]}>Welcome back</Text>
+    <ThemedView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
+      <ThemedText style={[styles.title, { color: colors.text }]}>
+        Welcome back
+      </ThemedText>
 
       <TextInput
         style={[
@@ -39,11 +45,11 @@ export default function LoginScreen() {
       </Pressable>
 
       <Link href="/(auth)/register">
-        <Text style={{ color: colors.text }}>
+        <ThemedText style={{ color: colors.text }}>
           Don't have an account? Register
-        </Text>
+        </ThemedText>
       </Link>
-    </View>
+    </ThemedView>
   );
 }
 
