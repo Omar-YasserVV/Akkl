@@ -1,24 +1,24 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import { SvcAuthModule } from './../src/svc-auth.module';
+import * as request from 'supertest';
+import { SvcWarehouseModule } from './../src/svc-warehouse.module';
 
-describe('SvcAuthController (e2e)', () => {
+describe('SvcWarehouseController (e2e)', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [SvcAuthModule],
+      imports: [SvcWarehouseModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
   });
 
-  afterAll(async () => {
-    await app.close();
-  });
-
-  it('should start', () => {
-    expect(app).toBeDefined();
+  it('/ (GET)', () => {
+    return request(app.getHttpServer())
+      .get('/')
+      .expect(200)
+      .expect('Hello World!');
   });
 });

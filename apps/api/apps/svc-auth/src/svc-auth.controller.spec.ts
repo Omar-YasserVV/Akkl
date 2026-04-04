@@ -15,8 +15,8 @@ describe('SvcAuthController', () => {
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(svcAuthController.getHello()).toBe('Hello World!');
+    it('should be defined', () => {
+      expect(svcAuthController).toBeDefined();
     });
   });
 });

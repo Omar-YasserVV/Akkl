@@ -7,6 +7,11 @@ import {
 } from 'class-validator';
 
 export class CreateBranchDto {
+
+  @IsInt()
+  @IsNotEmpty()
+  branchNumber: number;
+
   @IsString()
   @IsNotEmpty()
   name: string;
@@ -23,6 +28,10 @@ export class CreateBranchDto {
   @IsOptional()
   haveTables?: boolean;
 
+  @IsInt()
+  @IsOptional()
+  tablesCount?: number;
+
   @IsBoolean()
   @IsOptional()
   haveReservations?: boolean;
@@ -30,4 +39,9 @@ export class CreateBranchDto {
   @IsBoolean()
   @IsOptional()
   haveWarehouses?: boolean;
+
+
+  @IsString()
+  @IsOptional()
+  warehouseName?: string;
 }

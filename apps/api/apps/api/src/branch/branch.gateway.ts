@@ -30,4 +30,34 @@ export class BranchGateway {
     console.log('Pushing deleted branch ID to UI:', data.id);
     this.server.emit('branch_deleted', data);
   }
+  // Menu item endpoints
+  @EventPattern('menu_item.updated')
+  handleMenuItemUpdated(@Payload() data: any) {
+    console.log('Pushing updated menu item to UI:', data.name);
+    this.server.emit('menu_item_updated', data);
+  }
+
+  @EventPattern('menu_item.deleted')
+  handleMenuItemDeleted(@Payload() data: any) {
+    console.log('Pushing deleted menu item ID to UI:', data.id);
+    this.server.emit('menu_item_deleted', data);
+  }
+  // Order endpoints
+  @EventPattern('order.created')
+  handleOrderCreated(@Payload() data: any) {
+    console.log('Pushing new order to UI:', data.id);
+    this.server.emit('new_order_added', data);
+  }
+
+  @EventPattern('order.updated')
+  handleOrderUpdated(@Payload() data: any) {
+    console.log('Pushing updated order to UI:', data.id);
+    this.server.emit('order_updated', data);
+  }
+
+  @EventPattern('order.deleted')
+  handleOrderDeleted(@Payload() data: any) {
+    console.log('Pushing deleted order ID to UI:', data.id);
+    this.server.emit('order_deleted', data);
+  }
 }
