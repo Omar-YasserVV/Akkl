@@ -68,21 +68,45 @@ model Branch {
   warehouses       Warehouse[]
 }
 model BranchMenuItem {
-  id          Int      @id @default(autoincrement())
-  branchId    Int
-  menuItemId  Int
-  isAvailable Boolean  @default(true)
-  branch      Branch   @relation(fields: [branchId], references: [id])
-  name         String
-  description  String?
-  basePrice    Decimal          @db.Decimal(10, 2)
-  discountPrice Decimal?         @db.Decimal(10, 2)
-  orders       OrderItem[]
-  recipe       Recipe[]
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
+  id            Int                    @id @default(autoincrement())
+  branchId      Int
+  menuItemId    Int
+  isAvailable   Boolean                @default(true)
+  branch        Branch                 @relation(fields: [branchId], references: [id])
+  name          String
+  description   String?
+  image         String?                // Field for the Item Image URL
+  
+  // Relations
+  variations    MenuItemVariation[]    // Replaces basePrice and discountPrice
+  dietaryTags   DietaryTag[]           // Relation to tags
+  
+  orders        OrderItem[]
+  recipe        Recipe[]
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
 
   @@unique([branchId, menuItemId])
+}
+model MenuItemVariation {
+  id               Int            @id @default(autoincrement())
+  size             String         // e.g., "Standard", "Large", "Small"
+  price            Decimal        @db.Decimal(10, 2)
+  discountPrice    Decimal?       @db.Decimal(10, 2)
+  branchMenuItemId Int
+  branchMenuItem   BranchMenuItem @relation(fields: [branchMenuItemId], references: [id], onDelete: Cascade)
+}
+
+model DietaryTag {
+  id               Int              @id @default(autoincrement())
+  name             DietaryType
+  branchMenuItems  BranchMenuItem[] // Many-to-many relation
+}
+
+enum DietaryType {
+  VEGAN
+  GLUTEN_FREE
+  DAIRY_FREE
 }
 model Ingredient {
   id             Int             @id @default(autoincrement())
