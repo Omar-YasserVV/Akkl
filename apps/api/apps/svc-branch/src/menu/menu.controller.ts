@@ -1,18 +1,9 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  ParseIntPipe,
-  HttpStatus,
-  HttpCode,
-} from '@nestjs/common';
+import { BranchMenuItemDetailDto, UpdateBranchMenuItemDto } from '@app/common';
+import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { MenuService } from './menu.service';
-import { BranchMenuItemDetailDto, UpdateBranchMenuItemDto } from '@app/common';
 
-@Controller('menu')
+@Controller()
 export class MenuController {
   constructor(private readonly menuService: MenuService) {}
 
@@ -22,29 +13,33 @@ export class MenuController {
   }
 
   @MessagePattern('get_branch_menu')
-  async getByBranch(@Param('branchId', ParseIntPipe) branchId: number) {
+  async getByBranch(@Payload() branchId: number) {
     return this.menuService.getBranchMenu(branchId);
   }
 
   @MessagePattern('create_menu')
-  @HttpCode(HttpStatus.CREATED)
   async create(
-    @Param('branchId', ParseIntPipe) branchId: number,
-    @Body() createMenuDto: BranchMenuItemDetailDto,
+    @Payload() payload: { branchId: number; data: BranchMenuItemDetailDto },
   ) {
-    return this.menuService.createMenu(branchId, createMenuDto);
+    return this.menuService.createMenu(payload.branchId, payload.data);
+  }
+
+  @MessagePattern('bulk_create_menu')
+  async bulkCreate(
+    @Payload() payload: { branchId: number; items: BranchMenuItemDetailDto[] },
+  ) {
+    return this.menuService.bulkCreateMenuItem(payload.branchId, payload.items);
   }
 
   @MessagePattern('update_menu_item')
   async update(
-    @Param('menuItemId', ParseIntPipe) menuItemId: number,
-    @Body() updateMenuItemDto: UpdateBranchMenuItemDto,
+    @Payload() payload: { menuItemId: number; data: UpdateBranchMenuItemDto },
   ) {
-    return this.menuService.updateMenuItem(menuItemId, updateMenuItemDto);
+    return this.menuService.updateMenuItem(payload.menuItemId, payload.data);
   }
 
   @MessagePattern('delete_menu_item')
-  async delete(@Param('menuItemId', ParseIntPipe) menuItemId: number) {
+  async delete(@Payload() menuItemId: number) {
     return this.menuService.deleteMenuItem(menuItemId);
   }
 }

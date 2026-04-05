@@ -1,60 +1,64 @@
 import { Type } from 'class-transformer';
 import {
-  IsNumber,
-  IsString,
-  IsOptional,
-  IsBoolean,
   IsArray,
+  IsBoolean,
+  IsNumber,
+  IsOptional,
+  IsString,
   ValidateNested,
-  IsDate,
 } from 'class-validator';
+import {
+  MenuItemVariationDto,
+  RecipeIngredientDto,
+} from './VariationsAndTags.menu.dto';
 
 export class IngredientDetailDto {
   @IsNumber()
-  ingredientId: number;
+  ingredientId!: number;
 
   @IsString()
-  name: string;
+  name!: string;
 
   @IsNumber()
-  quantityRequired: number;
+  quantityRequired!: number;
 
   @IsString()
-  unit: string;
+  unit!: string;
 }
 
 export class BranchMenuItemDetailDto {
   @IsNumber()
-  menuItemId: number;
+  menuItemId!: number;
 
   @IsNumber()
-  branchId: number;
+  branchId!: number;
 
   @IsString()
-  name: string;
+  name!: string;
 
   @IsString()
   @IsOptional()
-  description: string | null;
+  description?: string;
 
-  @IsNumber()
-  basePrice: number;
-
-  @IsNumber()
+  @IsString()
   @IsOptional()
-  discountPrice: number | null;
+  image?: string;
 
   @IsBoolean()
-  isAvailable: boolean;
+  isAvailable!: boolean;
 
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => IngredientDetailDto)
-  recipe: IngredientDetailDto[];
+  @Type(() => MenuItemVariationDto)
+  variations!: MenuItemVariationDto[];
 
-  @IsDate()
-  createdAt: Date;
+  @IsArray()
+  @IsOptional()
+  @IsNumber({}, { each: true })
+  dietaryTags?: number[]; // Array of Tag IDs
 
-  @IsDate()
-  updatedAt: Date;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => RecipeIngredientDto)
+  recipe!: RecipeIngredientDto[];
 }

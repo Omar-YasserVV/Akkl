@@ -1,19 +1,23 @@
 import { Type } from 'class-transformer';
 import {
-  IsNumber,
-  IsString,
-  IsOptional,
-  IsBoolean,
   IsArray,
+  IsBoolean,
+  IsNumber,
+  IsOptional,
+  IsString,
   ValidateNested,
 } from 'class-validator';
+import {
+  MenuItemVariationDto,
+  RecipeIngredientDto,
+} from './VariationsAndTags.menu.dto';
 
 export class UpdateRecipeIngredientDto {
   @IsNumber()
-  ingredientId: number;
+  ingredientId!: number;
 
   @IsNumber()
-  quantityRequired: number;
+  quantityRequired!: number;
 }
 
 export class UpdateBranchMenuItemDto {
@@ -25,25 +29,28 @@ export class UpdateBranchMenuItemDto {
   @IsOptional()
   description?: string;
 
-  @IsNumber()
+  @IsString()
   @IsOptional()
-  basePrice?: number;
-
-  @IsNumber()
-  @IsOptional()
-  discountPrice?: number;
+  image?: string;
 
   @IsBoolean()
   @IsOptional()
   isAvailable?: boolean;
 
-  /**
-   * If provided, this usually replaces the existing recipe
-   * for this specific BranchMenuItem.
-   */
   @IsArray()
   @IsOptional()
   @ValidateNested({ each: true })
-  @Type(() => UpdateRecipeIngredientDto)
-  recipe?: UpdateRecipeIngredientDto[];
+  @Type(() => MenuItemVariationDto)
+  variations?: MenuItemVariationDto[];
+
+  @IsArray()
+  @IsOptional()
+  @IsNumber({}, { each: true })
+  dietaryTags?: number[];
+
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => RecipeIngredientDto)
+  recipe?: RecipeIngredientDto[];
 }
