@@ -17,6 +17,9 @@
       },
       "predictiveBackGestureEnabled": false
     },
+    "web": {
+      "bundler": "metro"
+    },
     "plugins": [
       "expo-router",
       [

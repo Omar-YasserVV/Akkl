@@ -2,10 +2,10 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { AuthContext } from "@/context/auth-context";
 import { useTheme } from "@react-navigation/native";
+import { Image } from "expo-image";
 import { Link } from "expo-router";
 import { useContext } from "react";
 import { Pressable, StyleSheet, Text, TextInput } from "react-native";
-
 export default function LoginScreen() {
   const { login } = useContext(AuthContext);
   const { colors } = useTheme();
@@ -14,8 +14,25 @@ export default function LoginScreen() {
     <ThemedView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
-      <ThemedText style={[styles.title, { color: colors.text }]}>
+      <Image
+        source={require("@/assets/images/logo.png")}
+        contentFit="contain"
+        style={[{ marginBottom: 15, width: 120, height: 120 }]}
+      />
+
+      <ThemedText
+        style={[{ color: colors.text, fontSize: 28, fontWeight: "bold" }]}
+      >
         Welcome back
+      </ThemedText>
+      <Text
+        style={[{ fontSize: 28, fontWeight: "bold" }]}
+        className="text-red-500 font-bold"
+      >
+        Welcome back
+      </Text>
+      <ThemedText style={[{ color: "gray", marginBottom: 24 }]}>
+        Log in to manage your restaurant operations
       </ThemedText>
 
       <TextInput
