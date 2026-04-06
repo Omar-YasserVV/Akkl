@@ -5,6 +5,18 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import * as XLSX from 'xlsx';
+
+interface ExcelMenuRow {
+  Name?: string;
+  Description?: string;
+  Image?: string;
+  Available?: string | boolean;
+  MenuItemID?: number | string;
+  Variations?: string;
+  DietaryTags?: string;
+  Recipe?: string;
+}
 
 @Injectable()
 export class MenuService {
@@ -29,6 +41,56 @@ export class MenuService {
       where: { branchId: Number(branchId) },
       include: this.commonInclude,
     });
+  }
+  //TODO:extract the func
+  async handleExcelUpload(branchId: number, fileBuffer: Buffer) {
+    const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+
+    const rows = XLSX.utils.sheet_to_json<ExcelMenuRow>(sheet);
+
+    if (!rows || rows.length === 0) {
+      throw new BadRequestException('The uploaded Excel file is empty.');
+    }
+
+    const items: BranchMenuItemDetailDto[] = rows.map((row) => {
+      try {
+        return {
+          branchId: Number(branchId),
+          name: String(row.Name || ''),
+          description: row.Description ? String(row.Description) : undefined,
+          image: row.Image ? String(row.Image) : undefined,
+          isAvailable:
+            row.Available === 'false' || row.Available === false ? false : true,
+          menuItemId: Number(row.MenuItemID || 0),
+
+          variations: row.Variations
+            ? (JSON.parse(
+                row.Variations,
+              ) as unknown as BranchMenuItemDetailDto['variations'])
+            : [],
+
+          dietaryTags: row.DietaryTags
+            ? String(row.DietaryTags)
+                .split(',')
+                .map((id) => Number(id.trim()))
+            : [],
+
+          recipe: row.Recipe
+            ? (JSON.parse(
+                row.Recipe,
+              ) as unknown as BranchMenuItemDetailDto['recipe'])
+            : [],
+        } as BranchMenuItemDetailDto;
+      } catch (e) {
+        throw new BadRequestException(
+          `Failed to parse row: ${row.Name ?? 'Unknown'}. Ensure JSON columns (Variations/Recipe) are valid. ${e}`,
+        );
+      }
+    });
+
+    return this.bulkCreateMenuItem(branchId, items);
   }
 
   async createMenu(branchId: number, data: BranchMenuItemDetailDto) {
@@ -79,7 +141,7 @@ export class MenuService {
     }
 
     try {
-      return this.prisma.$transaction(
+      return await this.prisma.$transaction(
         items.map((item) =>
           this.prisma.branchMenuItem.create({
             data: {
@@ -89,7 +151,6 @@ export class MenuService {
               isAvailable: item.isAvailable,
               menuItemId: item.menuItemId,
               branchId: Number(branchId),
-
               variations: {
                 create: item.variations?.map((v) => ({
                   size: v.size,
@@ -97,11 +158,9 @@ export class MenuService {
                   discountPrice: v.discountPrice,
                 })),
               },
-
               dietaryTags: {
                 connect: item.dietaryTags?.map((tagId) => ({ id: tagId })),
               },
-
               recipe: {
                 create: item.recipe?.map((r) => ({
                   ingredientId: r.ingredientId,
@@ -112,9 +171,9 @@ export class MenuService {
           }),
         ),
       );
-    } catch (error) {
+    } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'An unexpected error occurred';
+        error instanceof Error ? error.message : 'Bulk upload failed';
       throw new BadRequestException(message);
     }
   }
