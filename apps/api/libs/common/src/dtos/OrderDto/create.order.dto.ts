@@ -1,31 +1,39 @@
-
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsEnum, IsInt, IsNumber, IsOptional } from 'class-validator';
 import { OrderState } from '../../../../db/generated/client/client';
-import { 
-  IsNumber, 
-  IsEnum, 
-  IsOptional, 
-  IsArray, 
-  ValidateNested, 
-  IsInt 
-} from 'class-validator';
-import { Type } from 'class-transformer';
 
 export class CreateOrderDto {
+  @ApiProperty({
+    example: 150.75,
+    description: 'Total order amount (2 decimal places max)',
+  })
   @IsNumber({ maxDecimalPlaces: 2 })
-  totalAmount: number;
+  totalAmount!: number;
 
+  @ApiProperty({
+    example: 1,
+    description: 'Branch ID where the order is placed',
+  })
   @IsInt()
-  branchId: number;
+  branchId!: number;
 
+  @ApiProperty({
+    example: 25,
+    description: 'User ID who created the order',
+  })
   @IsInt()
-  userId: number;
+  userId!: number;
 
+  @ApiPropertyOptional({
+    enum: OrderState,
+    example: OrderState.PENDING, // or any default you use
+    description: 'Order status',
+  })
   @IsEnum(OrderState)
   @IsOptional()
   status?: OrderState;
 
-//   @IsArray()
-//   @ValidateNested({ each: true })
-//   @Type(() => CreateOrderItemDto) // Assumes you have an OrderItem DTO
-//   items: CreateOrderItemDto[];
+  // Future:
+  // @ApiProperty({ type: [CreateOrderItemDto] })
+  // items: CreateOrderItemDto[];
 }

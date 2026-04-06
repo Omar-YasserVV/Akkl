@@ -1,21 +1,38 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { RpcExceptionFilter } from '@app/common';
-import cookieParser from 'cookie-parser';
+import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import cookieParser from 'cookie-parser'; // Try standard default import first
+import { AppModule } from './app.module';
 
-async function bootstrap() {
+async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
 
+  // Swagger Setup
+  const config = new DocumentBuilder()
+    .setTitle('Gateway Service')
+    .setDescription('API Gateway handling HTTP and Kafka events')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .addCookieAuth('Authentication')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
+
   app.useGlobalFilters(new RpcExceptionFilter());
+
+  // If "cookieParser is not a function" persists, change to: (cookieParser as any)()
   app.use(cookieParser());
+
+  const randomId = Math.random().toString(36).substring(7);
+
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.KAFKA,
     options: {
       client: { brokers: ['localhost:9094'] },
       consumer: {
-        groupId:
-          'gateway-broadcaster-' + Math.random().toString(36).substring(7),
+        groupId: `gateway-broadcaster-${randomId}`,
       },
     },
   });
@@ -23,6 +40,9 @@ async function bootstrap() {
   await app.startAllMicroservices();
   const port = process.env.PORT || 9000;
   await app.listen(port);
-  console.log(`the server is working on port:http://localhost:${port}`);
+
+  console.log(`🚀 HTTP Server: http://localhost:${port}`);
+  console.log(`📄 Swagger Docs: http://localhost:${port}/api`);
 }
-bootstrap();
+
+void bootstrap();
