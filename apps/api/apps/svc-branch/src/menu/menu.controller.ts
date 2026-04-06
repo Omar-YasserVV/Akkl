@@ -1,68 +1,49 @@
 import { BranchMenuItemDetailDto, UpdateBranchMenuItemDto } from '@app/common';
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseIntPipe,
-  Post,
-  Put,
-  UploadedFile,
-  UseInterceptors,
-} from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { Controller } from '@nestjs/common';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 import { MenuService } from './menu.service';
 
-interface UploadedExcelFile {
-  buffer: Buffer;
-}
-
-@Controller('menu')
+@Controller()
 export class MenuController {
   constructor(private readonly menuService: MenuService) {}
 
-  @Get()
+  @MessagePattern('get_all_menu_items')
   async getAllItems() {
     return this.menuService.getMenu();
   }
 
-  @Get('branch/:branchId')
-  async getBranchMenu(@Param('branchId', ParseIntPipe) branchId: number) {
+  @MessagePattern('get_branch_menu')
+  async getBranchMenu(@Payload('branchId') branchId: number) {
     return this.menuService.getBranchMenu(branchId);
   }
 
-  @Post('branch/:branchId')
+  @MessagePattern('create_menu_item')
   async createMenuItem(
-    @Param('branchId', ParseIntPipe) branchId: number,
-    @Body() createDto: BranchMenuItemDetailDto,
+    @Payload('branchId') branchId: number,
+    @Payload('data') data: BranchMenuItemDetailDto,
   ) {
-    return this.menuService.createMenu(branchId, createDto);
+    return this.menuService.createMenu(branchId, data);
   }
 
-  @Post('branch/:branchId/upload-excel')
-  @UseInterceptors(FileInterceptor('file'))
+  @MessagePattern('upload_menu_excel')
   async uploadExcel(
-    @Param('branchId', ParseIntPipe) branchId: number,
-    @UploadedFile() file: UploadedExcelFile,
+    @Payload('branchId') branchId: number,
+    @Payload('fileBuffer') fileBuffer: Buffer, // Expecting the buffer to be passed in the payload
   ) {
-    if (!file || !file.buffer) {
-      throw new BadRequestException('No file uploaded');
-    }
-    return this.menuService.handleExcelUpload(branchId, file.buffer);
+    // Note: Validation logic usually moves to the calling gateway or a dedicated validation pipe
+    return this.menuService.handleExcelUpload(branchId, fileBuffer);
   }
 
-  @Put(':id')
+  @MessagePattern('update_menu_item')
   async updateMenuItem(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateDto: UpdateBranchMenuItemDto,
+    @Payload('id') id: number,
+    @Payload('data') data: UpdateBranchMenuItemDto,
   ) {
-    return this.menuService.updateMenuItem(id, updateDto);
+    return this.menuService.updateMenuItem(id, data);
   }
 
-  @Delete(':id')
-  async deleteMenuItem(@Param('id', ParseIntPipe) id: number) {
+  @MessagePattern('delete_menu_item')
+  async deleteMenuItem(@Payload('id') id: number) {
     return this.menuService.deleteMenuItem(id);
   }
 }
