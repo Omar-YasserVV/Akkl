@@ -7,7 +7,9 @@ import * as nodemailer from 'nodemailer';
 import * as jwt from 'jsonwebtoken';
 import { LoginDto, CreateUserDto, CompleteGoogleSignupDto } from '@app/common';
 import { BlackListService } from '@app/guards/services/blacklist.service';
-import { tokenDto } from '@app/common/dtos/UserDto/token.dto';
+import { ResetPasswordDto } from '../dtos/auth.dto';
+// import { tokenDto } from '@app/common/dtos/UserDto/token.dto';
+// TODO: abdo if the tokenDto import is not used delete this line
 @Injectable()
 export class SvcAuthService {
   constructor(
@@ -24,14 +26,31 @@ export class SvcAuthService {
     },
   });
 
-  async generateToken(payload: { sub: number }) {
+  generateToken(payload: { sub: number }) {
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      throw new Error('JWT_SECRET not set');
+    }
+
+    const refreshJwtSecret = process.env.JWT_REFRESH_SECRET;
+    if (!refreshJwtSecret) {
+      throw new Error('JWT_REFRESH_SECRET not set');
+    }
+
+    // jsonwebtoken uses a narrow template-literal type for `expiresIn`.
+    // Environment variables are just `string`, so we cast to the expected type.
+    const accessExpiresIn = (process.env.JWT_EXPIRATION_TIME ??
+      '7h') as jwt.SignOptions['expiresIn'];
+    const refreshExpiresIn = (process.env.JWT_EXPIRATION_TIME_REFRESH_TOKEN ??
+      '7d') as jwt.SignOptions['expiresIn'];
+
     const access_token = this.jwtService.sign(payload, {
-      secret: process.env.JWT_SECRET,
-      expiresIn: process.env.JWT_EXPIRATION_TIME || ('7h' as any),
+      secret: jwtSecret,
+      expiresIn: accessExpiresIn,
     });
     const refresh_token = this.jwtService.sign(payload, {
-      secret: process.env.JWT_REFRESH_SECRET,
-      expiresIn: process.env.JWT_EXPIRATION_TIME_REFRESH_TOKEN || ('7d' as any),
+      secret: refreshJwtSecret,
+      expiresIn: refreshExpiresIn,
     });
     return { access_token, refresh_token };
   }
@@ -52,7 +71,7 @@ export class SvcAuthService {
       throw new RpcException({ message: 'Invalid credentials', status: 401 });
     }
 
-    const { access_token, refresh_token } = await this.generateToken({
+    const { access_token, refresh_token } = this.generateToken({
       sub: user.id,
     });
     return {
@@ -79,7 +98,7 @@ export class SvcAuthService {
       data: { ...userData, password: hashedPassword, role: role },
     });
 
-    const { access_token, refresh_token } = await this.generateToken({
+    const { access_token, refresh_token } = this.generateToken({
       sub: newUser.id,
     });
     return {
@@ -105,22 +124,48 @@ export class SvcAuthService {
       });
     }
 
-    const decoded: any = jwt.verify(token, process.env.JWT_TEMP_SECRET!);
+    const tempSecret = process.env.JWT_TEMP_SECRET;
+    if (!tempSecret) {
+      throw new BadRequestException('JWT_TEMP_SECRET not set');
+    }
+
+    const decoded = jwt.verify(token, tempSecret);
+    if (
+      typeof decoded === 'string' ||
+      decoded === null ||
+      typeof decoded !== 'object'
+    ) {
+      throw new BadRequestException('Invalid or expired signup token');
+    }
+
+    const tempPayload = decoded as {
+      email?: unknown;
+      fullName?: unknown;
+      image?: unknown;
+    };
+
+    if (
+      typeof tempPayload.email !== 'string' ||
+      typeof tempPayload.fullName !== 'string'
+    ) {
+      throw new BadRequestException('Invalid or expired signup token');
+    }
 
     const hashedPassword = await hashPassword(password);
     const newUser = await this.prisma.user.create({
       data: {
-        email: decoded.email,
+        email: tempPayload.email,
         password: hashedPassword,
-        fullName: decoded.fullName,
+        fullName: tempPayload.fullName,
         phone,
-        image: decoded.image,
+        image:
+          typeof tempPayload.image === 'string' ? tempPayload.image : undefined,
         role,
         username,
       },
     });
 
-    const { access_token, refresh_token } = await this.generateToken({
+    const { access_token, refresh_token } = this.generateToken({
       sub: newUser.id,
     });
 
@@ -153,7 +198,7 @@ export class SvcAuthService {
     return { message: 'OTP sent to email' };
   }
 
-  async verifyOtpAndReset(dto: any) {
+  async verifyOtpAndReset(dto: ResetPasswordDto) {
     const { email, otp, newPassword } = dto;
     const user = await this.prisma.user.findUnique({ where: { email } });
 

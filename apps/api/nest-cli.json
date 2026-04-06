@@ -72,6 +72,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/svc-restaurant/tsconfig.app.json"
       }
+    },
+    "svc-warehouse": {
+      "type": "application",
+      "root": "apps/svc-warehouse",
+      "entryFile": "main",
+      "sourceRoot": "apps/svc-warehouse/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/svc-warehouse/tsconfig.app.json"
+      }
     }
   }
 }

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { DbModule } from '@app/db';
 import { PrismaService } from '@app/db';
+import { OrderService } from './order.service';
 
 @Module({
   imports: [
@@ -12,7 +13,6 @@ import { PrismaService } from '@app/db';
     DbModule,
   ],
   controllers: [],
-  providers: [PrismaService],
-  exports: [PrismaService],
+  providers: [PrismaService, OrderService],
 })
 export class OrderModule {}

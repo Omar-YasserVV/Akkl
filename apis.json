@@ -9,7 +9,7 @@
         "discord_handle": "fawzy.x",
         "action": "Open a ticket or DM if you hit a blocking error."
       },
-      "last_updated": "2026-03-11"
+      "last_updated": "2026-04-01"
     }
   },
   {
@@ -72,9 +72,7 @@
         "method": "POST",
         "url": "/auth/forgot-password",
         "description": "Generates a 6-digit OTP and sends it to the user's email via Nodemailer.",
-        "body_schema": {
-          "email": "string (Required)"
-        }
+        "body_schema": { "email": "string (Required)" }
       },
       {
         "action": "Reset Password",
@@ -116,27 +114,21 @@
         "method": "GET",
         "url": "/restaurants/:id",
         "description": "Fetches detailed information for a specific restaurant by its ID.",
-        "params": {
-          "id": "number (Required)"
-        }
+        "params": { "id": "number (Required)" }
       },
       {
         "name": "Get Restaurants By Owner",
         "method": "GET",
         "url": "/restaurants/owner/:userId",
         "description": "Retrieves all restaurants belonging to a specific owner ID.",
-        "params": {
-          "userId": "number (Required)"
-        }
+        "params": { "userId": "number (Required)" }
       },
       {
         "action": "Update Restaurant",
         "method": "PATCH",
         "url": "/restaurants/update/:id",
         "description": "Updates details of an existing restaurant.",
-        "params": {
-          "id": "number (Required)"
-        },
+        "params": { "id": "number (Required)" },
         "body_schema": {
           "name": "string (Optional)",
           "logoUrl": "string (Optional)"
@@ -147,9 +139,7 @@
         "method": "DELETE",
         "url": "/restaurants/delete/:id",
         "description": "Removes a restaurant record from the database.",
-        "params": {
-          "id": "number (Required)"
-        }
+        "params": { "id": "number (Required)" }
       }
     ]
   },
@@ -161,28 +151,33 @@
         "action": "Get All Branches",
         "method": "GET",
         "url": "/branches/:restaurantId",
-        "description": "Fetches the initial list of branches for a restaurant.",
+        "description": "Fetches the initial list of branches for a restaurant. Microservice proxy.",
         "params": {
-          "restaurantId": "number (Required)"
-        }
+          "restaurantId": "number (Required)",
+          "http_proxy": "/branches/:restaurantId"
+        },
+        "controller": "api/branch.controller"
       },
       {
         "action": "Get Branch By ID",
         "method": "GET",
         "url": "/branches/:restaurantId/:branchId",
-        "description": "Fetches deep info (menus, staff, tables) for a specific branch.",
+        "description": "Fetches deep info (menus, staff, tables) for a specific branch. Microservice proxy.",
         "params": {
           "restaurantId": "number (Required)",
-          "branchId": "number (Required)"
-        }
+          "branchId": "number (Required)",
+          "http_proxy": "/branches/:restaurantId/:branchId"
+        },
+        "controller": "api/branch.controller"
       },
       {
         "action": "Create Branch",
         "method": "POST",
-        "url": "/branches/:restaurantId",
-        "description": "Adds a new branch and triggers a real-time 'new_branch_added' event.",
+        "url": "create-branch",
+        "description": "Adds a new branch, emits socket 'new_branch_added'. Microservice + HTTP proxy.",
         "params": {
-          "restaurantId": "number (Required)"
+          "restaurantId": "number (Required)",
+          "http_proxy": "/branches/:restaurantId"
         },
         "body_schema": {
           "name": "string",
@@ -190,32 +185,160 @@
           "haveTables": "boolean",
           "haveReservations": "boolean",
           "haveWarehouses": "boolean"
-        }
+        },
+        "controller": "svc-branch + api/branch.controller"
       },
       {
         "action": "Update Branch",
         "method": "PATCH",
-        "url": "/branches/:restaurantId/:branchId",
-        "description": "Updates branch details and triggers a real-time 'branch_updated' event.",
+        "url": "update-branch",
+        "description": "Updates branch, emits socket 'branch_updated'.",
         "params": {
           "restaurantId": "number (Required)",
-          "branchId": "number (Required)"
+          "branchId": "number (Required)",
+          "http_proxy": "/branches/:restaurantId/:branchId"
         },
         "body_schema": {
           "name": "string (Optional)",
           "address": "string (Optional)",
           "haveTables": "boolean (Optional)"
-        }
+        },
+        "controller": "svc-branch"
       },
       {
         "action": "Delete Branch",
         "method": "DELETE",
-        "url": "/branches/:restaurantId/:branchId",
-        "description": "Deletes a branch and triggers a real-time 'branch_deleted' event.",
+        "url": "delete-branch",
+        "description": "Deletes branch, emits socket 'branch_deleted'.",
         "params": {
           "restaurantId": "number (Required)",
-          "branchId": "number (Required)"
-        }
+          "branchId": "number (Required)",
+          "http_proxy": "/branches/:restaurantId/:branchId"
+        },
+        "controller": "svc-branch"
+      },
+      {
+        "action": "Get All Menus",
+        "method": "MessagePattern",
+        "url": "get_all_menus",
+        "description": "Microservice to get all menus.",
+        "controller": "svc-branch/menu"
+      },
+      {
+        "action": "Get Branch Menu",
+        "method": "MessagePattern",
+        "url": "get_branch_menu",
+        "description": "Microservice to get branch menu.",
+        "params": {
+          "branchId": "number (Required)",
+          "http_proxy": "/branches/:restaurantId/:branchId/menu"
+        },
+        "controller": "svc-branch/menu + api/branch.controller"
+      },
+      {
+        "action": "Create Menu Item",
+        "method": "MessagePattern",
+        "url": "create_menu",
+        "description": "Microservice to create menu item.",
+        "params": {
+          "branchId": "number (Required)",
+          "http_proxy": "/branches/:restaurantId/:branchId/menu"
+        },
+        "body_schema": {
+          "menuItemId": "number",
+          "name": "string",
+          "description": "string",
+          "price": "number",
+          "imageUrl": "string",
+          "recipe": "array[{name:string,quantity:number,unit:string}]"
+        },
+        "controller": "svc-branch/menu + api/branch.controller"
+      },
+      {
+        "action": "Update Menu Item",
+        "method": "MessagePattern",
+        "url": "update_menu_item",
+        "description": "Microservice to update menu item, emits 'menu_item.updated'.",
+        "params": {
+          "menuItemId": "number (Required)",
+          "http_proxy": "/branches/:restaurantId/:branchId/menu/:menuItemId"
+        },
+        "body_schema": {
+          "name": "string (Opt)",
+          "description": "string (Opt)",
+          "price": "number (Opt)",
+          "imageUrl": "string (Opt)",
+          "recipe": "array"
+        },
+        "controller": "svc-branch/menu"
+      },
+      {
+        "action": "Delete Menu Item",
+        "method": "MessagePattern",
+        "url": "delete_menu_item",
+        "description": "Microservice to delete menu item, emits 'menu_item.deleted'.",
+        "params": {
+          "menuItemId": "number (Required)",
+          "http_proxy": "/branches/:restaurantId/:branchId/menu/:menuItemId"
+        },
+        "controller": "svc-branch/menu"
+      },
+      {
+        "action": "Create Order",
+        "method": "MessagePattern",
+        "url": "create_order",
+        "description": "Microservice to create order, emits 'order.created'.",
+        "params": { "branchId": "number (Required)" },
+        "body_schema": {
+          "tableNumber": "string",
+          "customerName": "string",
+          "items": "array",
+          "totalAmount": "number",
+          "status": "enum"
+        },
+        "controller": "svc-branch/order"
+      },
+      {
+        "action": "Update Order",
+        "method": "MessagePattern",
+        "url": "update_order",
+        "description": "Microservice to update order, emits 'order.updated'.",
+        "params": { "orderId": "number (Required)" },
+        "body_schema": {
+          "tableNumber": "string (Opt)",
+          "customerName": "string (Opt)",
+          "items": "array (Opt)",
+          "totalAmount": "number (Opt)",
+          "status": "enum (Opt)"
+        },
+        "controller": "svc-branch/order"
+      },
+      {
+        "action": "Delete Order",
+        "method": "MessagePattern",
+        "url": "delete_order",
+        "description": "Microservice to delete order, emits 'order.deleted'.",
+        "params": { "orderId": "number (Required)" },
+        "controller": "svc-branch/order"
+      },
+      {
+        "action": "Get Orders By Branch",
+        "method": "MessagePattern",
+        "url": "get_orders_by_branch",
+        "description": "Microservice to get orders by branch.",
+        "params": {
+          "branchId": "number (Required)",
+          "http_proxy": "/branches/:restaurantId/:branchId/orders"
+        },
+        "controller": "svc-branch/order + api/branch.controller"
+      },
+      {
+        "action": "Get Order By ID",
+        "method": "MessagePattern",
+        "url": "get_order_by_id",
+        "description": "Microservice to get order by ID.",
+        "params": { "orderId": "number (Required)" },
+        "controller": "svc-branch/order"
       }
     ]
   },
@@ -223,25 +346,55 @@
     "service": "real-time-events",
     "protocol": "WebSocket (Socket.io)",
     "connection_url": "ws://localhost:9000",
-    "description": "The 'Live Feed' for high-throughput data updates without manual refresh.",
+    "description": "Live Feed for real-time updates via branch.gateway.ts.",
     "events": [
       {
         "event": "new_branch_added",
-        "trigger": "When Create Branch is successful",
+        "trigger": "Create Branch successful",
         "data_payload": "Complete Branch Object",
         "ui_action": "Append to list"
       },
       {
         "event": "branch_updated",
-        "trigger": "When Update Branch is successful",
+        "trigger": "Update Branch successful",
         "data_payload": "Updated Branch Object",
-        "ui_action": "Replace item in list using ID"
+        "ui_action": "Replace by ID"
       },
       {
         "event": "branch_deleted",
-        "trigger": "When Delete Branch is successful",
+        "trigger": "Delete Branch successful",
         "data_payload": "{ id: number, restaurantId: number }",
-        "ui_action": "Remove item from list using ID"
+        "ui_action": "Remove by ID"
+      },
+      {
+        "event": "menu_item_updated",
+        "trigger": "Update Menu Item successful",
+        "data_payload": "Updated Menu Item Object",
+        "ui_action": "Replace menu item in list"
+      },
+      {
+        "event": "menu_item_deleted",
+        "trigger": "Delete Menu Item successful",
+        "data_payload": "{ id: number }",
+        "ui_action": "Remove menu item from list"
+      },
+      {
+        "event": "new_order_added",
+        "trigger": "Create Order successful",
+        "data_payload": "New Order Object",
+        "ui_action": "Append to orders list"
+      },
+      {
+        "event": "order_updated",
+        "trigger": "Update Order successful",
+        "data_payload": "Updated Order Object",
+        "ui_action": "Replace order in list"
+      },
+      {
+        "event": "order_deleted",
+        "trigger": "Delete Order successful",
+        "data_payload": "{ id: number }",
+        "ui_action": "Remove order from list"
       }
     ]
   }

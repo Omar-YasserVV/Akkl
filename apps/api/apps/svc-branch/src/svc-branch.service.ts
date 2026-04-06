@@ -11,6 +11,21 @@ export class SvcBranchService {
   ) {}
 
   async createBranch(restaurantId: number, data: CreateBranchDto) {
+    if (data.haveWarehouses && !data.warehouseName) {
+      throw new RpcException({
+        status: HttpStatus.BAD_REQUEST,
+        message: 'Warehouse name is required',
+      });
+    }
+
+    if (data.haveTables && (!data.tablesCount || data.tablesCount <= 0)) {
+      throw new RpcException({
+        status: HttpStatus.BAD_REQUEST,
+        message:
+          'You must specify a valid number of tables if haveTables is true',
+      });
+    }
+
     const existingBranch = await this.prisma.branch.findFirst({
       where: {
         restaurantId: Number(restaurantId),
@@ -22,18 +37,45 @@ export class SvcBranchService {
     if (existingBranch) {
       throw new RpcException({
         status: HttpStatus.CONFLICT,
-        message: 'Branch with the same name and address already exists',
+        message: 'Branch already exists',
       });
     }
 
+    const { warehouseName, tablesCount, ...branchData } = data;
+
+    const tablesToCreate = data.haveTables
+      ? Array.from({ length: tablesCount || 0 }, (_, i) => ({
+          tableNumber: String(branchData.branchNumber) + '_' + String(i + 1),
+          capacity: 4,
+        }))
+      : [];
+
     const newBranch = await this.prisma.branch.create({
       data: {
-        ...data,
+        ...branchData,
+        branchNumber: String(branchData.branchNumber),
         restaurantId: Number(restaurantId),
+
+        warehouses:
+          data.haveWarehouses && warehouseName
+            ? {
+                create: [{ name: warehouseName }],
+              }
+            : undefined,
+
+        tables: data.haveTables
+          ? {
+              create: tablesToCreate,
+            }
+          : undefined,
+      },
+      include: {
+        warehouses: true,
+        tables: true,
       },
     });
-    this.kafkaClient.emit('branch.created', newBranch);
 
+    this.kafkaClient.emit('branch.created', newBranch);
     return newBranch;
   }
 
@@ -80,12 +122,13 @@ export class SvcBranchService {
     branchId: number,
     data: UpdateBranchDto,
   ) {
+    const { restaurantId: _, ...updateData } = data;
     const branch = await this.prisma.branch.update({
       where: {
         restaurantId: Number(restaurantId),
         id: Number(branchId),
       },
-      data,
+      data: updateData,
     });
 
     if (!branch) {

@@ -1,8 +1,8 @@
 import {
-  BadRequestException,
+  // BadRequestException,
   Injectable,
-  NotFoundException,
-  UnauthorizedException,
+  // NotFoundException,
+  // UnauthorizedException,
 } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import { PrismaService } from '@app/db';
