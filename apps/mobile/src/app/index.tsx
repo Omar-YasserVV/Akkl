@@ -39,12 +39,6 @@ export default function HomeScreen() {
           </ThemedText>
         </ThemedView>
 
-        <ThemedView className="flex-1 items-center justify-center bg-white">
-          <ThemedText className="text-xl font-bold text-blue-500">
-            Welcome to Nativewind!
-          </ThemedText>
-        </ThemedView>
-
         <ThemedText type="code" style={styles.code}>
           get started
         </ThemedText>
