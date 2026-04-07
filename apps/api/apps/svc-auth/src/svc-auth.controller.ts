@@ -1,14 +1,9 @@
-import {
-  Controller,
-  Request,
-  Response,
-  // UnauthorizedException,
-} from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
-import { SvcAuthService } from './svc-auth.service';
-import { LoginDto, CreateUserDto, CompleteGoogleSignupDto } from '@app/common';
+import { CompleteGoogleSignupDto, CreateUserDto, LoginDto } from '@app/common';
 import { BlackListService } from '@app/guards/services/blacklist.service';
+import { Controller } from '@nestjs/common';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 import { GoogleUserDto, LogoutDto, ResetPasswordDto } from '../dtos/auth.dto';
+import { SvcAuthService } from './svc-auth.service';
 // import { tokenDto } from '@app/common/dtos/UserDto/token.dto';
 // TODO: remove un used code //Abdo
 // TODO: abdo fix this dtos i created file called auth.dto.ts in this folder make use the one time dto use there and the many uses in the common

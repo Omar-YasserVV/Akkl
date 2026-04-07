@@ -14,7 +14,7 @@ export class LogoutDto {
   })
   @IsString()
   @IsNotEmpty()
-  token!: string;
+  Token!: string;
 }
 
 export class GoogleUserDto {
