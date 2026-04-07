@@ -1,4 +1,4 @@
-import { PartialType, OmitType } from '@nestjs/mapped-types';
+import { OmitType, PartialType } from '@nestjs/swagger'; // ⚡ Use @nestjs/swagger for proper Swagger integration
 import { CreateUserDto } from './create.user.dto';
 
 export class UpdateUserDto extends PartialType(
