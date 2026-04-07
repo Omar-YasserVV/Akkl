@@ -1,14 +1,14 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { CompleteGoogleSignupDto, CreateUserDto, LoginDto } from '@app/common';
+import { PrismaService } from '@app/db';
+import { BlackListService } from '@app/guards/services/blacklist.service';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { RpcException } from '@nestjs/microservices';
-import { comparePasswords, hashPassword } from '../../../utils/argon2';
-import { PrismaService } from '@app/db';
-import * as nodemailer from 'nodemailer';
 import * as jwt from 'jsonwebtoken';
-import { LoginDto, CreateUserDto, CompleteGoogleSignupDto } from '@app/common';
-import { BlackListService } from '@app/guards/services/blacklist.service';
-import { ResetPasswordDto } from '../dtos/auth.dto';
+import * as nodemailer from 'nodemailer';
 import { Prisma } from '../../../libs/db/generated/client/client';
+import { comparePasswords, hashPassword } from '../../../utils/argon2';
+import { ResetPasswordDto } from '../dtos/auth.dto';
 // import { tokenDto } from '@app/common/dtos/UserDto/token.dto';
 // TODO: abdo if the tokenDto import is not used delete this line
 @Injectable()
@@ -85,7 +85,13 @@ export class SvcAuthService {
       message: 'Login successful',
       access_token: access_token,
       refresh_token: refresh_token,
-      user: { id: user.id, email: user.email },
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
+        image: user.image,
+      },
     };
   }
 
@@ -102,7 +108,10 @@ export class SvcAuthService {
 
     if (existingUser) {
       if (existingUser.email === data.email) {
-        throw new RpcException({ message: 'Email already in use', status: 409 });
+        throw new RpcException({
+          message: 'Email already in use',
+          status: 409,
+        });
       }
       if (existingUser.phone === data.phone) {
         throw new RpcException({
@@ -111,18 +120,37 @@ export class SvcAuthService {
         });
       }
       if (existingUser.username === data.username) {
-        throw new RpcException({ message: 'Username already in use', status: 409 });
+        throw new RpcException({
+          message: 'Username already in use',
+          status: 409,
+        });
       }
     }
 
     const hashedPassword = await hashPassword(data.password);
     const { role, ...userData } = data;
 
-    let newUser;
     try {
-      newUser = await this.prisma.user.create({
+      const newUser = await this.prisma.user.create({
         data: { ...userData, password: hashedPassword, role: role },
       });
+
+      const { access_token, refresh_token } = this.generateToken({
+        sub: newUser.id,
+      });
+
+      return {
+        message: 'Signup successful',
+        access_token,
+        refresh_token,
+        user: {
+          id: newUser.id,
+          email: newUser.email,
+          username: newUser.username,
+          role: newUser.role,
+          image: newUser.image,
+        },
+      };
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -136,16 +164,6 @@ export class SvcAuthService {
       }
       throw error;
     }
-
-    const { access_token, refresh_token } = this.generateToken({
-      sub: newUser.id,
-    });
-    return {
-      message: 'Signup successful',
-      access_token,
-      refresh_token,
-      user: { id: newUser.id, email: newUser.email },
-    };
   }
 
   async findUserByEmail(email: string) {
