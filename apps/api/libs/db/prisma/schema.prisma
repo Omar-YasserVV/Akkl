@@ -79,6 +79,8 @@ model Employee {
   fullName  String
   username  String    @unique
   password  String
+  email     String    @unique
+  image     String?
   role      StaffRole @default(WAITER)
   salary    Decimal   @db.Decimal(10, 2)
   branchId  Int

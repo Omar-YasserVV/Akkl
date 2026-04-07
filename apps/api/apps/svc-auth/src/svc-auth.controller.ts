@@ -5,6 +5,10 @@ import { MessagePattern, Payload } from '@nestjs/microservices';
 import { GoogleUserDto, LogoutDto, ResetPasswordDto } from '../dtos/auth.dto';
 import { SvcAuthService } from './svc-auth.service';
 // Import the interfaces defined above
+import {
+  CreateEmployeeDto,
+  EmployeeLoginDto,
+} from '@app/common/dtos/Employees/employee.dto';
 import { AuthResult, MessageResult } from './interfaces/auth.interface';
 
 @Controller()
@@ -56,5 +60,15 @@ export class SvcAuthController {
     @Payload() resetDto: ResetPasswordDto,
   ): Promise<MessageResult> {
     return this.svcAuthService.verifyOtpAndReset(resetDto);
+  }
+
+  @MessagePattern('create-employee')
+  async createEmployee(@Payload() data: CreateEmployeeDto) {
+    return this.svcAuthService.createEmployee(data);
+  }
+
+  @MessagePattern('employee-login')
+  async employeeLogin(@Payload() data: EmployeeLoginDto): Promise<AuthResult> {
+    return this.svcAuthService.employeeLogin(data);
   }
 }

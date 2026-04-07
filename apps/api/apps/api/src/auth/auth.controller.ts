@@ -1,5 +1,9 @@
 import { CompleteGoogleSignupDto, CreateUserDto, LoginDto } from '@app/common';
 import {
+  CreateEmployeeDto,
+  EmployeeLoginDto,
+} from '@app/common/dtos/Employees/employee.dto';
+import {
   Body,
   Controller,
   HttpStatus,
@@ -9,6 +13,7 @@ import {
   Res,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ResetPasswordDto } from 'apps/svc-auth/dtos/auth.dto';
 import { Request, Response } from 'express';
 import { lastValueFrom } from 'rxjs';
@@ -151,5 +156,42 @@ export class AuthController {
       this.authService.send<MessageResponse>('reset-password', resetDto),
     );
     return res.status(HttpStatus.OK).json(result);
+  }
+
+  // emp
+  @Post('staff/create')
+  async createStaff(@Body() data: CreateEmployeeDto): Promise<MessageResponse> {
+    return await lastValueFrom(
+      this.authService.send<MessageResponse>('create-employee', data),
+    );
+  }
+
+  @Post('employee/login')
+  @ApiOperation({ summary: 'Login for Staff (Sets tokens in cookies only)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Sets cookies and returns user data',
+  })
+  async employeeLogin(
+    @Body() data: EmployeeLoginDto,
+    @Res() res: Response,
+  ): Promise<Response> {
+    // 1. Get tokens and user data from Microservice
+    const result = await lastValueFrom(
+      this.authService.send<AuthResponse>('employee-login', data),
+    );
+
+    const { access_token, refresh_token, user } = result;
+
+    // 2. Set tokens in HttpOnly cookies
+    this.setAuthCookies(res, { access_token, refresh_token });
+
+    // 3. Return ONLY user info in the JSON body
+    return res.status(HttpStatus.OK).json({
+      status: 'success',
+      data: {
+        user,
+      },
+    });
   }
 }

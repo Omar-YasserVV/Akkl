@@ -1,4 +1,8 @@
 import { CompleteGoogleSignupDto, CreateUserDto, LoginDto } from '@app/common';
+import {
+  CreateEmployeeDto,
+  EmployeeLoginDto,
+} from '@app/common/dtos/Employees/employee.dto';
 import { PrismaService } from '@app/db';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -11,6 +15,8 @@ import { AuthResult } from './interfaces/auth.interface';
 
 interface JwtPayload extends Omit<jwt.JwtPayload, 'sub'> {
   sub: number;
+  type?: 'employee' | 'user';
+  branchId?: number;
   email?: string;
   fullName?: string;
   image?: string;
@@ -37,7 +43,7 @@ export class SvcAuthService {
     });
   }
 
-  private generateToken(payload: { sub: number }): {
+  private generateToken(payload: JwtPayload): {
     access_token: string;
     refresh_token: string;
   } {
@@ -213,5 +219,77 @@ export class SvcAuthService {
     });
 
     return { message: 'Success' };
+  }
+
+  async employeeLogin(data: EmployeeLoginDto): Promise<AuthResult> {
+    const employee = await this.prisma.employee.findUnique({
+      where: { email: data.email }, // Matches your updated DTO
+    });
+
+    if (!employee) {
+      throw new RpcException({
+        message: 'Invalid staff credentials',
+        status: 401,
+      });
+    }
+
+    const isPasswordValid = await comparePasswords(
+      data.password,
+      employee.password,
+    );
+    if (!isPasswordValid) {
+      throw new RpcException({
+        message: 'Invalid staff credentials',
+        status: 401,
+      });
+    }
+
+    const tokens = this.generateToken({
+      sub: employee.id,
+      type: 'employee',
+      branchId: employee.branchId,
+    });
+
+    return {
+      ...tokens,
+      user: {
+        id: employee.id,
+        username: employee.username,
+        fullName: employee.fullName,
+        role: employee.role,
+        email: employee.email,
+        image: employee.image ?? undefined,
+      },
+    };
+  }
+
+  async createEmployee(
+    data: CreateEmployeeDto,
+  ): Promise<{ message: string; id: number }> {
+    const existingEmployee = await this.prisma.employee.findUnique({
+      where: { username: data.username },
+    });
+
+    if (existingEmployee) {
+      throw new RpcException({
+        message: 'Username is already taken by another staff member',
+        status: 409,
+      });
+    }
+
+    const hashedPassword = await hashPassword(data.password);
+
+    const newEmployee = await this.prisma.employee.create({
+      data: {
+        ...data,
+        password: hashedPassword,
+        image: data.image ?? null,
+        salary: 0,
+      },
+    });
+    return {
+      message: 'Employee created successfully',
+      id: newEmployee.id,
+    };
   }
 }
