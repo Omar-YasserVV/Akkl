@@ -1,7 +1,13 @@
 import { BranchMenuItemDetailDto, UpdateBranchMenuItemDto } from '@app/common';
-import { Controller } from '@nestjs/common';
+import { BadRequestException, Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { MenuService } from './menu.service';
+
+// 1. Define an interface for what Kafka actually sends
+interface KafkaBuffer {
+  type: 'Buffer';
+  data: number[];
+}
 
 @Controller()
 export class MenuController {
@@ -28,22 +34,44 @@ export class MenuController {
   @MessagePattern('upload_menu_excel')
   async uploadExcel(
     @Payload('branchId') branchId: number,
-    @Payload('fileBuffer') fileBuffer: Buffer, // Expecting the buffer to be passed in the payload
+    @Payload('fileBuffer') fileBuffer: unknown, // 2. Change 'any' to 'unknown'
   ) {
-    // Note: Validation logic usually moves to the calling gateway or a dedicated validation pipe
-    return this.menuService.handleExcelUpload(branchId, fileBuffer);
+    let buffer: Buffer;
+
+    if (Buffer.isBuffer(fileBuffer)) {
+      // If it's already a real Buffer
+      buffer = fileBuffer;
+    } else if (
+      fileBuffer &&
+      typeof fileBuffer === 'object' &&
+      'data' in fileBuffer &&
+      Array.isArray((fileBuffer as Record<string, unknown>).data)
+    ) {
+      // 3. Cast to our interface only after verifying the structure
+      // This satisfies ESLint because we checked that .data is an Array
+      const kafkaBuffer = fileBuffer as unknown as KafkaBuffer;
+      buffer = Buffer.from(kafkaBuffer.data);
+    } else {
+      throw new BadRequestException('Invalid file buffer received from Kafka');
+    }
+
+    return this.menuService.handleExcelUpload(branchId, buffer);
   }
 
   @MessagePattern('update_menu_item')
   async updateMenuItem(
     @Payload('id') id: number,
+    @Payload('branchId') branchId: number,
     @Payload('data') data: UpdateBranchMenuItemDto,
   ) {
-    return this.menuService.updateMenuItem(id, data);
+    return this.menuService.updateMenuItem(id, data, branchId);
   }
 
   @MessagePattern('delete_menu_item')
-  async deleteMenuItem(@Payload('id') id: number) {
-    return this.menuService.deleteMenuItem(id);
+  async deleteMenuItem(
+    @Payload('id') id: number,
+    @Payload('branchId') branchId: number,
+  ) {
+    return this.menuService.deleteMenuItem(id, branchId);
   }
 }

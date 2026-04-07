@@ -1,12 +1,11 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { ClientsModule, Transport } from '@nestjs/microservices';
 import { GuardsModule } from '@app/guards';
 import { JwtAuthGuard } from '@app/guards/jwt-auth.guard';
 import { RolesGuard } from '@app/guards/role.guard';
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { BranchController } from './branch.controller';
 import { BranchGateway } from './branch.gateway';
-import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [

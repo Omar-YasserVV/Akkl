@@ -29,6 +29,7 @@ export class MenuService {
       include: { ingredient: true },
     },
   };
+  // --- External API Methods ---
 
   async getMenu() {
     return this.prisma.branchMenuItem.findMany({
@@ -41,56 +42,6 @@ export class MenuService {
       where: { branchId: Number(branchId) },
       include: this.commonInclude,
     });
-  }
-  //TODO:extract the func
-  async handleExcelUpload(branchId: number, fileBuffer: Buffer) {
-    const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
-    const sheetName = workbook.SheetNames[0];
-    const sheet = workbook.Sheets[sheetName];
-
-    const rows = XLSX.utils.sheet_to_json<ExcelMenuRow>(sheet);
-
-    if (!rows || rows.length === 0) {
-      throw new BadRequestException('The uploaded Excel file is empty.');
-    }
-
-    const items: BranchMenuItemDetailDto[] = rows.map((row) => {
-      try {
-        return {
-          branchId: Number(branchId),
-          name: String(row.Name || ''),
-          description: row.Description ? String(row.Description) : undefined,
-          image: row.Image ? String(row.Image) : undefined,
-          isAvailable:
-            row.Available === 'false' || row.Available === false ? false : true,
-          menuItemId: Number(row.MenuItemID || 0),
-
-          variations: row.Variations
-            ? (JSON.parse(
-                row.Variations,
-              ) as unknown as BranchMenuItemDetailDto['variations'])
-            : [],
-
-          dietaryTags: row.DietaryTags
-            ? String(row.DietaryTags)
-                .split(',')
-                .map((id) => Number(id.trim()))
-            : [],
-
-          recipe: row.Recipe
-            ? (JSON.parse(
-                row.Recipe,
-              ) as unknown as BranchMenuItemDetailDto['recipe'])
-            : [],
-        } as BranchMenuItemDetailDto;
-      } catch (e) {
-        throw new BadRequestException(
-          `Failed to parse row: ${row.Name ?? 'Unknown'}. Ensure JSON columns (Variations/Recipe) are valid. ${e}`,
-        );
-      }
-    });
-
-    return this.bulkCreateMenuItem(branchId, items);
   }
 
   async createMenu(branchId: number, data: BranchMenuItemDetailDto) {
@@ -128,6 +79,132 @@ export class MenuService {
         },
       },
       include: this.commonInclude,
+    });
+  }
+
+  async updateMenuItem(
+    menuItemId: number,
+    data: UpdateBranchMenuItemDto,
+    branchId?: number,
+  ) {
+    const menuItem = await this.prisma.branchMenuItem.findUnique({
+      where: { id: Number(menuItemId) },
+    });
+
+    if (!menuItem) {
+      throw new NotFoundException(`Menu item with ID ${menuItemId} not found`);
+    }
+
+    // Security: Ensure the item belongs to the branch provided in the URL
+    if (branchId && menuItem.branchId !== Number(branchId)) {
+      throw new BadRequestException(
+        'This menu item does not belong to the specified branch',
+      );
+    }
+
+    return this.prisma.branchMenuItem.update({
+      where: { id: Number(menuItemId) },
+      data: {
+        name: data.name,
+        description: data.description,
+        image: data.image,
+        isAvailable: data.isAvailable,
+        variations: data.variations
+          ? {
+              deleteMany: {},
+              create: data.variations,
+            }
+          : undefined,
+        dietaryTags: data.dietaryTags
+          ? {
+              set: data.dietaryTags.map((id) => ({ id })),
+            }
+          : undefined,
+        recipe: data.recipe
+          ? {
+              deleteMany: {},
+              create: data.recipe.map((r) => ({
+                ingredientId: r.ingredientId,
+                quantityRequired: r.quantityRequired,
+              })),
+            }
+          : undefined,
+      },
+      include: this.commonInclude,
+    });
+  }
+
+  async deleteMenuItem(menuItemId: number, branchId?: number) {
+    const menuItem = await this.prisma.branchMenuItem.findUnique({
+      where: { id: Number(menuItemId) },
+    });
+
+    if (!menuItem) {
+      throw new NotFoundException(`Menu item with ID ${menuItemId} not found`);
+    }
+
+    if (branchId && menuItem.branchId !== Number(branchId)) {
+      throw new BadRequestException('Action denied: Branch ID mismatch');
+    }
+
+    return this.prisma.branchMenuItem.delete({
+      where: { id: Number(menuItemId) },
+    });
+  }
+
+  // --- Bulk & Excel Operations ---
+
+  async handleExcelUpload(branchId: number, fileBuffer: Buffer) {
+    const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+
+    const rows = XLSX.utils.sheet_to_json<ExcelMenuRow>(sheet);
+
+    if (!rows || rows.length === 0) {
+      throw new BadRequestException('The uploaded Excel file is empty.');
+    }
+
+    const items = this.parseExcelRows(branchId, rows);
+    return this.bulkCreateMenuItem(branchId, items);
+  }
+
+  private parseExcelRows(
+    branchId: number,
+    rows: ExcelMenuRow[],
+  ): BranchMenuItemDetailDto[] {
+    return rows.map((row) => {
+      try {
+        return {
+          branchId: Number(branchId),
+          name: String(row.Name || ''),
+          description: row.Description ? String(row.Description) : undefined,
+          image: row.Image ? String(row.Image) : undefined,
+          isAvailable:
+            row.Available === 'false' || row.Available === false ? false : true,
+          menuItemId: Number(row.MenuItemID || 0),
+
+          variations: row.Variations
+            ? (JSON.parse(
+                row.Variations,
+              ) as BranchMenuItemDetailDto['variations'])
+            : [],
+
+          dietaryTags: row.DietaryTags
+            ? String(row.DietaryTags)
+                .split(',')
+                .map((id) => Number(id.trim()))
+            : [],
+
+          recipe: row.Recipe
+            ? (JSON.parse(row.Recipe) as BranchMenuItemDetailDto['recipe'])
+            : [],
+        } as BranchMenuItemDetailDto;
+      } catch (e) {
+        throw new BadRequestException(
+          `Parsing failed for row "${row.Name || 'Unknown'}". Ensure JSON columns are valid. ${e}`,
+        );
+      }
     });
   }
 
@@ -176,52 +253,5 @@ export class MenuService {
         error instanceof Error ? error.message : 'Bulk upload failed';
       throw new BadRequestException(message);
     }
-  }
-
-  async updateMenuItem(menuItemId: number, data: UpdateBranchMenuItemDto) {
-    const menuItem = await this.prisma.branchMenuItem.findUnique({
-      where: { id: Number(menuItemId) },
-    });
-
-    if (!menuItem) {
-      throw new NotFoundException(`Menu item with ID ${menuItemId} not found`);
-    }
-
-    return this.prisma.branchMenuItem.update({
-      where: { id: Number(menuItemId) },
-      data: {
-        name: data.name,
-        description: data.description,
-        image: data.image,
-        isAvailable: data.isAvailable,
-        variations: data.variations
-          ? {
-              deleteMany: {},
-              create: data.variations,
-            }
-          : undefined,
-        dietaryTags: data.dietaryTags
-          ? {
-              set: data.dietaryTags.map((id) => ({ id })),
-            }
-          : undefined,
-        recipe: data.recipe
-          ? {
-              deleteMany: {},
-              create: data.recipe.map((r) => ({
-                ingredientId: r.ingredientId,
-                quantityRequired: r.quantityRequired,
-              })),
-            }
-          : undefined,
-      },
-      include: this.commonInclude,
-    });
-  }
-
-  async deleteMenuItem(menuItemId: number) {
-    return this.prisma.branchMenuItem.delete({
-      where: { id: Number(menuItemId) },
-    });
   }
 }

@@ -1,7 +1,7 @@
+import { DbModule, PrismaService } from '@app/db';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { DbModule } from '@app/db';
-import { PrismaService } from '@app/db';
+import { MenuController } from './menu.controller';
 import { MenuService } from './menu.service';
 
 @Module({
@@ -11,7 +11,7 @@ import { MenuService } from './menu.service';
     }),
     DbModule,
   ],
-  controllers: [],
+  controllers: [MenuController],
   providers: [MenuService, PrismaService],
 })
 export class MenuModule {}
