@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { DbModule } from '@app/db';
 import { PrismaService } from '@app/db';
 import { OrderService } from './order.service';
+import { OrderController } from './order.controller';
 
 @Module({
   imports: [
@@ -12,7 +13,7 @@ import { OrderService } from './order.service';
     }),
     DbModule,
   ],
-  controllers: [],
+  controllers: [OrderController],
   providers: [PrismaService, OrderService],
 })
 export class OrderModule {}
