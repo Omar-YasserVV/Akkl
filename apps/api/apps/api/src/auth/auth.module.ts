@@ -4,6 +4,9 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 
+const authServiceHost = process.env.AUTH_SERVICE_HOST || '127.0.0.1';
+const authServicePort = Number(process.env.AUTH_SERVICE_PORT || 9015);
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -14,7 +17,7 @@ import { JwtModule } from '@nestjs/jwt';
       {
         name: 'AUTH_SERVICE',
         transport: Transport.TCP,
-        options: { host: '127.0.0.1', port: 9010 },
+        options: { host: authServiceHost, port: authServicePort },
       },
     ]),
     JwtModule.register({

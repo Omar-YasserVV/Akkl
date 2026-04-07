@@ -8,6 +8,7 @@ import * as jwt from 'jsonwebtoken';
 import { LoginDto, CreateUserDto, CompleteGoogleSignupDto } from '@app/common';
 import { BlackListService } from '@app/guards/services/blacklist.service';
 import { ResetPasswordDto } from '../dtos/auth.dto';
+import { Prisma } from '../../../libs/db/generated/client/client';
 // import { tokenDto } from '@app/common/dtos/UserDto/token.dto';
 // TODO: abdo if the tokenDto import is not used delete this line
 @Injectable()
@@ -29,12 +30,18 @@ export class SvcAuthService {
   generateToken(payload: { sub: number }) {
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
-      throw new Error('JWT_SECRET not set');
+      throw new RpcException({
+        message: 'Auth token configuration is missing (JWT_SECRET)',
+        status: 500,
+      });
     }
 
     const refreshJwtSecret = process.env.JWT_REFRESH_SECRET;
     if (!refreshJwtSecret) {
-      throw new Error('JWT_REFRESH_SECRET not set');
+      throw new RpcException({
+        message: 'Auth token configuration is missing (JWT_REFRESH_SECRET)',
+        status: 500,
+      });
     }
 
     // jsonwebtoken uses a narrow template-literal type for `expiresIn`.
@@ -83,20 +90,52 @@ export class SvcAuthService {
   }
 
   async signup(data: CreateUserDto) {
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email: data.email },
+    const existingUser = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: data.email },
+          { phone: data.phone },
+          { username: data.username },
+        ],
+      },
     });
 
     if (existingUser) {
-      throw new RpcException({ message: 'Email already in use', status: 409 });
+      if (existingUser.email === data.email) {
+        throw new RpcException({ message: 'Email already in use', status: 409 });
+      }
+      if (existingUser.phone === data.phone) {
+        throw new RpcException({
+          message: 'Phone number already in use',
+          status: 409,
+        });
+      }
+      if (existingUser.username === data.username) {
+        throw new RpcException({ message: 'Username already in use', status: 409 });
+      }
     }
 
     const hashedPassword = await hashPassword(data.password);
     const { role, ...userData } = data;
 
-    const newUser = await this.prisma.user.create({
-      data: { ...userData, password: hashedPassword, role: role },
-    });
+    let newUser;
+    try {
+      newUser = await this.prisma.user.create({
+        data: { ...userData, password: hashedPassword, role: role },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new RpcException({
+          message:
+            'A user with this email, phone number, or username already exists',
+          status: 409,
+        });
+      }
+      throw error;
+    }
 
     const { access_token, refresh_token } = this.generateToken({
       sub: newUser.id,
