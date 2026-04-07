@@ -5,6 +5,7 @@ export interface UserResponse {
   username?: string;
   role?: string;
   image?: string;
+  branchId?: number;
 }
 
 export interface AuthResult {

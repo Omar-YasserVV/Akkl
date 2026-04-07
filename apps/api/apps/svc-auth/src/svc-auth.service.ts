@@ -256,6 +256,7 @@ export class SvcAuthService {
         id: employee.id,
         username: employee.username,
         fullName: employee.fullName,
+        branchId: employee.branchId,
         role: employee.role,
         email: employee.email,
         image: employee.image ?? undefined,
