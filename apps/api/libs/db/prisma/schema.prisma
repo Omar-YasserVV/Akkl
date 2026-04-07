@@ -35,15 +35,21 @@ model User {
   restaurants  Restaurant[]
 }
 
+model TokenBlacklist {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  createdAt DateTime @default(now())
+}
+
 model Restaurant {
-  id        Int        @id @default(autoincrement())
-  name      String     @unique
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
   logoUrl   String?
   ownerId   Int
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   branches  Branch[]
-  user      User       @relation(fields: [ownerId], references: [id])
+  user      User     @relation(fields: [ownerId], references: [id])
 }
 
 model Branch {
@@ -66,104 +72,6 @@ model Branch {
   shifts           Shift[]
   tables           Table[]
   warehouses       Warehouse[]
-}
-model BranchMenuItem {
-  id            Int                    @id @default(autoincrement())
-  branchId      Int
-  menuItemId    Int
-  isAvailable   Boolean                @default(true)
-  branch        Branch                 @relation(fields: [branchId], references: [id])
-  name          String
-  description   String?
-  image         String?                // Field for the Item Image URL
-  
-  // Relations
-  variations    MenuItemVariation[]    // Replaces basePrice and discountPrice
-  dietaryTags   DietaryTag[]           // Relation to tags
-  
-  orders        OrderItem[]
-  recipe        Recipe[]
-  createdAt     DateTime               @default(now())
-  updatedAt     DateTime               @updatedAt
-
-  @@unique([branchId, menuItemId])
-}
-model MenuItemVariation {
-  id               Int            @id @default(autoincrement())
-  size             String         // e.g., "Standard", "Large", "Small"
-  price            Decimal        @db.Decimal(10, 2)
-  discountPrice    Decimal?       @db.Decimal(10, 2)
-  branchMenuItemId Int
-  branchMenuItem   BranchMenuItem @relation(fields: [branchMenuItemId], references: [id], onDelete: Cascade)
-}
-
-model DietaryTag {
-  id               Int              @id @default(autoincrement())
-  name             DietaryType
-  branchMenuItems  BranchMenuItem[] // Many-to-many relation
-}
-
-enum DietaryType {
-  VEGAN
-  GLUTEN_FREE
-  DAIRY_FREE
-}
-model Ingredient {
-  id             Int             @id @default(autoincrement())
-  name           String          @unique
-  unit           String
-  recipes        Recipe[]
-  inventoryItems InventoryItem[]
-}
-
-model Recipe {
-  id                Int            @id @default(autoincrement())
-  menuItemId        Int
-  ingredientId      Int
-  quantityRequired  Float
-  
-  menuItem          BranchMenuItem @relation(fields: [menuItemId], references: [id])
-  ingredient        Ingredient     @relation(fields: [ingredientId], references: [id])
-}
-
-model InventoryItem {
-  id           Int        @id @default(autoincrement())
-  ingredientId Int
-  quantity     Float
-  warehouseId  Int
-  
-  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
-  warehouse    Warehouse  @relation(fields: [warehouseId], references: [id])
-}
-model Order {
-  id          Int         @id @default(autoincrement())
-  totalAmount Decimal     @db.Decimal(10, 2)
-  branchId    Int
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  userId      Int
-  status      OrderState  @default(PENDING)
-  branch      Branch      @relation(fields: [branchId], references: [id])
-  user        User        @relation(fields: [userId], references: [id])
-  items       OrderItem[]
-}
-
-model OrderItem {
-  id          Int       @id @default(autoincrement())
-  orderId     Int
-  menuItemId  Int
-  quantity    Int
-  price       Decimal   @db.Decimal(10, 2)
-  order       Order     @relation(fields: [orderId], references: [id])
-  branchMenuItem BranchMenuItem @relation(fields: [menuItemId], references: [id])
-}
-
-model Warehouse {
-  id       Int             @id @default(autoincrement())
-  name     String
-  branchId Int
-  items    InventoryItem[]
-  branch   Branch          @relation(fields: [branchId], references: [id])
 }
 
 model Employee {
@@ -191,14 +99,95 @@ model Shift {
   employee   Employee    @relation(fields: [employeeId], references: [id])
 }
 
-model Expense {
-  id          Int         @id @default(autoincrement())
-  amount      Decimal     @db.Decimal(10, 2)
-  category    ExpenseType
+model BranchMenuItem {
+  id          Int                 @id @default(autoincrement())
+  branchId    Int
+  menuItemId  Int
+  isAvailable Boolean             @default(true)
+  name        String
   description String?
+  image       String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  branch      Branch              @relation(fields: [branchId], references: [id])
+  variations  MenuItemVariation[]
+  orders      OrderItem[]
+  recipe      Recipe[]
+  dietaryTags DietaryTag[]        @relation("BranchMenuItemToDietaryTag")
+
+  @@unique([branchId, menuItemId])
+}
+
+model MenuItemVariation {
+  id               Int            @id @default(autoincrement())
+  size             String
+  price            Decimal        @db.Decimal(10, 2)
+  discountPrice    Decimal?       @db.Decimal(10, 2)
+  branchMenuItemId Int
+  branchMenuItem   BranchMenuItem @relation(fields: [branchMenuItemId], references: [id], onDelete: Cascade)
+}
+
+model DietaryTag {
+  id              Int              @id @default(autoincrement())
+  name            DietaryType
+  branchMenuItems BranchMenuItem[] @relation("BranchMenuItemToDietaryTag")
+}
+
+model Ingredient {
+  id             Int             @id @default(autoincrement())
+  name           String          @unique
+  unit           String
+  inventoryItems InventoryItem[]
+  recipes        Recipe[]
+}
+
+model Recipe {
+  id               Int            @id @default(autoincrement())
+  menuItemId       Int
+  ingredientId     Int
+  quantityRequired Float
+  ingredient       Ingredient     @relation(fields: [ingredientId], references: [id])
+  menuItem         BranchMenuItem @relation(fields: [menuItemId], references: [id])
+}
+
+model Warehouse {
+  id       Int             @id @default(autoincrement())
+  name     String
+  branchId Int
+  items    InventoryItem[]
+  branch   Branch          @relation(fields: [branchId], references: [id])
+}
+
+model InventoryItem {
+  id           Int        @id @default(autoincrement())
+  ingredientId Int
+  quantity     Float
+  warehouseId  Int
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+  warehouse    Warehouse  @relation(fields: [warehouseId], references: [id])
+}
+
+model Order {
+  id          Int         @id @default(autoincrement())
+  totalAmount Decimal     @db.Decimal(10, 2)
   branchId    Int
   createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  userId      Int
+  status      OrderState  @default(PENDING)
   branch      Branch      @relation(fields: [branchId], references: [id])
+  user        User        @relation(fields: [userId], references: [id])
+  items       OrderItem[]
+}
+
+model OrderItem {
+  id             Int            @id @default(autoincrement())
+  orderId        Int
+  menuItemId     Int
+  quantity       Int
+  price          Decimal        @db.Decimal(10, 2)
+  branchMenuItem BranchMenuItem @relation(fields: [menuItemId], references: [id])
+  order          Order          @relation(fields: [orderId], references: [id])
 }
 
 model Table {
@@ -211,7 +200,6 @@ model Table {
 
   @@unique([tableNumber, branchId])
 }
-
 
 model Reservation {
   id              Int      @id @default(autoincrement())
@@ -227,10 +215,25 @@ model Reservation {
   user            User     @relation(fields: [userId], references: [id])
 }
 
-model TokenBlacklist {
-  id        Int      @id @default(autoincrement())
-  token     String   @unique
-  createdAt DateTime @default(now())
+model Expense {
+  id          Int         @id @default(autoincrement())
+  amount      Decimal     @db.Decimal(10, 2)
+  category    ExpenseType
+  description String?
+  branchId    Int
+  createdAt   DateTime    @default(now())
+  branch      Branch      @relation(fields: [branchId], references: [id])
+}
+
+enum UserRole {
+  CUSTOMER
+  BUSINESS_OWNER
+}
+
+enum StaffRole {
+  ADMIN
+  CASHIER
+  WAITER
 }
 
 enum ShiftStatus {
@@ -246,15 +249,10 @@ enum OrderState {
   CANCELLED
 }
 
-enum UserRole {
-  CUSTOMER
-  BUSINESS_OWNER
-}
-
-enum StaffRole {
-  ADMIN
-  CASHIER
-  WAITER
+enum DietaryType {
+  VEGAN
+  GLUTEN_FREE
+  DAIRY_FREE
 }
 
 enum ExpenseType {
