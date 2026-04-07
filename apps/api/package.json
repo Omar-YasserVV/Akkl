@@ -22,7 +22,12 @@
     "auth:start:dev": "nest start svc-auth --watch",
     "restaurant:start:dev": "nest start svc-restaurant --watch",
     "branch:start:dev": "nest start svc-branch --watch",
-    "start:all:dev": "concurrently \"pnpm run start:dev\" \"pnpm run auth:start:dev\" \"pnpm run restaurant:start:dev\" \"pnpm run branch:start:dev\""
+    "start:all:dev": "concurrently \"pnpm run start:dev\" \"pnpm run auth:start:dev\" \"pnpm run restaurant:start:dev\" \"pnpm run branch:start:dev\"",
+    "prisma:gen": "prisma generate",
+    "prisma:migrate:dev": "prisma migrate dev",
+    "prisma:migrate:prod": "prisma migrate deploy",
+    "prisma:studio": "prisma studio",
+    "prisma:format": "prisma format"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.16",
