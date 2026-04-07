@@ -1,22 +1,26 @@
 import { CompleteGoogleSignupDto, CreateUserDto, LoginDto } from '@app/common';
 import { PrismaService } from '@app/db';
-import { BlackListService } from '@app/guards/services/blacklist.service';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { RpcException } from '@nestjs/microservices';
 import * as jwt from 'jsonwebtoken';
 import * as nodemailer from 'nodemailer';
-import { Prisma } from '../../../libs/db/generated/client/client';
 import { comparePasswords, hashPassword } from '../../../utils/argon2';
 import { ResetPasswordDto } from '../dtos/auth.dto';
-// import { tokenDto } from '@app/common/dtos/UserDto/token.dto';
-// TODO: abdo if the tokenDto import is not used delete this line
+import { AuthResult } from './interfaces/auth.interface';
+
+interface JwtPayload extends Omit<jwt.JwtPayload, 'sub'> {
+  sub: number;
+  email?: string;
+  fullName?: string;
+  image?: string;
+}
+
 @Injectable()
 export class SvcAuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-    private readonly blackListService: BlackListService,
   ) {}
 
   private transporter = nodemailer.createTransport({
@@ -27,75 +31,64 @@ export class SvcAuthService {
     },
   });
 
-  generateToken(payload: { sub: number }) {
+  async findUserByEmail(email: string) {
+    return await this.prisma.user.findUnique({
+      where: { email },
+    });
+  }
+
+  private generateToken(payload: { sub: number }): {
+    access_token: string;
+    refresh_token: string;
+  } {
     const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
+    const refreshSecret = process.env.JWT_REFRESH_SECRET;
+
+    if (!jwtSecret || !refreshSecret) {
       throw new RpcException({
-        message: 'Auth token configuration is missing (JWT_SECRET)',
+        message: 'JWT configuration missing',
         status: 500,
       });
     }
-
-    const refreshJwtSecret = process.env.JWT_REFRESH_SECRET;
-    if (!refreshJwtSecret) {
-      throw new RpcException({
-        message: 'Auth token configuration is missing (JWT_REFRESH_SECRET)',
-        status: 500,
-      });
-    }
-
-    // jsonwebtoken uses a narrow template-literal type for `expiresIn`.
-    // Environment variables are just `string`, so we cast to the expected type.
-    const accessExpiresIn = (process.env.JWT_EXPIRATION_TIME ??
-      '7h') as jwt.SignOptions['expiresIn'];
-    const refreshExpiresIn = (process.env.JWT_EXPIRATION_TIME_REFRESH_TOKEN ??
-      '7d') as jwt.SignOptions['expiresIn'];
 
     const access_token = this.jwtService.sign(payload, {
       secret: jwtSecret,
-      expiresIn: accessExpiresIn,
+      expiresIn: (process.env.JWT_EXPIRATION_TIME ??
+        '7h') as jwt.SignOptions['expiresIn'],
     });
+
     const refresh_token = this.jwtService.sign(payload, {
-      secret: refreshJwtSecret,
-      expiresIn: refreshExpiresIn,
+      secret: refreshSecret,
+      expiresIn: (process.env.JWT_EXPIRATION_TIME_REFRESH_TOKEN ??
+        '7d') as jwt.SignOptions['expiresIn'],
     });
+
     return { access_token, refresh_token };
   }
 
-  async login(data: LoginDto) {
+  async login(data: LoginDto): Promise<AuthResult> {
     const user = await this.prisma.user.findUnique({
       where: { email: data.email },
     });
-    if (!user) {
+
+    if (!user || !(await comparePasswords(data.password, user.password))) {
       throw new RpcException({ message: 'Invalid credentials', status: 401 });
     }
 
-    const isPasswordValid = await comparePasswords(
-      data.password,
-      user.password,
-    );
-    if (!isPasswordValid) {
-      throw new RpcException({ message: 'Invalid credentials', status: 401 });
-    }
-
-    const { access_token, refresh_token } = this.generateToken({
-      sub: user.id,
-    });
+    const tokens = this.generateToken({ sub: user.id });
     return {
-      message: 'Login successful',
-      access_token: access_token,
-      refresh_token: refresh_token,
+      ...tokens,
       user: {
         id: user.id,
         email: user.email,
         fullName: user.fullName,
         role: user.role,
-        image: user.image,
+        image: user.image ?? undefined, // Fix null -> undefined
       },
     };
   }
 
-  async signup(data: CreateUserDto) {
+  async signup(data: CreateUserDto): Promise<AuthResult> {
     const existingUser = await this.prisma.user.findFirst({
       where: {
         OR: [
@@ -107,72 +100,35 @@ export class SvcAuthService {
     });
 
     if (existingUser) {
-      if (existingUser.email === data.email) {
-        throw new RpcException({
-          message: 'Email already in use',
-          status: 409,
-        });
-      }
-      if (existingUser.phone === data.phone) {
-        throw new RpcException({
-          message: 'Phone number already in use',
-          status: 409,
-        });
-      }
-      if (existingUser.username === data.username) {
-        throw new RpcException({
-          message: 'Username already in use',
-          status: 409,
-        });
-      }
+      throw new RpcException({
+        message: 'User credentials already in use',
+        status: 409,
+      });
     }
 
     const hashedPassword = await hashPassword(data.password);
-    const { role, ...userData } = data;
+    const newUser = await this.prisma.user.create({
+      data: { ...data, password: hashedPassword },
+    });
 
-    try {
-      const newUser = await this.prisma.user.create({
-        data: { ...userData, password: hashedPassword, role: role },
-      });
-
-      const { access_token, refresh_token } = this.generateToken({
-        sub: newUser.id,
-      });
-
-      return {
-        message: 'Signup successful',
-        access_token,
-        refresh_token,
-        user: {
-          id: newUser.id,
-          email: newUser.email,
-          username: newUser.username,
-          role: newUser.role,
-          image: newUser.image,
-        },
-      };
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2002'
-      ) {
-        throw new RpcException({
-          message:
-            'A user with this email, phone number, or username already exists',
-          status: 409,
-        });
-      }
-      throw error;
-    }
+    const tokens = this.generateToken({ sub: newUser.id });
+    return {
+      ...tokens,
+      user: {
+        id: newUser.id,
+        email: newUser.email,
+        fullName: newUser.fullName,
+        username: newUser.username,
+        role: newUser.role,
+        image: newUser.image ?? undefined, // Explicit mapping
+      },
+    };
   }
 
-  async findUserByEmail(email: string) {
-    return this.prisma.user.findUnique({ where: { email } });
-  }
-
-  async finalizeGoogleSignup(data: CompleteGoogleSignupDto) {
-    const { token, password, passwordConfirmation, phone, role, username } =
-      data;
+  async finalizeGoogleSignup(
+    data: CompleteGoogleSignupDto,
+  ): Promise<AuthResult> {
+    const { token, password, passwordConfirmation, ...rest } = data;
 
     if (password !== passwordConfirmation) {
       throw new RpcException({
@@ -182,64 +138,46 @@ export class SvcAuthService {
     }
 
     const tempSecret = process.env.JWT_TEMP_SECRET;
-    if (!tempSecret) {
-      throw new BadRequestException('JWT_TEMP_SECRET not set');
-    }
+    if (!tempSecret) throw new BadRequestException('JWT_TEMP_SECRET missing');
 
-    const decoded = jwt.verify(token, tempSecret);
-    if (
-      typeof decoded === 'string' ||
-      decoded === null ||
-      typeof decoded !== 'object'
-    ) {
-      throw new BadRequestException('Invalid or expired signup token');
-    }
+    const decoded = jwt.verify(token, tempSecret) as unknown as JwtPayload;
 
-    const tempPayload = decoded as {
-      email?: unknown;
-      fullName?: unknown;
-      image?: unknown;
-    };
-
-    if (
-      typeof tempPayload.email !== 'string' ||
-      typeof tempPayload.fullName !== 'string'
-    ) {
-      throw new BadRequestException('Invalid or expired signup token');
+    if (!decoded || typeof decoded === 'string' || !decoded.email) {
+      throw new BadRequestException('Invalid signup token');
     }
 
     const hashedPassword = await hashPassword(password);
     const newUser = await this.prisma.user.create({
       data: {
-        email: tempPayload.email,
+        email: decoded.email,
+        fullName: decoded.fullName ?? '',
+        image: decoded.image ?? '',
         password: hashedPassword,
-        fullName: tempPayload.fullName,
-        phone,
-        image:
-          typeof tempPayload.image === 'string' ? tempPayload.image : undefined,
-        role,
-        username,
+        ...rest,
       },
     });
 
-    const { access_token, refresh_token } = this.generateToken({
-      sub: newUser.id,
-    });
+    const tokens = this.generateToken({ sub: newUser.id });
 
+    // FIX: Map the database object to the restricted UserResponse interface
     return {
-      message: 'Signup successful',
-      access_token,
-      refresh_token,
-      user: newUser,
+      ...tokens,
+      user: {
+        id: newUser.id,
+        email: newUser.email,
+        fullName: newUser.fullName,
+        role: newUser.role,
+        image: newUser.image ?? undefined,
+      },
     };
   }
 
-  async forgotPassword(email: string) {
+  async forgotPassword(email: string): Promise<{ message: string }> {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) throw new BadRequestException('User not found');
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+    const expires = new Date(Date.now() + 10 * 60 * 1000);
 
     await this.prisma.user.update({
       where: { email },
@@ -248,36 +186,32 @@ export class SvcAuthService {
 
     await this.transporter.sendMail({
       to: email,
-      subject: 'Your Password Reset OTP',
-      text: `Your OTP is ${otp}. It expires in 10 minutes.`,
+      subject: 'Password Reset OTP',
+      text: `Your OTP is ${otp}. Expires in 10 mins.`,
     });
 
-    return { message: 'OTP sent to email' };
+    return { message: 'OTP sent' };
   }
 
-  async verifyOtpAndReset(dto: ResetPasswordDto) {
-    const { email, otp, newPassword } = dto;
-    const user = await this.prisma.user.findUnique({ where: { email } });
+  async verifyOtpAndReset(dto: ResetPasswordDto): Promise<{ message: string }> {
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
 
     if (
       !user ||
-      !user.otpCode ||
-      !user.otpExpires ||
-      user.otpCode !== otp ||
-      user.otpExpires < new Date()
+      user.otpCode !== dto.otp ||
+      (user.otpExpires && user.otpExpires < new Date())
     ) {
-      throw new BadRequestException('Invalid or expired OTP');
+      throw new BadRequestException('Invalid/Expired OTP');
     }
 
-    const hashedPassword = await hashPassword(newPassword);
-
+    const hashedPassword = await hashPassword(dto.newPassword);
     await this.prisma.user.update({
-      where: { email },
-      data: {
-        password: hashedPassword,
-      },
+      where: { email: dto.email },
+      data: { password: hashedPassword, otpCode: null, otpExpires: null },
     });
 
-    return { message: 'Password reset successful' };
+    return { message: 'Success' };
   }
 }
