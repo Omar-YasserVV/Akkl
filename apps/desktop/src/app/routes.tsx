@@ -1,15 +1,14 @@
+import SignIn from "@/features/auth/sign-in";
+import BulkUploadMenuItems from "@/features/dashboard/bulk-upload-menu-items";
+import DashboardLayout from "@/features/dashboard/components/dashboard-layout";
+import FinancePage from "@/features/dashboard/finance-page";
+import LiveOrders from "@/features/dashboard/live-orders";
+import MenuManager from "@/features/dashboard/menu-manager";
+import Overview from "@/features/dashboard/overview";
+import Warehouse from "@/features/dashboard/warehouse";
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
-import MenuManager from "@/features/dashboard/menu-manager";
-import FinancePage from "@/features/dashboard/finance-page";
-import Warehouse from "@/features/dashboard/warehouse";
 import NotFound from "./not-found.page";
-import Home from "@/features/home";
-import SignIn from "@/features/auth/sign-in";
-import DashboardLayout from "@/features/dashboard/components/dashboard-layout";
-import Overview from "@/features/dashboard/overview";
-import LiveOrders from "@/features/dashboard/live-orders";
-import BulkUploadMenuItems from "@/features/dashboard/bulk-upload-menu-items";
 export const router = createBrowserRouter([
   {
     path: "*",
@@ -22,10 +21,6 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true, // This makes Home the default for "/"
-        element: <Home />,
-      },
-      {
-        path: "sign-in",
         element: <SignIn />,
       },
       {

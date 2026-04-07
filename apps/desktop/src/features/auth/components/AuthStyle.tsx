@@ -8,7 +8,7 @@ function AuthStyle() {
         backgroundImage: `url(${AkklLoginBackground})`,
       }}
     >
-      <img src={AkklLogin} className="absolute bottom-0 right-0 h-[83%] " />
+      <img src={AkklLogin} className="absolute bottom-0 right-0 h-[83%]" />
     </div>
   );
 }

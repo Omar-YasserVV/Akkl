@@ -1,90 +1,174 @@
+import { Button, Checkbox, Input } from "@heroui/react";
 import { useState } from "react";
-import AuthStyle from "../components/AuthStyle";
+import { HiOutlineEye, HiOutlineEyeOff } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
-import { BiChevronLeft } from "react-icons/bi";
-import { FiEyeOff } from "react-icons/fi";
+import AuthStyle from "../components/AuthStyle";
+
+// Import react-hook-form and zod
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm } from "react-hook-form";
+import { z } from "zod";
+
+// Define Zod schema
+const signInSchema = z.object({
+  email: z
+    .string()
+    .min(1, "Email is required.")
+    .email("Email must be a valid email address."),
+  password: z.string().min(1, "Password is required."),
+  remember: z.boolean().optional(),
+});
+
+type SignInFormData = z.infer<typeof signInSchema>;
 
 function SignIn() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setError,
+    control,
+    watch,
+    setValue,
+  } = useForm<SignInFormData>({
+    mode: "onSubmit",
+    resolver: zodResolver(signInSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      remember: false,
+    },
+  });
+
+  const onSubmit = async (data: SignInFormData) => {
+    try {
+      // Replace with your authentication logic
+      // Simulate async auth
+      await new Promise((res) => setTimeout(res, 1000));
+      // On success, redirect (customize as needed)
+      navigate("/dashboard");
+    } catch (err) {
+      // Handle auth error (customize)
+      setError("password", { message: "Invalid credentials" });
+    }
+  };
+
+  const emailVal = watch("email");
+  const passwordVal = watch("password");
+  const rememberVal = watch("remember");
+
   return (
     <div className="relative flex bg-white">
       <div className="w-1/2 h-screen">
         <div className="full h-screen flex flex-col items-center justify-center px-20">
           <div className="w-full max-w-md">
-            {/* Back Button */}
-            <button
-              onClick={() => navigate(-1)}
-              className="p-2 bg-[#F1F1F1] rounded-xl mb-8 hover:bg-gray-200 transition-colors cursor-pointer"
-            >
-              <BiChevronLeft size={24} className="text-[#262626]" />
-            </button>
-
-            {/* Header */}
             <h1 className="text-4xl font-bold text-gray-900 mb-2">Sign in</h1>
             <p className="text-gray-400 mb-10">
               Please login to continue to your account.
             </p>
 
-            <form className="space-y-6">
-              {/* Email Field */}
-              <div className="relative group">
-                <label className="absolute -top-2.75 left-4 bg-white px-1 text-sm font-medium text-gray-400 z-10 transition-colors group-focus-within:text-blue-500">
-                  Email
-                </label>
-
-                <input
-                  type="text"
-                  placeholder="Email or phone number"
-                  className="w-full px-4 py-4 border border-[#9A9A9A] rounded-xl 
-                 focus:outline-none focus:border-blue-500 
-                 text-gray-700 placeholder-[#9A9A9A]"
-                />
-              </div>
-
-              {/* Password Field */}
-              <div className="relative group">
-                <label className="absolute -top-2.75 left-4 bg-white px-1 text-sm font-medium text-gray-400 z-10 transition-colors group-focus-within:text-blue-500">
-                  Password
-                </label>
-
-                <div className="relative">
-                  <input
+            <form
+              className="space-y-6"
+              onSubmit={handleSubmit(onSubmit)}
+              noValidate
+            >
+              <div className="space-y-10">
+                <div>
+                  <Input
+                    type="text"
+                    variant="bordered"
+                    label="Email"
+                    labelPlacement="outside"
+                    classNames={{
+                      innerWrapper: "px-2",
+                      inputWrapper:
+                        "h-15 group-data-[focus=true]:border-primary data-[hover=true]:border-primary/50 group-data-[focus=true]:data-[hover=true]:border-primary !hover:border-primary",
+                      label: "bg-white px-1.5 ml-3 top-9 w-fit",
+                    }}
+                    placeholder="Email or phone number"
+                    className="w-full text-gray-700 placeholder-[#9A9A9A]"
+                    {...register("email")}
+                    value={emailVal}
+                    onChange={(e) => setValue("email", e.target.value)}
+                    isInvalid={!!errors.email}
+                    errorMessage={errors.email?.message}
+                  />
+                </div>
+                <div>
+                  <Input
                     type={showPassword ? "text" : "password"}
                     placeholder="Password"
-                    className="w-full px-4 py-4 border border-[#9A9A9A] rounded-xl 
-                 focus:outline-none focus:border-blue-500 
-                 text-gray-700 placeholder-[#9A9A9A]"
+                    endContent={
+                      showPassword ? (
+                        <HiOutlineEye
+                          size={20}
+                          className="cursor-pointer"
+                          aria-label="Hide password"
+                          tabIndex={0}
+                          onClick={() => setShowPassword(false)}
+                        />
+                      ) : (
+                        <HiOutlineEyeOff
+                          size={20}
+                          className="cursor-pointer"
+                          aria-label="Show password"
+                          tabIndex={0}
+                          onClick={() => setShowPassword(true)}
+                        />
+                      )
+                    }
+                    classNames={{
+                      innerWrapper: "px-2",
+                      inputWrapper:
+                        "h-15 group-data-[focus=true]:border-primary data-[hover=true]:border-primary/50 group-data-[focus=true]:data-[hover=true]:border-primary !hover:border-primary",
+                      label: "bg-white px-1.5 ml-3 top-9 w-fit",
+                    }}
+                    variant="bordered"
+                    label="Password"
+                    labelPlacement="outside"
+                    className="w-full text-gray-700 placeholder-[#9A9A9A]"
+                    {...register("password")}
+                    value={passwordVal}
+                    onChange={(e) => setValue("password", e.target.value)}
+                    isInvalid={!!errors.password}
+                    errorMessage={errors.password?.message}
                   />
-
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
-                  >
-                    <FiEyeOff size={22} className="cursor-pointer" />
-                  </button>
                 </div>
               </div>
 
-              {/* Remember & Forgot */}
               <div className="flex items-center justify-between text-sm">
-                <label className="flex items-center space-x-2 cursor-pointer text-gray-600">
-                  <input
-                    type="checkbox"
-                    className="w-4 h-4 r border-gray-300 text-secondary focus:ring-blue-500 cursor-pointer"
-                  />
-                  <span>Remember me</span>
-                </label>
+                <Controller
+                  control={control}
+                  name="remember"
+                  render={({ field: { onChange, onBlur } }) => (
+                    <Checkbox
+                      checked={!!rememberVal}
+                      onChange={onChange}
+                      onBlur={onBlur}
+                    >
+                      Remember me
+                    </Checkbox>
+                  )}
+                />
+
                 <a href="#" className="text-gray-600 hover:underline">
                   Forgot password?
                 </a>
               </div>
 
-              {/* Sign In Button */}
-              <button className="w-full bg-secondary text-white py-4 rounded-xl font-semibold text-lg hover:bg-blue-700 transition-all hover:shadow-lg hover:shadow-blue-200 cursor-pointer">
-                Sign in
-              </button>
+              <Button
+                size="lg"
+                radius="sm"
+                type="submit"
+                className="w-full bg-secondary text-white py-4 font-semibold text-lg hover:bg-blue-700 transition-all hover:shadow-lg hover:shadow-blue-200 cursor-pointer"
+                isLoading={isSubmitting}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Signing in..." : "Sign in"}
+              </Button>
             </form>
           </div>
         </div>
