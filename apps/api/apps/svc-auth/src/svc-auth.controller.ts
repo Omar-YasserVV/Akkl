@@ -1,15 +1,11 @@
+import { CompleteGoogleSignupDto, CreateUserDto, LoginDto, tokenDto } from '@app/common';
+import { BlackListService } from '@app/guards/services/blacklist.service';
 import {
-  Controller,
-  Request,
-  Response,
-  // UnauthorizedException,
+  Controller
 } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
+import { GoogleUserDto, ResetPasswordDto } from '../dtos/auth.dto';
 import { SvcAuthService } from './svc-auth.service';
-import { LoginDto, CreateUserDto, CompleteGoogleSignupDto } from '@app/common';
-import { BlackListService } from '@app/guards/services/blacklist.service';
-import { GoogleUserDto, LogoutDto, ResetPasswordDto } from '../dtos/auth.dto';
-// import { tokenDto } from '@app/common/dtos/UserDto/token.dto';
 // TODO: remove un used code //Abdo
 // TODO: abdo fix this dtos i created file called auth.dto.ts in this folder make use the one time dto use there and the many uses in the common
 
@@ -31,7 +27,7 @@ export class SvcAuthController {
   }
 
   @MessagePattern('logout')
-  async handleLogout(@Payload() data: LogoutDto) {
+  async handleLogout(@Payload() data: tokenDto) {
     if (data && data.Token) {
       await this.blackListService.pushBlacklistedToken(data);
     }
