@@ -1,12 +1,9 @@
 import { CompleteGoogleSignupDto, CreateUserDto, LoginDto } from '@app/common';
-import {
-  CreateEmployeeDto,
-  EmployeeLoginDto,
-} from '@app/common/dtos/Employees/employee.dto';
 import { PrismaService } from '@app/db';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { RpcException } from '@nestjs/microservices';
+import * as crypto from 'crypto';
 import * as jwt from 'jsonwebtoken';
 import * as nodemailer from 'nodemailer';
 import { comparePasswords, hashPassword } from '../../../utils/argon2';
@@ -221,84 +218,62 @@ export class SvcAuthService {
     return { message: 'Success' };
   }
 
-  async employeeLogin(data: EmployeeLoginDto): Promise<AuthResult> {
-    const employee = await this.prisma.employee.findUnique({
-      where: { email: data.email }, // Matches your updated DTO
-    });
-
-    if (!employee) {
-      throw new RpcException({
-        message: 'Invalid staff credentials',
-        status: 401,
-      });
-    }
-
-    const isPasswordValid = await comparePasswords(
-      data.password,
-      employee.password,
-    );
-    if (!isPasswordValid) {
-      throw new RpcException({
-        message: 'Invalid staff credentials',
-        status: 401,
-      });
-    }
-
-    const tokens = this.generateToken({
-      sub: employee.id,
-      type: 'employee',
-      branchId: employee.branchId,
-    });
-
-    return {
-      ...tokens,
-      user: {
-        id: employee.id,
-        username: employee.username,
-        fullName: employee.fullName,
-        branchId: employee.branchId,
-        role: employee.role,
-        email: employee.email,
-        image: employee.image ?? undefined,
+  async createEmployee(data: CreateUserDto): Promise<{
+    message: string;
+    id: number;
+    generatedUsername: string;
+    tempPassword: string;
+  }> {
+    const existingUser = await this.prisma.user.findFirst({
+      where: {
+        OR: [{ email: data.email }, { phone: data.phone }],
       },
-    };
-  }
-
-  async createEmployee(
-    data: CreateEmployeeDto,
-  ): Promise<{ message: string; id: number }> {
-    const existingEmployee = await this.prisma.employee.findUnique({
-      where: { username: data.username },
     });
 
-    if (existingEmployee) {
+    if (existingUser) {
       throw new RpcException({
-        message: 'Username is already taken by another staff member',
+        message: 'User with this email or phone already exists',
         status: 409,
       });
     }
 
-    const hashedPassword = await hashPassword(data.password);
+    const baseUsername = data.fullName.toLowerCase().replace(/\s+/g, '_');
+    const randomSuffix = crypto.randomBytes(2).toString('hex');
+    const generatedUsername = `${baseUsername}_${randomSuffix}`;
 
-    const newEmployee = await this.prisma.employee.create({
-      data: {
-        ...data,
-        password: hashedPassword,
-        image: data.image ?? null,
-        salary: 0,
-      },
-    });
-    return {
-      message: 'Employee created successfully',
-      id: newEmployee.id,
-    };
+    const tempPassword = crypto.randomBytes(4).toString('hex');
+    const hashedPassword = await hashPassword(tempPassword);
+
+    try {
+      const newEmployee = await this.prisma.user.create({
+        data: {
+          ...data,
+          username: generatedUsername,
+          password: hashedPassword,
+          image: data.image ?? null,
+        },
+      });
+
+      return {
+        message:
+          'Employee created successfully. Please provide them with their credentials.',
+        id: newEmployee.id,
+        generatedUsername,
+        tempPassword,
+      };
+    } catch {
+      throw new RpcException({
+        message: 'Failed to create employee',
+        status: 500,
+      });
+    }
   }
 
   async getEmployeeProfile(id: number): Promise<UserResponse> {
-    const employee = await this.prisma.employee.findUnique({
+    const employee = await this.prisma.user.findUnique({
       where: { id },
       include: {
-        branch: {
+        bransh: {
           select: {
             name: true,
             restaurant: { select: { name: true } },
@@ -314,16 +289,6 @@ export class SvcAuthService {
       });
     }
 
-    return {
-      id: employee.id,
-      username: employee.username,
-      fullName: employee.fullName,
-      email: employee.email,
-      role: employee.role,
-      branchId: employee.branchId, // Critical for Desktop app routing
-      image: employee.image ?? undefined,
-      branchName: employee.branch.name,
-      restaurantName: employee.branch.restaurant.name,
-    };
+    return { ...employee, image: employee.image ?? undefined };
   }
 }

@@ -1,48 +1,59 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsEmail,
   IsEnum,
+  IsInt,
   IsNotEmpty,
   IsOptional,
   IsPhoneNumber,
   IsString,
+  IsUrl,
   MinLength,
 } from 'class-validator';
 import { UserRole } from '../../../../db/generated/client/client';
 
 export class CreateUserDto {
+  @ApiProperty({ example: 'omar@email.com' })
   @IsEmail()
   @IsNotEmpty()
-  @ApiProperty({ example: 'omar@email.com' })
   email!: string;
 
+  @ApiProperty({ example: '!password123@zX1' })
   @IsString()
   @MinLength(8, { message: 'Password must be at least 8 characters long' })
-  @ApiProperty({ example: '!password123@zX1' })
   password!: string;
 
+  @ApiProperty({ example: 'Omar Hassan' })
   @IsString()
   @IsNotEmpty()
-  @ApiProperty({ example: 'Omar Hassan' })
   fullName!: string;
 
+  @ApiProperty({ example: 'omar_hassan' })
   @IsString()
   @IsNotEmpty()
-  @ApiProperty({ example: 'omar_hassan' })
   username!: string;
 
+  @ApiProperty({ example: '+1234567890' })
   @IsPhoneNumber()
   @IsNotEmpty()
-  @ApiProperty({ example: '+1234567890' })
   phone!: string;
 
+  @ApiPropertyOptional({ example: 'https://example.com/profile.jpg' })
   @IsOptional()
   @IsString()
-  @ApiProperty({ example: 'https://example.com/profile.jpg' })
+  @IsUrl()
   image?: string;
 
+  @ApiPropertyOptional({ enum: UserRole, default: UserRole.CUSTOMER })
   @IsOptional()
   @IsEnum(UserRole)
-  @ApiProperty({ enum: UserRole })
   role?: UserRole;
+
+  @ApiPropertyOptional({
+    example: 1,
+    description: 'The ID of the branch the user belongs to',
+  })
+  @IsOptional()
+  @IsInt()
+  brancheId?: number;
 }

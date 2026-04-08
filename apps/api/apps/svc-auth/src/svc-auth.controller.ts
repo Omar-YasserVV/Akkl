@@ -1,19 +1,19 @@
-import { CompleteGoogleSignupDto, CreateUserDto, LoginDto } from '@app/common';
+import {
+  CompleteGoogleSignupDto,
+  CreateUserDto,
+  LoginDto,
+  tokenDto,
+} from '@app/common';
 import { BlackListService } from '@app/guards/services/blacklist.service';
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { GoogleUserDto, LogoutDto, ResetPasswordDto } from '../dtos/auth.dto';
-import { SvcAuthService } from './svc-auth.service';
-// Import the interfaces defined above
-import {
-  CreateEmployeeDto,
-  EmployeeLoginDto,
-} from '@app/common/dtos/Employees/employee.dto';
+import { GoogleUserDto, ResetPasswordDto } from '../dtos/auth.dto';
 import {
   AuthResult,
   MessageResult,
   UserResponse,
 } from './interfaces/auth.interface';
+import { SvcAuthService } from './svc-auth.service';
 
 @Controller()
 export class SvcAuthController {
@@ -33,12 +33,8 @@ export class SvcAuthController {
   }
 
   @MessagePattern('logout')
-  async handleLogout(
-    @Payload() data: LogoutDto,
-  ): Promise<{ success: boolean }> {
-    if (data?.Token) {
-      await this.blackListService.pushBlacklistedToken(data);
-    }
+  async handleLogout(@Payload() data: tokenDto): Promise<{ success: boolean }> {
+    await this.blackListService.pushBlacklistedToken(data);
     return { success: true };
   }
 
@@ -67,13 +63,8 @@ export class SvcAuthController {
   }
 
   @MessagePattern('create-employee')
-  async createEmployee(@Payload() data: CreateEmployeeDto) {
+  async createEmployee(@Payload() data: CreateUserDto) {
     return this.svcAuthService.createEmployee(data);
-  }
-
-  @MessagePattern('employee-login')
-  async employeeLogin(@Payload() data: EmployeeLoginDto): Promise<AuthResult> {
-    return this.svcAuthService.employeeLogin(data);
   }
 
   @MessagePattern('get-employee-profile')

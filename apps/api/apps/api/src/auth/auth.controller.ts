@@ -1,8 +1,4 @@
 import { CompleteGoogleSignupDto, CreateUserDto, LoginDto } from '@app/common';
-import {
-  CreateEmployeeDto,
-  EmployeeLoginDto,
-} from '@app/common/dtos/Employees/employee.dto';
 import { JwtAuthGuard } from '@app/guards/jwt-auth.guard';
 import {
   Body,
@@ -17,7 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation } from '@nestjs/swagger';
 import { ResetPasswordDto } from 'apps/svc-auth/dtos/auth.dto';
 import { UserResponse } from 'apps/svc-auth/src/interfaces/auth.interface';
 import { Request, Response } from 'express';
@@ -72,11 +68,11 @@ export class AuthController {
   ): void {
     res.cookie('access_token', tokens.access_token, {
       ...this.cookieOptions,
-      maxAge: 1000 * 60 * 60 * 7, // 7 Hours
+      maxAge: 1000 * 60 * 60 * 7,
     });
     res.cookie('refresh_token', tokens.refresh_token, {
       ...this.cookieOptions,
-      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 Days
+      maxAge: 1000 * 60 * 60 * 24 * 7,
     });
   }
 
@@ -93,7 +89,6 @@ export class AuthController {
     this.setAuthCookies(res, { access_token, refresh_token });
 
     return res.status(HttpStatus.CREATED).json({
-      status: 'success',
       data: { user },
     });
   }
@@ -108,7 +103,6 @@ export class AuthController {
     this.setAuthCookies(res, { access_token, refresh_token });
 
     return res.status(HttpStatus.OK).json({
-      status: 'success',
       data: { user },
     });
   }
@@ -129,7 +123,6 @@ export class AuthController {
     res.clearCookie('refresh_token', this.cookieOptions);
 
     return res.status(HttpStatus.OK).json({
-      status: 'success',
       message: 'Logged out successfully',
     });
   }
@@ -147,7 +140,6 @@ export class AuthController {
     this.setAuthCookies(res, { access_token, refresh_token });
 
     return res.status(HttpStatus.OK).json({
-      status: 'success',
       data: { user },
     });
   }
@@ -174,60 +166,21 @@ export class AuthController {
     return res.status(HttpStatus.OK).json(result);
   }
 
-  // emp
   @Post('staff/create')
-  async createStaff(@Body() data: CreateEmployeeDto): Promise<MessageResponse> {
+  async createStaff(@Body() data: CreateUserDto): Promise<MessageResponse> {
     return await lastValueFrom(
       this.authService.send<MessageResponse>('create-employee', data),
     );
   }
 
-  @Post('employee/login')
-  @ApiOperation({ summary: 'Login for Staff (Sets tokens in cookies only)' })
-  @ApiResponse({
-    status: 200,
-    description: 'Sets cookies and returns user data',
-  })
-  async employeeLogin(
-    @Body() data: EmployeeLoginDto,
-    @Res() res: Response,
-  ): Promise<Response> {
-    const result = await lastValueFrom(
-      this.authService.send<AuthResponse>('employee-login', data),
-    );
-
-    const { access_token, refresh_token, user } = result;
-
-    this.setAuthCookies(res, { access_token, refresh_token });
-
-    return res.status(HttpStatus.OK).json({
-      status: 'success',
-      data: {
-        user,
-      },
-    });
-  }
-
   @Get('employee/me')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Get authenticated employee profile' })
-  @ApiResponse({
-    status: 200,
-    description: "Returns the authenticated employee's profile",
-    type: Object, // Optionally replace 'Object' with a class if available, e.g. UserResponse
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized. User ID not found in token',
-  })
   async getEmployeeMe(@Req() req: AuthenticatedRequest): Promise<UserResponse> {
     const userId = req.user.sub || req.user.id;
 
     if (!userId) {
-      throw new HttpException(
-        'User ID not found in token',
-        HttpStatus.UNAUTHORIZED,
-      );
+      throw new HttpException('User ID not found', HttpStatus.UNAUTHORIZED);
     }
 
     const profile = await lastValueFrom(
