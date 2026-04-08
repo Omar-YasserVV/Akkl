@@ -1,8 +1,4 @@
 import { CompleteGoogleSignupDto, CreateUserDto, LoginDto } from '@app/common';
-import {
-  CreateEmployeeDto,
-  EmployeeLoginDto,
-} from '@app/common/dtos/Employees/employee.dto';
 import { JwtAuthGuard } from '@app/guards/jwt-auth.guard';
 import {
   Body,
@@ -72,11 +68,11 @@ export class AuthController {
   ): void {
     res.cookie('access_token', tokens.access_token, {
       ...this.cookieOptions,
-      maxAge: 1000 * 60 * 60 * 7, // 7 Hours
+      maxAge: 1000 * 60 * 60 * 7,
     });
     res.cookie('refresh_token', tokens.refresh_token, {
       ...this.cookieOptions,
-      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 Days
+      maxAge: 1000 * 60 * 60 * 24 * 7,
     });
   }
 
@@ -93,7 +89,6 @@ export class AuthController {
     this.setAuthCookies(res, { access_token, refresh_token });
 
     return res.status(HttpStatus.CREATED).json({
-      status: 'success',
       data: { user },
     });
   }
@@ -108,7 +103,6 @@ export class AuthController {
     this.setAuthCookies(res, { access_token, refresh_token });
 
     return res.status(HttpStatus.OK).json({
-      status: 'success',
       data: { user },
     });
   }
@@ -129,7 +123,6 @@ export class AuthController {
     res.clearCookie('refresh_token', this.cookieOptions);
 
     return res.status(HttpStatus.OK).json({
-      status: 'success',
       message: 'Logged out successfully',
     });
   }
@@ -147,7 +140,6 @@ export class AuthController {
     this.setAuthCookies(res, { access_token, refresh_token });
 
     return res.status(HttpStatus.OK).json({
-      status: 'success',
       data: { user },
     });
   }
@@ -176,7 +168,7 @@ export class AuthController {
 
   // emp
   @Post('staff/create')
-  async createStaff(@Body() data: CreateEmployeeDto): Promise<MessageResponse> {
+  async createStaff(@Body() data: CreateUserDto): Promise<MessageResponse> {
     return await lastValueFrom(
       this.authService.send<MessageResponse>('create-employee', data),
     );

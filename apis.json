@@ -5,11 +5,11 @@
       "contact": {
         "engineer": "Abdelrhman-Fawzy",
         "platform": "Discord",
-        "discord name": "Devil",
+        "discord_name": "Devil",
         "discord_handle": "fawzy.x",
         "action": "Open a ticket or DM if you hit a blocking error."
       },
-      "last_updated": "2026-04-01"
+      "last_updated": "2024-10-01"
     }
   },
   {
@@ -22,14 +22,15 @@
         "url": "/auth/signup",
         "description": "Registers a new user and sets access/refresh tokens in cookies.",
         "body_schema": {
-          "email": "string (Required: Valid email format)",
+          "email": "string (Required: Valid email format, ex: omar@email.com)",
           "password": "string (Required: Min 8 chars)",
-          "fullName": "string (Required)",
-          "username": "string (Required)",
+          "fullName": "string (Required, ex: Omar Yasser)",
+          "username": "string (Required, ex: omar_user)",
           "phone": "string (Required: Valid phone format)",
           "image": "string (Optional: URL)",
           "role": "enum (Optional: CUSTOMER | BUSINESS_OWNER)"
-        }
+        },
+        "security": "None (public)"
       },
       {
         "action": "Local Login",
@@ -37,9 +38,10 @@
         "url": "/auth/login",
         "description": "Authenticates user credentials and sets access/refresh tokens in cookies.",
         "body_schema": {
-          "email": "string (Required)",
+          "email": "string (Required, ex: omar@email.com)",
           "password": "string (Required)"
-        }
+        },
+        "security": "None (public)"
       },
       {
         "action": "Google Login",
@@ -72,7 +74,9 @@
         "method": "POST",
         "url": "/auth/forgot-password",
         "description": "Generates a 6-digit OTP and sends it to the user's email via Nodemailer.",
-        "body_schema": { "email": "string (Required)" }
+        "body_schema": {
+          "email": "string (Required)"
+        }
       },
       {
         "action": "Reset Password",
@@ -84,6 +88,29 @@
           "otp": "string (Required: 6 digits)",
           "newPassword": "string (Required: Min 8 chars)"
         }
+      },
+      {
+        "action": "Create Staff/Employee",
+        "method": "POST",
+        "url": "/auth/staff/create",
+        "description": "Creates a new employee/staff member for a branch.",
+        "body_schema": {
+          "fullName": "string (Required, ex: Omar Yasser)",
+          "username": "string (Required, ex: omar_admin_01)",
+          "email": "string (Required, ex: omar.staff@example.com)",
+          "password": "string (Required: Min 6 chars)",
+          "role": "enum (Required: StaffRole - ADMIN, etc.)",
+          "image": "string (Optional: URL)",
+          "branchId": "number (Required, ex: 1)"
+        },
+        "security": "JwtAuthGuard (likely BUSINESS_OWNER)"
+      },
+      {
+        "action": "Get Employee Profile",
+        "method": "GET",
+        "url": "/auth/employee/me",
+        "description": "Returns the authenticated employee's profile.",
+        "security": "JwtAuthGuard"
       }
     ]
   },
@@ -95,7 +122,7 @@
         "action": "Get All Restaurants",
         "method": "GET",
         "url": "/restaurants",
-        "description": "Retrieves a list of all restaurants. Protected by JWT and BUSINESS_OWNER role.",
+        "description": "Retrieves a list of all restaurants.",
         "security": "JwtAuthGuard, RolesGuard (BUSINESS_OWNER)"
       },
       {
@@ -103,32 +130,38 @@
         "method": "POST",
         "url": "/restaurants",
         "description": "Creates a new restaurant associated with the authenticated user ID.",
-        "security": "JwtAuthGuard, RolesGuard (BUSINESS_OWNER)",
         "body_schema": {
-          "name": "string (Required: Unique)",
-          "logoUrl": "string (Optional: URL)"
-        }
+          "name": "string (Required, ex: Koshary El Tahrir)",
+          "logoUrl": "string (Optional URL, ex: https://example.com/logo.png)"
+        },
+        "security": "JwtAuthGuard, RolesGuard (BUSINESS_OWNER)"
       },
       {
-        "name": "Get Restaurant By ID",
+        "action": "Get Restaurant By ID",
         "method": "GET",
         "url": "/restaurants/:id",
         "description": "Fetches detailed information for a specific restaurant by its ID.",
-        "params": { "id": "number (Required)" }
+        "params": {
+          "id": "number (Required)"
+        }
       },
       {
-        "name": "Get Restaurants By Owner",
+        "action": "Get Restaurants By Owner",
         "method": "GET",
         "url": "/restaurants/owner/:userId",
         "description": "Retrieves all restaurants belonging to a specific owner ID.",
-        "params": { "userId": "number (Required)" }
+        "params": {
+          "userId": "number (Required)"
+        }
       },
       {
         "action": "Update Restaurant",
         "method": "PATCH",
         "url": "/restaurants/update/:id",
-        "description": "Updates details of an existing restaurant.",
-        "params": { "id": "number (Required)" },
+        "description": "Updates details of an existing restaurant (partial updates).",
+        "params": {
+          "id": "number (Required)"
+        },
         "body_schema": {
           "name": "string (Optional)",
           "logoUrl": "string (Optional)"
@@ -139,7 +172,9 @@
         "method": "DELETE",
         "url": "/restaurants/delete/:id",
         "description": "Removes a restaurant record from the database.",
-        "params": { "id": "number (Required)" }
+        "params": {
+          "id": "number (Required)"
+        }
       }
     ]
   },
@@ -148,197 +183,170 @@
     "base_url": "/branches",
     "endpoints": [
       {
-        "action": "Get All Branches",
+        "action": "Create Branch",
+        "method": "POST",
+        "url": "/branches/:restaurantId",
+        "description": "Adds a new branch to a restaurant.",
+        "params": {
+          "restaurantId": "number (Required)"
+        },
+        "body_schema": {
+          "branchNumber": "number (Required, ex: 1)",
+          "name": "string (Required, ex: Nasr City Branch)",
+          "address": "string (Required, ex: 123 Abbas El Akkad St)",
+          "restaurantId": "number (Required)",
+          "haveTables": "boolean (Optional)",
+          "tablesCount": "number (Optional, ex: 20)",
+          "haveReservations": "boolean (Optional)",
+          "haveWarehouses": "boolean (Optional)",
+          "warehouseName": "string (Optional, ex: Main Warehouse)"
+        }
+      },
+      {
+        "action": "Get Branches by Restaurant",
         "method": "GET",
         "url": "/branches/:restaurantId",
-        "description": "Fetches the initial list of branches for a restaurant. Microservice proxy.",
         "params": {
-          "restaurantId": "number (Required)",
-          "http_proxy": "/branches/:restaurantId"
-        },
-        "controller": "api/branch.controller"
+          "restaurantId": "number (Required)"
+        }
       },
       {
         "action": "Get Branch By ID",
         "method": "GET",
         "url": "/branches/:restaurantId/:branchId",
-        "description": "Fetches deep info (menus, staff, tables) for a specific branch. Microservice proxy.",
         "params": {
           "restaurantId": "number (Required)",
-          "branchId": "number (Required)",
-          "http_proxy": "/branches/:restaurantId/:branchId"
-        },
-        "controller": "api/branch.controller"
-      },
-      {
-        "action": "Create Branch",
-        "method": "POST",
-        "url": "create-branch",
-        "description": "Adds a new branch, emits socket 'new_branch_added'. Microservice + HTTP proxy.",
-        "params": {
-          "restaurantId": "number (Required)",
-          "http_proxy": "/branches/:restaurantId"
-        },
-        "body_schema": {
-          "name": "string",
-          "address": "string",
-          "haveTables": "boolean",
-          "haveReservations": "boolean",
-          "haveWarehouses": "boolean"
-        },
-        "controller": "svc-branch + api/branch.controller"
+          "branchId": "number (Required)"
+        }
       },
       {
         "action": "Update Branch",
         "method": "PATCH",
-        "url": "update-branch",
-        "description": "Updates branch, emits socket 'branch_updated'.",
+        "url": "/branches/:restaurantId/:branchId",
         "params": {
-          "restaurantId": "number (Required)",
-          "branchId": "number (Required)",
-          "http_proxy": "/branches/:restaurantId/:branchId"
+          "restaurantId": "number",
+          "branchId": "number"
         },
-        "body_schema": {
-          "name": "string (Optional)",
-          "address": "string (Optional)",
-          "haveTables": "boolean (Optional)"
-        },
-        "controller": "svc-branch"
+        "body_schema": "Partial CreateBranchDto fields"
       },
       {
         "action": "Delete Branch",
         "method": "DELETE",
-        "url": "delete-branch",
-        "description": "Deletes branch, emits socket 'branch_deleted'.",
+        "url": "/branches/:restaurantId/:branchId",
         "params": {
-          "restaurantId": "number (Required)",
-          "branchId": "number (Required)",
-          "http_proxy": "/branches/:restaurantId/:branchId"
-        },
-        "controller": "svc-branch"
-      },
-      {
-        "action": "Get All Menus",
-        "method": "MessagePattern",
-        "url": "get_all_menus",
-        "description": "Microservice to get all menus.",
-        "controller": "svc-branch/menu"
+          "restaurantId": "number",
+          "branchId": "number"
+        }
       },
       {
         "action": "Get Branch Menu",
-        "method": "MessagePattern",
-        "url": "get_branch_menu",
-        "description": "Microservice to get branch menu.",
+        "method": "GET",
+        "url": "/branches/:restaurantId/:branchId/menu",
         "params": {
-          "branchId": "number (Required)",
-          "http_proxy": "/branches/:restaurantId/:branchId/menu"
-        },
-        "controller": "svc-branch/menu + api/branch.controller"
+          "restaurantId": "number",
+          "branchId": "number"
+        }
       },
       {
         "action": "Create Menu Item",
-        "method": "MessagePattern",
-        "url": "create_menu",
-        "description": "Microservice to create menu item.",
+        "method": "POST",
+        "url": "/branches/:restaurantId/:branchId/menu",
         "params": {
-          "branchId": "number (Required)",
-          "http_proxy": "/branches/:restaurantId/:branchId/menu"
+          "restaurantId": "number",
+          "branchId": "number"
         },
         "body_schema": {
           "menuItemId": "number",
-          "name": "string",
-          "description": "string",
-          "price": "number",
-          "imageUrl": "string",
-          "recipe": "array[{name:string,quantity:number,unit:string}]"
+          "branchId": "number",
+          "name": "string (ex: Chicken Shawarma)",
+          "description": "string (opt)",
+          "image": "string (opt URL)",
+          "isAvailable": "boolean",
+          "variations": "array of {id: num, name: str, price: num}",
+          "dietaryTags": "array of numbers (opt)",
+          "recipe": "array of {ingredientId: num, quantityRequired: num, unit: str}"
+        }
+      },
+      {
+        "action": "Upload Menu Excel",
+        "method": "POST",
+        "url": "/branches/:restaurantId/:branchId/menu/upload",
+        "description": "Upload Excel file to bulk create/update menu items.",
+        "params": {
+          "restaurantId": "number",
+          "branchId": "number"
         },
-        "controller": "svc-branch/menu + api/branch.controller"
+        "body": "multipart/form-data, field 'file' (Excel file)"
       },
       {
         "action": "Update Menu Item",
-        "method": "MessagePattern",
-        "url": "update_menu_item",
-        "description": "Microservice to update menu item, emits 'menu_item.updated'.",
+        "method": "PATCH",
+        "url": "/branches/:restaurantId/:branchId/menu/:menuItemId",
         "params": {
-          "menuItemId": "number (Required)",
-          "http_proxy": "/branches/:restaurantId/:branchId/menu/:menuItemId"
+          "restaurantId": "number",
+          "branchId": "number",
+          "menuItemId": "number"
         },
-        "body_schema": {
-          "name": "string (Opt)",
-          "description": "string (Opt)",
-          "price": "number (Opt)",
-          "imageUrl": "string (Opt)",
-          "recipe": "array"
-        },
-        "controller": "svc-branch/menu"
+        "body_schema": "Partial BranchMenuItemDetailDto"
       },
       {
         "action": "Delete Menu Item",
-        "method": "MessagePattern",
-        "url": "delete_menu_item",
-        "description": "Microservice to delete menu item, emits 'menu_item.deleted'.",
+        "method": "DELETE",
+        "url": "/branches/:restaurantId/:branchId/menu/:menuItemId",
         "params": {
-          "menuItemId": "number (Required)",
-          "http_proxy": "/branches/:restaurantId/:branchId/menu/:menuItemId"
-        },
-        "controller": "svc-branch/menu"
+          "restaurantId": "number",
+          "branchId": "number",
+          "menuItemId": "number"
+        }
       },
       {
         "action": "Create Order",
-        "method": "MessagePattern",
-        "url": "create_order",
-        "description": "Microservice to create order, emits 'order.created'.",
-        "params": { "branchId": "number (Required)" },
-        "body_schema": {
-          "tableNumber": "string",
-          "customerName": "string",
-          "items": "array",
-          "totalAmount": "number",
-          "status": "enum"
+        "method": "POST",
+        "url": "/branches/:restaurantId/:branchId/orders",
+        "params": {
+          "restaurantId": "number",
+          "branchId": "number"
         },
-        "controller": "svc-branch/order"
+        "body_schema": {
+          "totalAmount": "number (ex: 150.75)",
+          "branchId": "number",
+          "userId": "number",
+          "status": "OrderState enum (opt, ex: PENDING)"
+        }
+      },
+      {
+        "action": "Get Orders by Branch",
+        "method": "GET",
+        "url": "/branches/:restaurantId/:branchId/orders",
+        "params": {
+          "restaurantId": "number",
+          "branchId": "number"
+        }
+      },
+      {
+        "action": "Get Order by ID",
+        "method": "GET",
+        "url": "/branches/:restaurantId/:branchId/orders/:orderId",
+        "params": {
+          "orderId": "number"
+        }
       },
       {
         "action": "Update Order",
-        "method": "MessagePattern",
-        "url": "update_order",
-        "description": "Microservice to update order, emits 'order.updated'.",
-        "params": { "orderId": "number (Required)" },
-        "body_schema": {
-          "tableNumber": "string (Opt)",
-          "customerName": "string (Opt)",
-          "items": "array (Opt)",
-          "totalAmount": "number (Opt)",
-          "status": "enum (Opt)"
+        "method": "PATCH",
+        "url": "/branches/:restaurantId/:branchId/orders/:orderId",
+        "params": {
+          "orderId": "number"
         },
-        "controller": "svc-branch/order"
+        "body_schema": "Partial CreateOrderDto"
       },
       {
         "action": "Delete Order",
-        "method": "MessagePattern",
-        "url": "delete_order",
-        "description": "Microservice to delete order, emits 'order.deleted'.",
-        "params": { "orderId": "number (Required)" },
-        "controller": "svc-branch/order"
-      },
-      {
-        "action": "Get Orders By Branch",
-        "method": "MessagePattern",
-        "url": "get_orders_by_branch",
-        "description": "Microservice to get orders by branch.",
+        "method": "DELETE",
+        "url": "/branches/:restaurantId/:branchId/orders/:orderId",
         "params": {
-          "branchId": "number (Required)",
-          "http_proxy": "/branches/:restaurantId/:branchId/orders"
-        },
-        "controller": "svc-branch/order + api/branch.controller"
-      },
-      {
-        "action": "Get Order By ID",
-        "method": "MessagePattern",
-        "url": "get_order_by_id",
-        "description": "Microservice to get order by ID.",
-        "params": { "orderId": "number (Required)" },
-        "controller": "svc-branch/order"
+          "orderId": "number"
+        }
       }
     ]
   },
