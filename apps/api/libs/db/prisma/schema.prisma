@@ -30,9 +30,13 @@ model User {
   otpCode      String?
   otpExpires   DateTime?
   username     String        @unique
+  salary       Decimal?      @db.Decimal(10, 2)
+  brancheId    Int?
+  bransh       Branch?       @relation(fields: [brancheId], references: [id])
   orders       Order[]
   reservations Reservation[]
   restaurants  Restaurant[]
+  shifts       Shift[]
 }
 
 model TokenBlacklist {
@@ -65,7 +69,7 @@ model Branch {
   updatedAt        DateTime         @updatedAt
   restaurant       Restaurant       @relation(fields: [restaurantId], references: [id])
   branchMenu       BranchMenuItem[]
-  employees        Employee[]
+  employees        User[]
   expenses         Expense[]
   orders           Order[]
   reservations     Reservation[]
@@ -73,32 +77,15 @@ model Branch {
   tables           Table[]
   warehouses       Warehouse[]
 }
-
-model Employee {
-  id        Int       @id @default(autoincrement())
-  fullName  String
-  username  String    @unique
-  password  String
-  email     String    @unique
-  image     String?
-  role      StaffRole @default(WAITER)
-  salary    Decimal   @db.Decimal(10, 2)
-  branchId  Int
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  branch    Branch    @relation(fields: [branchId], references: [id])
-  shifts    Shift[]
-}
-
 model Shift {
   id         Int         @id @default(autoincrement())
-  employeeId Int
+  userId     Int
   branchId   Int
   startTime  DateTime    @default(now())
   endTime    DateTime?
   status     ShiftStatus @default(ACTIVE)
   branch     Branch      @relation(fields: [branchId], references: [id])
-  employee   Employee    @relation(fields: [employeeId], references: [id])
+  employee   User        @relation(fields: [userId], references: [id])
 }
 
 model BranchMenuItem {
@@ -230,12 +217,10 @@ model Expense {
 enum UserRole {
   CUSTOMER
   BUSINESS_OWNER
-}
-
-enum StaffRole {
-  ADMIN
-  CASHIER
+  CHIEF
   WAITER
+  MANAGER
+  CASHIER
 }
 
 enum ShiftStatus {
