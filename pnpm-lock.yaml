@@ -19,6 +19,10 @@ overrides:
 importers:
 
   .:
+    dependencies:
+      concurrently:
+        specifier: ^9.2.1
+        version: 9.2.1
     devDependencies:
       prettier:
         specifier: ^3.7.4
@@ -86,9 +90,6 @@ importers:
       class-validator:
         specifier: ^0.14.4
         version: 0.14.4
-      concurrently:
-        specifier: ^9.2.1
-        version: 9.2.1
       cookie-parser:
         specifier: ^1.4.7
         version: 1.4.7
