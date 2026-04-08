@@ -2,9 +2,11 @@ import { BranchMenuItemDetailDto, UpdateBranchMenuItemDto } from '@app/common';
 import { PrismaService } from '@app/db';
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { ClientKafka } from '@nestjs/microservices';
 import * as XLSX from 'xlsx';
 
 interface ExcelMenuRow {
@@ -20,7 +22,10 @@ interface ExcelMenuRow {
 
 @Injectable()
 export class MenuService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Inject('BRANCH_SERVICE') private readonly kafkaClient: ClientKafka,
+  ) {}
 
   private readonly commonInclude = {
     variations: true,
@@ -53,7 +58,7 @@ export class MenuService {
       throw new NotFoundException(`Branch with ID ${branchId} not found`);
     }
 
-    return this.prisma.branchMenuItem.create({
+    const menuItem = await this.prisma.branchMenuItem.create({
       data: {
         name: data.name,
         description: data.description,
@@ -80,6 +85,8 @@ export class MenuService {
       },
       include: this.commonInclude,
     });
+    this.kafkaClient.emit('menu-item.created', menuItem);
+    return menuItem;
   }
 
   async updateMenuItem(
@@ -102,7 +109,7 @@ export class MenuService {
       );
     }
 
-    return this.prisma.branchMenuItem.update({
+    const updatedMenuItemn = await this.prisma.branchMenuItem.update({
       where: { id: Number(menuItemId) },
       data: {
         name: data.name,
@@ -132,6 +139,8 @@ export class MenuService {
       },
       include: this.commonInclude,
     });
+    this.kafkaClient.emit('menu-item.updated', updatedMenuItemn);
+    return updatedMenuItemn;
   }
 
   async deleteMenuItem(menuItemId: number, branchId?: number) {
@@ -147,9 +156,11 @@ export class MenuService {
       throw new BadRequestException('Action denied: Branch ID mismatch');
     }
 
-    return this.prisma.branchMenuItem.delete({
+    await this.prisma.branchMenuItem.delete({
       where: { id: Number(menuItemId) },
     });
+    this.kafkaClient.emit('menu-item.deleted', { id: Number(menuItemId) });
+    return { message: `Menu item with ID ${menuItemId} deleted successfully` };
   }
 
   // --- Bulk & Excel Operations ---
@@ -218,7 +229,7 @@ export class MenuService {
     }
 
     try {
-      return await this.prisma.$transaction(
+      const bulkItems = await this.prisma.$transaction(
         items.map((item) =>
           this.prisma.branchMenuItem.create({
             data: {
@@ -248,6 +259,11 @@ export class MenuService {
           }),
         ),
       );
+      this.kafkaClient.emit('menu-items.bulk-created', bulkItems);
+      return {
+        message: `${bulkItems.length} menu items created successfully`,
+        items: bulkItems,
+      };
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Bulk upload failed';

@@ -122,7 +122,7 @@ export class SvcBranchService {
     branchId: number,
     data: UpdateBranchDto,
   ) {
-    const { restaurantId: _, ...updateData } = data;
+    const { ...updateData } = data;
     const branch = await this.prisma.branch.update({
       where: {
         restaurantId: Number(restaurantId),

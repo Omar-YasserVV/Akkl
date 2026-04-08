@@ -1,7 +1,7 @@
-import { Controller, Get } from '@nestjs/common';
-import { SvcBranchService } from './svc-branch.service';
-import { MessagePattern, Payload } from '@nestjs/microservices';
 import { CreateBranchDto, UpdateBranchDto } from '@app/common';
+import { Controller } from '@nestjs/common';
+import { MessagePattern, Payload } from '@nestjs/microservices';
+import { SvcBranchService } from './svc-branch.service';
 
 @Controller()
 export class SvcBranchController {
