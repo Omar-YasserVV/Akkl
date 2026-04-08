@@ -9,7 +9,11 @@ import {
   CreateEmployeeDto,
   EmployeeLoginDto,
 } from '@app/common/dtos/Employees/employee.dto';
-import { AuthResult, MessageResult } from './interfaces/auth.interface';
+import {
+  AuthResult,
+  MessageResult,
+  UserResponse,
+} from './interfaces/auth.interface';
 
 @Controller()
 export class SvcAuthController {
@@ -70,5 +74,10 @@ export class SvcAuthController {
   @MessagePattern('employee-login')
   async employeeLogin(@Payload() data: EmployeeLoginDto): Promise<AuthResult> {
     return this.svcAuthService.employeeLogin(data);
+  }
+
+  @MessagePattern('get-employee-profile')
+  async getEmployeeProfile(@Payload() id: number): Promise<UserResponse> {
+    return this.svcAuthService.getEmployeeProfile(id);
   }
 }

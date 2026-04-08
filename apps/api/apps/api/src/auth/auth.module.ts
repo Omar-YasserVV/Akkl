@@ -1,8 +1,9 @@
+import { BlackListService } from '@app/guards/services/blacklist.service';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AuthController } from './auth.controller';
-import { JwtModule } from '@nestjs/jwt';
 
 const authServiceHost = process.env.AUTH_SERVICE_HOST || '127.0.0.1';
 const authServicePort = Number(process.env.AUTH_SERVICE_PORT || 9015);
@@ -26,6 +27,6 @@ const authServicePort = Number(process.env.AUTH_SERVICE_PORT || 9015);
     }),
   ],
   controllers: [AuthController],
-  providers: [],
+  providers: [BlackListService],
 })
 export class AuthModule {}
