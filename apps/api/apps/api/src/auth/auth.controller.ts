@@ -166,7 +166,6 @@ export class AuthController {
     return res.status(HttpStatus.OK).json(result);
   }
 
-  // emp
   @Post('staff/create')
   async createStaff(@Body() data: CreateUserDto): Promise<MessageResponse> {
     return await lastValueFrom(
@@ -174,25 +173,6 @@ export class AuthController {
     );
   }
 
-<<<<<<< HEAD
-  @Post('employee/login')
-  @ApiOperation({ summary: 'Login for Staff' })
-  async employeeLogin(
-    @Body() data: EmployeeLoginDto,
-    @Res() res: Response,
-  ): Promise<Response> {
-    const result = await lastValueFrom(
-      this.authService.send<AuthResponse>('employee-login', data),
-    );
-
-    const { access_token, refresh_token, user } = result;
-    this.setAuthCookies(res, { access_token, refresh_token });
-
-    return res.status(HttpStatus.OK).json(user);
-  }
-
-=======
->>>>>>> a7f22e0184bc2892ed7b3f1efba1147a0568e857
   @Get('employee/me')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Get authenticated employee profile' })
