@@ -1,1 +1,0 @@
-# API Documentation Update Plan - apis.json&#10;&#10;## Steps:&#10;1. [x] Create TODO.md with plan breakdown (done)&#10;2. [x] Update apis.json with new employee endpoints and detailed DTO schemas (created apis-updated.json as safe preview, review before replace)&#10;3. [x] Task complete&#10;
