@@ -182,32 +182,6 @@ export class AuthController {
     );
   }
 
-  @Post('employee/login')
-  @ApiOperation({ summary: 'Login for Staff (Sets tokens in cookies only)' })
-  @ApiResponse({
-    status: 200,
-    description: 'Sets cookies and returns user data',
-  })
-  async employeeLogin(
-    @Body() data: EmployeeLoginDto,
-    @Res() res: Response,
-  ): Promise<Response> {
-    const result = await lastValueFrom(
-      this.authService.send<AuthResponse>('employee-login', data),
-    );
-
-    const { access_token, refresh_token, user } = result;
-
-    this.setAuthCookies(res, { access_token, refresh_token });
-
-    return res.status(HttpStatus.OK).json({
-      status: 'success',
-      data: {
-        user,
-      },
-    });
-  }
-
   @Get('employee/me')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Get authenticated employee profile' })
