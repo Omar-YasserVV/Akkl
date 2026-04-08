@@ -1,10 +1,10 @@
 import { useAuthStore } from "@/store/AuthStore";
-import { Button, Checkbox, Input } from "@heroui/react";
+import { Button, Checkbox, Input, Spinner } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { HiOutlineEye, HiOutlineEyeOff } from "react-icons/hi";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate, useNavigation } from "react-router-dom";
 import { z } from "zod";
 import AuthStyle from "../components/AuthStyle";
 
@@ -21,10 +21,19 @@ type SignInFormData = z.infer<typeof signInSchema>;
 
 function SignIn() {
   const navigate = useNavigate();
+  const navigation = useNavigation();
+
   const [showPassword, setShowPassword] = useState(false);
 
   // Zustand AuthStore
   const { login, isAuthenticated } = useAuthStore();
+
+  if (navigation.state === "loading")
+    return (
+      <div className="h-screen w-full flex items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    );
 
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;

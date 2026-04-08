@@ -40,6 +40,7 @@ export interface User {
  * Zustand AuthStore state and API, persisted in local storage.
  * @property {User["data"] | null} user - Authenticated user data or null if unauthenticated
  * @property {boolean} isAuthenticated - Is the current session authenticated
+ * @property {boolean} isLoading - Is an async auth operation in progress
  * @property {() => Promise<void>} authCheck - Checks if user session is valid
  * @property {(data: { email: string; password: string }) => Promise<void>} login - Perform login and set auth state
  * @property {() => void} logout - Reset user and authentication state
@@ -55,13 +56,15 @@ export interface User {
  *     "email": "staff@example.com",
  *     "image": "/img/staff01.png"
  *   },
- *   "isAuthenticated": true
+ *   "isAuthenticated": true,
+ *   "isLoading": false
  * }
  * ```
  */
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   authCheck: () => Promise<void>;
   login: (data: { email: string; password: string }) => Promise<void>;
   logout: () => void;
@@ -93,24 +96,33 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       isAuthenticated: false,
+      isLoading: false,
       authCheck: async () => {
+        set({ isLoading: true });
         try {
           const res = await apiClient.get<{ status: string; data: User }>(
             "/auth/employee/me",
           );
-          set({ user: res.data, isAuthenticated: true });
+          set({ user: res.data, isAuthenticated: true, isLoading: false });
         } catch {
-          set({ user: null, isAuthenticated: false });
+          set({ user: null, isAuthenticated: false, isLoading: false });
         }
       },
       login: async (credentials) => {
-        const res = await apiClient.post<{ status: string; data: User }>(
-          "/auth/employee/login",
-          credentials,
-        );
-        set({ user: res.data, isAuthenticated: true });
+        set({ isLoading: true });
+        try {
+          const res = await apiClient.post<{ status: string; data: User }>(
+            "/auth/employee/login",
+            credentials,
+          );
+          set({ user: res.data, isAuthenticated: true, isLoading: false });
+        } catch (error) {
+          set({ isLoading: false });
+          throw error;
+        }
       },
-      logout: () => set({ user: null, isAuthenticated: false }),
+      logout: () =>
+        set({ user: null, isAuthenticated: false, isLoading: false }),
     }),
     { name: "auth-storage" },
   ),
