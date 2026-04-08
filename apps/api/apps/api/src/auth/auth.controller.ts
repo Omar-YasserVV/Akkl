@@ -3,22 +3,26 @@ import {
   CreateEmployeeDto,
   EmployeeLoginDto,
 } from '@app/common/dtos/Employees/employee.dto';
+import { JwtAuthGuard } from '@app/guards/jwt-auth.guard';
 import {
   Body,
   Controller,
+  Get,
+  HttpException,
   HttpStatus,
   Inject,
   Post,
   Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ResetPasswordDto } from 'apps/svc-auth/dtos/auth.dto';
+import { UserResponse } from 'apps/svc-auth/src/interfaces/auth.interface';
 import { Request, Response } from 'express';
 import { lastValueFrom } from 'rxjs';
 
-// Senior-level approach: Define specific interfaces for Microservice responses
 interface AuthResponse {
   access_token: string;
   refresh_token: string;
@@ -34,6 +38,19 @@ interface AuthResponse {
 
 interface MessageResponse {
   message: string;
+}
+interface AuthenticatedRequest extends Request {
+  user: {
+    sub: number;
+    type?: 'employee' | 'user';
+    branchId?: number;
+    id: number;
+    email: string;
+    fullName?: string;
+    username?: string;
+    role?: string;
+    image?: string;
+  };
 }
 
 @Controller('auth')
@@ -68,7 +85,6 @@ export class AuthController {
     @Body() data: CreateUserDto,
     @Res() res: Response,
   ): Promise<Response> {
-    // Specify the return type in .send<T> to avoid 'any' assignment
     const result = await lastValueFrom(
       this.authService.send<AuthResponse>('signup', data),
     );
@@ -176,22 +192,38 @@ export class AuthController {
     @Body() data: EmployeeLoginDto,
     @Res() res: Response,
   ): Promise<Response> {
-    // 1. Get tokens and user data from Microservice
     const result = await lastValueFrom(
       this.authService.send<AuthResponse>('employee-login', data),
     );
 
     const { access_token, refresh_token, user } = result;
 
-    // 2. Set tokens in HttpOnly cookies
     this.setAuthCookies(res, { access_token, refresh_token });
 
-    // 3. Return ONLY user info in the JSON body
     return res.status(HttpStatus.OK).json({
       status: 'success',
       data: {
         user,
       },
     });
+  }
+
+  @Get('employee/me')
+  @UseGuards(JwtAuthGuard)
+  async getEmployeeMe(@Req() req: AuthenticatedRequest): Promise<UserResponse> {
+    const userId = req.user.sub || req.user.id;
+
+    if (!userId) {
+      throw new HttpException(
+        'User ID not found in token',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+
+    const profile = await lastValueFrom(
+      this.authService.send<UserResponse>('get-employee-profile', userId),
+    );
+
+    return profile;
   }
 }
