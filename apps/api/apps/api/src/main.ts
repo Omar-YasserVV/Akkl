@@ -22,6 +22,13 @@ async function bootstrap(): Promise<void> {
 
   app.useGlobalFilters(new RpcExceptionFilter());
 
+  app.enableCors({
+    origin: true, // or specify 'http://localhost:5173'
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
+
   // If "cookieParser is not a function" persists, change to: (cookieParser as any)()
   app.use(cookieParser());
 

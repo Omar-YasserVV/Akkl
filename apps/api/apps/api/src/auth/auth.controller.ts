@@ -210,6 +210,16 @@ export class AuthController {
 
   @Get('employee/me')
   @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Get authenticated employee profile' })
+  @ApiResponse({
+    status: 200,
+    description: "Returns the authenticated employee's profile",
+    type: Object, // Optionally replace 'Object' with a class if available, e.g. UserResponse
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized. User ID not found in token',
+  })
   async getEmployeeMe(@Req() req: AuthenticatedRequest): Promise<UserResponse> {
     const userId = req.user.sub || req.user.id;
 
