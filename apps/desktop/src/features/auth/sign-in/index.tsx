@@ -1,15 +1,13 @@
+import { useAuthStore } from "@/store/AuthStore";
 import { Button, Checkbox, Input } from "@heroui/react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { HiOutlineEye, HiOutlineEyeOff } from "react-icons/hi";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
+import { z } from "zod";
 import AuthStyle from "../components/AuthStyle";
 
-// Import react-hook-form and zod
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
-import { z } from "zod";
-
-// Define Zod schema
 const signInSchema = z.object({
   email: z
     .string()
@@ -25,6 +23,12 @@ function SignIn() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
+  // Zustand AuthStore
+  const { login, isAuthenticated } = useAuthStore();
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
   const {
     register,
     handleSubmit,
@@ -32,7 +36,6 @@ function SignIn() {
     setError,
     control,
     watch,
-    setValue,
   } = useForm<SignInFormData>({
     mode: "onSubmit",
     resolver: zodResolver(signInSchema),
@@ -43,22 +46,27 @@ function SignIn() {
     },
   });
 
-  const onSubmit = async (data: SignInFormData) => {
-    try {
-      // Replace with your authentication logic
-      // Simulate async auth
-      await new Promise((res) => setTimeout(res, 1000));
-      // On success, redirect (customize as needed)
-      navigate("/dashboard");
-    } catch (err) {
-      // Handle auth error (customize)
-      setError("password", { message: "Invalid credentials" });
-    }
-  };
-
   const emailVal = watch("email");
   const passwordVal = watch("password");
   const rememberVal = watch("remember");
+
+  const onSubmit = async (data: SignInFormData) => {
+    try {
+      await login({ email: data.email, password: data.password });
+      navigate("/dashboard");
+    } catch (err: any) {
+      let errMsg = "Invalid credentials.";
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        "response" in err &&
+        (err.response as any)?.data?.message
+      ) {
+        errMsg = (err.response as any).data.message;
+      }
+      setError("password", { message: errMsg });
+    }
+  };
 
   return (
     <div className="relative flex bg-white">
@@ -69,7 +77,6 @@ function SignIn() {
             <p className="text-gray-400 mb-10">
               Please login to continue to your account.
             </p>
-
             <form
               className="space-y-6"
               onSubmit={handleSubmit(onSubmit)}
@@ -92,7 +99,6 @@ function SignIn() {
                     className="w-full text-gray-700 placeholder-[#9A9A9A]"
                     {...register("email")}
                     value={emailVal}
-                    onChange={(e) => setValue("email", e.target.value)}
                     isInvalid={!!errors.email}
                     errorMessage={errors.email?.message}
                   />
@@ -132,13 +138,11 @@ function SignIn() {
                     className="w-full text-gray-700 placeholder-[#9A9A9A]"
                     {...register("password")}
                     value={passwordVal}
-                    onChange={(e) => setValue("password", e.target.value)}
                     isInvalid={!!errors.password}
                     errorMessage={errors.password?.message}
                   />
                 </div>
               </div>
-
               <div className="flex items-center justify-between text-sm">
                 <Controller
                   control={control}
@@ -153,12 +157,10 @@ function SignIn() {
                     </Checkbox>
                   )}
                 />
-
                 <a href="#" className="text-gray-600 hover:underline">
                   Forgot password?
                 </a>
               </div>
-
               <Button
                 size="lg"
                 radius="sm"
