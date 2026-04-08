@@ -14,7 +14,7 @@ import { Server } from 'socket.io';
 })
 export class BranchGateway {
   @WebSocketServer()
-  server: Server;
+  server!: Server;
 
   @EventPattern('branch.created')
   handleBranchCreated(@Payload() data: CreateBranchDto) {
