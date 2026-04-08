@@ -22,22 +22,9 @@ type SignInFormData = z.infer<typeof signInSchema>;
 function SignIn() {
   const navigate = useNavigate();
   const navigation = useNavigation();
-
   const [showPassword, setShowPassword] = useState(false);
-
-  // Zustand AuthStore
   const { login, isAuthenticated } = useAuthStore();
 
-  if (navigation.state === "loading")
-    return (
-      <div className="h-screen w-full flex items-center justify-center">
-        <Spinner size="lg" />
-      </div>
-    );
-
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
-  }
   const {
     register,
     handleSubmit,
@@ -58,6 +45,17 @@ function SignIn() {
   const emailVal = watch("email");
   const passwordVal = watch("password");
   const rememberVal = watch("remember");
+
+  if (navigation.state === "loading")
+    return (
+      <div className="h-screen w-full flex items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    );
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const onSubmit = async (data: SignInFormData) => {
     try {

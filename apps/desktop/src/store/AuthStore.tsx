@@ -121,8 +121,16 @@ export const useAuthStore = create<AuthState>()(
           throw error;
         }
       },
-      logout: () =>
-        set({ user: null, isAuthenticated: false, isLoading: false }),
+      logout: async () => {
+        set({ isLoading: false });
+        try {
+          await apiClient.post<{ status: string }>("/auth/logout");
+          set({ user: null, isAuthenticated: false, isLoading: false });
+        } catch (error) {
+          set({ isLoading: false });
+          throw error;
+        }
+      },
     }),
     { name: "auth-storage" },
   ),

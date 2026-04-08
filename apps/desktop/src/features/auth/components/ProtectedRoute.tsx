@@ -18,6 +18,7 @@ const ProtectedRoute = () => {
     return <Navigate to="/" />;
   }
 
+  
   return <Outlet />;
 };
 export default ProtectedRoute;
