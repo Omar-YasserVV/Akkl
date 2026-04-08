@@ -7,16 +7,6 @@ import {
   MinLength,
 } from 'class-validator';
 
-export class LogoutDto {
-  @ApiProperty({
-    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-    description: 'JWT access or refresh token to invalidate',
-  })
-  @IsString()
-  @IsNotEmpty()
-  Token!: string;
-}
-
 export class GoogleUserDto {
   @ApiProperty({
     example: 'john.doe@gmail.com',
