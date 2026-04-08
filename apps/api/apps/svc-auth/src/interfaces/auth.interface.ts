@@ -6,6 +6,8 @@ export interface UserResponse {
   role?: string;
   image?: string;
   branchId?: number;
+  branchName?: string;
+  restaurantName?: string;
 }
 
 export interface AuthResult {
