@@ -17,7 +17,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation } from '@nestjs/swagger';
 import { ResetPasswordDto } from 'apps/svc-auth/dtos/auth.dto';
 import { UserResponse } from 'apps/svc-auth/src/interfaces/auth.interface';
 import { Request, Response } from 'express';
@@ -183,11 +183,7 @@ export class AuthController {
   }
 
   @Post('employee/login')
-  @ApiOperation({ summary: 'Login for Staff (Sets tokens in cookies only)' })
-  @ApiResponse({
-    status: 200,
-    description: 'Sets cookies and returns user data',
-  })
+  @ApiOperation({ summary: 'Login for Staff' })
   async employeeLogin(
     @Body() data: EmployeeLoginDto,
     @Res() res: Response,
@@ -197,37 +193,19 @@ export class AuthController {
     );
 
     const { access_token, refresh_token, user } = result;
-
     this.setAuthCookies(res, { access_token, refresh_token });
 
-    return res.status(HttpStatus.OK).json({
-      status: 'success',
-      data: {
-        user,
-      },
-    });
+    return res.status(HttpStatus.OK).json(user);
   }
 
   @Get('employee/me')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Get authenticated employee profile' })
-  @ApiResponse({
-    status: 200,
-    description: "Returns the authenticated employee's profile",
-    type: Object, // Optionally replace 'Object' with a class if available, e.g. UserResponse
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized. User ID not found in token',
-  })
   async getEmployeeMe(@Req() req: AuthenticatedRequest): Promise<UserResponse> {
     const userId = req.user.sub || req.user.id;
 
     if (!userId) {
-      throw new HttpException(
-        'User ID not found in token',
-        HttpStatus.UNAUTHORIZED,
-      );
+      throw new HttpException('User ID not found', HttpStatus.UNAUTHORIZED);
     }
 
     const profile = await lastValueFrom(
