@@ -1,21 +1,32 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { CompleteGoogleSignupDto, CreateUserDto, LoginDto } from '@app/common';
+import {
+  CreateEmployeeDto,
+  EmployeeLoginDto,
+} from '@app/common/dtos/Employees/employee.dto';
+import { PrismaService } from '@app/db';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { RpcException } from '@nestjs/microservices';
-import { comparePasswords, hashPassword } from '../../../utils/argon2';
-import { PrismaService } from '@app/db';
-import * as nodemailer from 'nodemailer';
 import * as jwt from 'jsonwebtoken';
-import { LoginDto, CreateUserDto, CompleteGoogleSignupDto } from '@app/common';
-import { BlackListService } from '@app/guards/services/blacklist.service';
+import * as nodemailer from 'nodemailer';
+import { comparePasswords, hashPassword } from '../../../utils/argon2';
 import { ResetPasswordDto } from '../dtos/auth.dto';
-// import { tokenDto } from '@app/common/dtos/UserDto/token.dto';
-// TODO: abdo if the tokenDto import is not used delete this line
+import { AuthResult, UserResponse } from './interfaces/auth.interface';
+
+interface JwtPayload extends Omit<jwt.JwtPayload, 'sub'> {
+  sub: number;
+  type?: 'employee' | 'user';
+  branchId?: number;
+  email?: string;
+  fullName?: string;
+  image?: string;
+}
+
 @Injectable()
 export class SvcAuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-    private readonly blackListService: BlackListService,
   ) {}
 
   private transporter = nodemailer.createTransport({
@@ -26,96 +37,104 @@ export class SvcAuthService {
     },
   });
 
-  generateToken(payload: { sub: number }) {
+  async findUserByEmail(email: string) {
+    return await this.prisma.user.findUnique({
+      where: { email },
+    });
+  }
+
+  private generateToken(payload: JwtPayload): {
+    access_token: string;
+    refresh_token: string;
+  } {
     const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
-      throw new Error('JWT_SECRET not set');
-    }
+    const refreshSecret = process.env.JWT_REFRESH_SECRET;
 
-    const refreshJwtSecret = process.env.JWT_REFRESH_SECRET;
-    if (!refreshJwtSecret) {
-      throw new Error('JWT_REFRESH_SECRET not set');
+    if (!jwtSecret || !refreshSecret) {
+      throw new RpcException({
+        message: 'JWT configuration missing',
+        status: 500,
+      });
     }
-
-    // jsonwebtoken uses a narrow template-literal type for `expiresIn`.
-    // Environment variables are just `string`, so we cast to the expected type.
-    const accessExpiresIn = (process.env.JWT_EXPIRATION_TIME ??
-      '7h') as jwt.SignOptions['expiresIn'];
-    const refreshExpiresIn = (process.env.JWT_EXPIRATION_TIME_REFRESH_TOKEN ??
-      '7d') as jwt.SignOptions['expiresIn'];
 
     const access_token = this.jwtService.sign(payload, {
       secret: jwtSecret,
-      expiresIn: accessExpiresIn,
+      expiresIn: (process.env.JWT_EXPIRATION_TIME ??
+        '7h') as jwt.SignOptions['expiresIn'],
     });
+
     const refresh_token = this.jwtService.sign(payload, {
-      secret: refreshJwtSecret,
-      expiresIn: refreshExpiresIn,
+      secret: refreshSecret,
+      expiresIn: (process.env.JWT_EXPIRATION_TIME_REFRESH_TOKEN ??
+        '7d') as jwt.SignOptions['expiresIn'],
     });
+
     return { access_token, refresh_token };
   }
 
-  async login(data: LoginDto) {
+  async login(data: LoginDto): Promise<AuthResult> {
     const user = await this.prisma.user.findUnique({
       where: { email: data.email },
     });
-    if (!user) {
+
+    if (!user || !(await comparePasswords(data.password, user.password))) {
       throw new RpcException({ message: 'Invalid credentials', status: 401 });
     }
 
-    const isPasswordValid = await comparePasswords(
-      data.password,
-      user.password,
-    );
-    if (!isPasswordValid) {
-      throw new RpcException({ message: 'Invalid credentials', status: 401 });
-    }
-
-    const { access_token, refresh_token } = this.generateToken({
-      sub: user.id,
-    });
+    const tokens = this.generateToken({ sub: user.id });
     return {
-      message: 'Login successful',
-      access_token: access_token,
-      refresh_token: refresh_token,
-      user: { id: user.id, email: user.email },
+      ...tokens,
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
+        image: user.image ?? undefined, // Fix null -> undefined
+      },
     };
   }
 
-  async signup(data: CreateUserDto) {
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email: data.email },
+  async signup(data: CreateUserDto): Promise<AuthResult> {
+    const existingUser = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: data.email },
+          { phone: data.phone },
+          { username: data.username },
+        ],
+      },
     });
 
     if (existingUser) {
-      throw new RpcException({ message: 'Email already in use', status: 409 });
+      throw new RpcException({
+        message: 'User credentials already in use',
+        status: 409,
+      });
     }
 
     const hashedPassword = await hashPassword(data.password);
-    const { role, ...userData } = data;
-
     const newUser = await this.prisma.user.create({
-      data: { ...userData, password: hashedPassword, role: role },
+      data: { ...data, password: hashedPassword },
     });
 
-    const { access_token, refresh_token } = this.generateToken({
-      sub: newUser.id,
-    });
+    const tokens = this.generateToken({ sub: newUser.id });
     return {
-      message: 'Signup successful',
-      access_token,
-      refresh_token,
-      user: { id: newUser.id, email: newUser.email },
+      ...tokens,
+      user: {
+        id: newUser.id,
+        email: newUser.email,
+        fullName: newUser.fullName,
+        username: newUser.username,
+        role: newUser.role,
+        image: newUser.image ?? undefined, // Explicit mapping
+      },
     };
   }
 
-  async findUserByEmail(email: string) {
-    return this.prisma.user.findUnique({ where: { email } });
-  }
-
-  async finalizeGoogleSignup(data: CompleteGoogleSignupDto) {
-    const { token, password, passwordConfirmation, phone, role, username } =
-      data;
+  async finalizeGoogleSignup(
+    data: CompleteGoogleSignupDto,
+  ): Promise<AuthResult> {
+    const { token, password, passwordConfirmation, ...rest } = data;
 
     if (password !== passwordConfirmation) {
       throw new RpcException({
@@ -125,64 +144,46 @@ export class SvcAuthService {
     }
 
     const tempSecret = process.env.JWT_TEMP_SECRET;
-    if (!tempSecret) {
-      throw new BadRequestException('JWT_TEMP_SECRET not set');
-    }
+    if (!tempSecret) throw new BadRequestException('JWT_TEMP_SECRET missing');
 
-    const decoded = jwt.verify(token, tempSecret);
-    if (
-      typeof decoded === 'string' ||
-      decoded === null ||
-      typeof decoded !== 'object'
-    ) {
-      throw new BadRequestException('Invalid or expired signup token');
-    }
+    const decoded = jwt.verify(token, tempSecret) as unknown as JwtPayload;
 
-    const tempPayload = decoded as {
-      email?: unknown;
-      fullName?: unknown;
-      image?: unknown;
-    };
-
-    if (
-      typeof tempPayload.email !== 'string' ||
-      typeof tempPayload.fullName !== 'string'
-    ) {
-      throw new BadRequestException('Invalid or expired signup token');
+    if (!decoded || typeof decoded === 'string' || !decoded.email) {
+      throw new BadRequestException('Invalid signup token');
     }
 
     const hashedPassword = await hashPassword(password);
     const newUser = await this.prisma.user.create({
       data: {
-        email: tempPayload.email,
+        email: decoded.email,
+        fullName: decoded.fullName ?? '',
+        image: decoded.image ?? '',
         password: hashedPassword,
-        fullName: tempPayload.fullName,
-        phone,
-        image:
-          typeof tempPayload.image === 'string' ? tempPayload.image : undefined,
-        role,
-        username,
+        ...rest,
       },
     });
 
-    const { access_token, refresh_token } = this.generateToken({
-      sub: newUser.id,
-    });
+    const tokens = this.generateToken({ sub: newUser.id });
 
+    // FIX: Map the database object to the restricted UserResponse interface
     return {
-      message: 'Signup successful',
-      access_token,
-      refresh_token,
-      user: newUser,
+      ...tokens,
+      user: {
+        id: newUser.id,
+        email: newUser.email,
+        fullName: newUser.fullName,
+        role: newUser.role,
+        image: newUser.image ?? undefined,
+      },
     };
   }
 
-  async forgotPassword(email: string) {
+  async forgotPassword(email: string): Promise<{ message: string }> {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) throw new BadRequestException('User not found');
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+    const expires = new Date(Date.now() + 10 * 60 * 1000);
 
     await this.prisma.user.update({
       where: { email },
@@ -191,36 +192,138 @@ export class SvcAuthService {
 
     await this.transporter.sendMail({
       to: email,
-      subject: 'Your Password Reset OTP',
-      text: `Your OTP is ${otp}. It expires in 10 minutes.`,
+      subject: 'Password Reset OTP',
+      text: `Your OTP is ${otp}. Expires in 10 mins.`,
     });
 
-    return { message: 'OTP sent to email' };
+    return { message: 'OTP sent' };
   }
 
-  async verifyOtpAndReset(dto: ResetPasswordDto) {
-    const { email, otp, newPassword } = dto;
-    const user = await this.prisma.user.findUnique({ where: { email } });
+  async verifyOtpAndReset(dto: ResetPasswordDto): Promise<{ message: string }> {
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
 
     if (
       !user ||
-      !user.otpCode ||
-      !user.otpExpires ||
-      user.otpCode !== otp ||
-      user.otpExpires < new Date()
+      user.otpCode !== dto.otp ||
+      (user.otpExpires && user.otpExpires < new Date())
     ) {
-      throw new BadRequestException('Invalid or expired OTP');
+      throw new BadRequestException('Invalid/Expired OTP');
     }
 
-    const hashedPassword = await hashPassword(newPassword);
-
+    const hashedPassword = await hashPassword(dto.newPassword);
     await this.prisma.user.update({
-      where: { email },
+      where: { email: dto.email },
+      data: { password: hashedPassword, otpCode: null, otpExpires: null },
+    });
+
+    return { message: 'Success' };
+  }
+
+  async employeeLogin(data: EmployeeLoginDto): Promise<AuthResult> {
+    const employee = await this.prisma.employee.findUnique({
+      where: { email: data.email }, // Matches your updated DTO
+    });
+
+    if (!employee) {
+      throw new RpcException({
+        message: 'Invalid staff credentials',
+        status: 401,
+      });
+    }
+
+    const isPasswordValid = await comparePasswords(
+      data.password,
+      employee.password,
+    );
+    if (!isPasswordValid) {
+      throw new RpcException({
+        message: 'Invalid staff credentials',
+        status: 401,
+      });
+    }
+
+    const tokens = this.generateToken({
+      sub: employee.id,
+      type: 'employee',
+      branchId: employee.branchId,
+    });
+
+    return {
+      ...tokens,
+      user: {
+        id: employee.id,
+        username: employee.username,
+        fullName: employee.fullName,
+        branchId: employee.branchId,
+        role: employee.role,
+        email: employee.email,
+        image: employee.image ?? undefined,
+      },
+    };
+  }
+
+  async createEmployee(
+    data: CreateEmployeeDto,
+  ): Promise<{ message: string; id: number }> {
+    const existingEmployee = await this.prisma.employee.findUnique({
+      where: { username: data.username },
+    });
+
+    if (existingEmployee) {
+      throw new RpcException({
+        message: 'Username is already taken by another staff member',
+        status: 409,
+      });
+    }
+
+    const hashedPassword = await hashPassword(data.password);
+
+    const newEmployee = await this.prisma.employee.create({
       data: {
+        ...data,
         password: hashedPassword,
+        image: data.image ?? null,
+        salary: 0,
+      },
+    });
+    return {
+      message: 'Employee created successfully',
+      id: newEmployee.id,
+    };
+  }
+
+  async getEmployeeProfile(id: number): Promise<UserResponse> {
+    const employee = await this.prisma.employee.findUnique({
+      where: { id },
+      include: {
+        branch: {
+          select: {
+            name: true,
+            restaurant: { select: { name: true } },
+          },
+        },
       },
     });
 
-    return { message: 'Password reset successful' };
+    if (!employee) {
+      throw new RpcException({
+        message: 'Employee profile not found',
+        status: 404,
+      });
+    }
+
+    return {
+      id: employee.id,
+      username: employee.username,
+      fullName: employee.fullName,
+      email: employee.email,
+      role: employee.role,
+      branchId: employee.branchId, // Critical for Desktop app routing
+      image: employee.image ?? undefined,
+      branchName: employee.branch.name,
+      restaurantName: employee.branch.restaurant.name,
+    };
   }
 }

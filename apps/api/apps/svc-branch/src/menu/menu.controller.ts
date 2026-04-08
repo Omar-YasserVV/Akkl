@@ -1,50 +1,77 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  ParseIntPipe,
-  HttpStatus,
-  HttpCode,
-} from '@nestjs/common';
+import { BranchMenuItemDetailDto, UpdateBranchMenuItemDto } from '@app/common';
+import { BadRequestException, Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { MenuService } from './menu.service';
-import { BranchMenuItemDetailDto, UpdateBranchMenuItemDto } from '@app/common';
 
-@Controller('menu')
+// 1. Define an interface for what Kafka actually sends
+interface KafkaBuffer {
+  type: 'Buffer';
+  data: number[];
+}
+
+@Controller()
 export class MenuController {
   constructor(private readonly menuService: MenuService) {}
 
-  @MessagePattern('get_all_menus')
-  async getAllMenus() {
+  @MessagePattern('get_all_menu_items')
+  async getAllItems() {
     return this.menuService.getMenu();
   }
 
   @MessagePattern('get_branch_menu')
-  async getByBranch(@Param('branchId', ParseIntPipe) branchId: number) {
+  async getBranchMenu(@Payload('branchId') branchId: number) {
     return this.menuService.getBranchMenu(branchId);
   }
 
-  @MessagePattern('create_menu')
-  @HttpCode(HttpStatus.CREATED)
-  async create(
-    @Param('branchId', ParseIntPipe) branchId: number,
-    @Body() createMenuDto: BranchMenuItemDetailDto,
+  @MessagePattern('create_menu_item')
+  async createMenuItem(
+    @Payload('branchId') branchId: number,
+    @Payload('data') data: BranchMenuItemDetailDto,
   ) {
-    return this.menuService.createMenu(branchId, createMenuDto);
+    return this.menuService.createMenu(branchId, data);
+  }
+
+  @MessagePattern('upload_menu_excel')
+  async uploadExcel(
+    @Payload('branchId') branchId: number,
+    @Payload('fileBuffer') fileBuffer: unknown, // 2. Change 'any' to 'unknown'
+  ) {
+    let buffer: Buffer;
+
+    if (Buffer.isBuffer(fileBuffer)) {
+      // If it's already a real Buffer
+      buffer = fileBuffer;
+    } else if (
+      fileBuffer &&
+      typeof fileBuffer === 'object' &&
+      'data' in fileBuffer &&
+      Array.isArray((fileBuffer as Record<string, unknown>).data)
+    ) {
+      // 3. Cast to our interface only after verifying the structure
+      // This satisfies ESLint because we checked that .data is an Array
+      const kafkaBuffer = fileBuffer as unknown as KafkaBuffer;
+      buffer = Buffer.from(kafkaBuffer.data);
+    } else {
+      throw new BadRequestException('Invalid file buffer received from Kafka');
+    }
+
+    return this.menuService.handleExcelUpload(branchId, buffer);
   }
 
   @MessagePattern('update_menu_item')
-  async update(
-    @Param('menuItemId', ParseIntPipe) menuItemId: number,
-    @Body() updateMenuItemDto: UpdateBranchMenuItemDto,
+  async updateMenuItem(
+    @Payload('id') id: number,
+    @Payload('branchId') branchId: number,
+    @Payload('data') data: UpdateBranchMenuItemDto,
   ) {
-    return this.menuService.updateMenuItem(menuItemId, updateMenuItemDto);
+    return this.menuService.updateMenuItem(id, data, branchId);
   }
 
   @MessagePattern('delete_menu_item')
-  async delete(@Param('menuItemId', ParseIntPipe) menuItemId: number) {
-    return this.menuService.deleteMenuItem(menuItemId);
+  async deleteMenuItem(
+    @Payload('id') id: number,
+    @Payload('branchId') branchId: number,
+  ) {
+    return this.menuService.deleteMenuItem(id, branchId);
   }
 }

@@ -1,8 +1,8 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy, Profile, VerifyCallback } from 'passport-google-oauth20';
-import { SvcAuthService } from '../svc-auth.service';
 import * as jwt from 'jsonwebtoken';
+import { Profile, Strategy, VerifyCallback } from 'passport-google-oauth20';
+import { SvcAuthService } from '../svc-auth.service';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
@@ -16,44 +16,48 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   }
 
   async validate(
-    accessToken: string,
-    refreshToken: string,
+    _accessToken: string, // Prefixed with _ if unused to satisfy linters
+    _refreshToken: string,
     profile: Profile,
     done: VerifyCallback,
   ): Promise<void> {
-    const { id, displayName, emails, photos } = profile;
+    try {
+      const { id, displayName, emails, photos } = profile;
 
-    if (!displayName) {
-      throw new UnauthorizedException('Google account has no display name');
+      const email = emails?.[0]?.value;
+      if (!email) {
+        return done(new UnauthorizedException('Google account has no email'));
+      }
+
+      const user = await this.authService.findUserByEmail(email);
+
+      if (user) {
+        // If user exists, pass the user object
+        return done(null, user);
+      }
+
+      // If user doesn't exist, create a temporary token for the "Complete Signup" step
+      const tempSecret = process.env.JWT_TEMP_SECRET;
+      if (!tempSecret) {
+        return done(new Error('JWT_TEMP_SECRET not set'));
+      }
+
+      const tempToken = jwt.sign(
+        {
+          googleID: id,
+          email,
+          fullName: displayName,
+          image: photos?.[0]?.value,
+        },
+        tempSecret,
+        { expiresIn: '15m' },
+      );
+
+      // Pass the token as the user object to be handled by the controller
+      return done(null, { tempToken });
+    } catch (error) {
+      // FIX: Handle the error safely for ESLint
+      return done(error instanceof Error ? error : new Error(String(error)));
     }
-
-    const email = emails?.[0]?.value;
-    if (!email) {
-      throw new UnauthorizedException('Google account has no email');
-    }
-
-    const user = await this.authService.findUserByEmail(email);
-
-    if (user) {
-      done(null, user);
-      return;
-    }
-
-    if (!process.env.JWT_TEMP_SECRET) {
-      throw new Error('JWT_TEMP_SECRET not set');
-    }
-
-    const tempToken = jwt.sign(
-      {
-        googleID: id,
-        email,
-        fullName: displayName,
-        image: photos?.[0]?.value,
-      },
-      process.env.JWT_TEMP_SECRET,
-      { expiresIn: '15m' },
-    );
-
-    done(null, { tempToken });
   }
 }

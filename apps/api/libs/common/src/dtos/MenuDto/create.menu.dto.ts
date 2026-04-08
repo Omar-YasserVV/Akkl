@@ -1,60 +1,139 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
-  IsNumber,
-  IsString,
-  IsOptional,
-  IsBoolean,
   IsArray,
+  IsBoolean,
+  IsNumber,
+  IsOptional,
+  IsString,
   ValidateNested,
-  IsDate,
 } from 'class-validator';
+import {
+  MenuItemVariationDto,
+  RecipeIngredientDto,
+} from './VariationsAndTags.menu.dto';
 
 export class IngredientDetailDto {
+  @ApiProperty({
+    example: 1,
+    description: 'Ingredient ID',
+  })
   @IsNumber()
-  ingredientId: number;
+  ingredientId!: number;
 
+  @ApiProperty({
+    example: 'Tomato',
+    description: 'Ingredient name',
+  })
   @IsString()
-  name: string;
+  name!: string;
 
+  @ApiProperty({
+    example: 2,
+    description: 'Quantity required',
+  })
   @IsNumber()
-  quantityRequired: number;
+  quantityRequired!: number;
 
+  @ApiProperty({
+    example: 'kg',
+    description: 'Unit of measurement',
+  })
   @IsString()
-  unit: string;
+  unit!: string;
 }
 
 export class BranchMenuItemDetailDto {
+  @ApiProperty({
+    example: 101,
+    description: 'Menu item ID',
+  })
   @IsNumber()
-  menuItemId: number;
+  menuItemId!: number;
 
+  @ApiProperty({
+    example: 1,
+    description: 'Branch ID',
+  })
   @IsNumber()
-  branchId: number;
+  branchId!: number;
 
+  @ApiProperty({
+    example: 'Chicken Shawarma',
+    description: 'Menu item name',
+  })
   @IsString()
-  name: string;
+  name!: string;
 
+  @ApiPropertyOptional({
+    example: 'Grilled chicken wrapped with garlic sauce',
+    description: 'Item description',
+  })
   @IsString()
   @IsOptional()
-  description: string | null;
+  description?: string;
 
-  @IsNumber()
-  basePrice: number;
-
-  @IsNumber()
+  @ApiPropertyOptional({
+    example: 'https://example.com/images/shawarma.jpg',
+    description: 'Item image URL',
+  })
+  @IsString()
   @IsOptional()
-  discountPrice: number | null;
+  image?: string;
 
+  @ApiProperty({
+    example: true,
+    description: 'Availability status',
+  })
   @IsBoolean()
-  isAvailable: boolean;
+  isAvailable!: boolean;
 
+  @ApiProperty({
+    type: [MenuItemVariationDto],
+    description: 'Available variations for the item',
+    example: [
+      {
+        id: 1,
+        name: 'Small',
+        price: 50,
+      },
+      {
+        id: 2,
+        name: 'Large',
+        price: 80,
+      },
+    ],
+  })
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => IngredientDetailDto)
-  recipe: IngredientDetailDto[];
+  @Type(() => MenuItemVariationDto)
+  variations!: MenuItemVariationDto[];
 
-  @IsDate()
-  createdAt: Date;
+  @ApiPropertyOptional({
+    example: [1, 2],
+    description: 'Dietary tag IDs (e.g., vegan, spicy)',
+  })
+  @IsArray()
+  @IsOptional()
+  @IsNumber({}, { each: true })
+  dietaryTags?: number[];
 
-  @IsDate()
-  updatedAt: Date;
+  @ApiProperty({
+    type: [RecipeIngredientDto],
+    description: 'Recipe ingredients required',
+    example: [
+      {
+        ingredientId: 1,
+        quantityRequired: 0.2,
+      },
+      {
+        ingredientId: 2,
+        quantityRequired: 0.1,
+      },
+    ],
+  })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => RecipeIngredientDto)
+  recipe!: RecipeIngredientDto[];
 }

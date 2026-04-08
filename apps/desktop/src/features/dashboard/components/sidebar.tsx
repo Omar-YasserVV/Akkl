@@ -1,22 +1,24 @@
-import { useState } from "react";
 import { Button, cn, Tooltip } from "@heroui/react";
+import { useState } from "react";
 
-import { NavLink, useLocation } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { useAuthStore } from "@/store/AuthStore";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   LuChartColumnIncreasing,
   LuChevronsLeftRight,
   LuHouse,
+  LuLogOut,
   LuSettings,
   LuShoppingCart,
   LuUtensilsCrossed,
   LuWarehouse,
 } from "react-icons/lu";
+import { NavLink, useLocation } from "react-router-dom";
 
 const Sidebar = () => {
   const { pathname } = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
-
+  const { logout } = useAuthStore();
   const routes = [
     {
       name: "Overview",
@@ -168,7 +170,14 @@ const Sidebar = () => {
 
       {/* Bottom spacer/Optional Footer */}
       <div className="mt-auto p-4">
-        {/* You could add a logout or user profile trigger here */}
+        <Button
+          className="w-full justify-between text-red-500"
+          variant="ghost"
+          onPress={logout}
+          endContent={<LuLogOut />}
+        >
+          Logout
+        </Button>
       </div>
     </motion.div>
   );

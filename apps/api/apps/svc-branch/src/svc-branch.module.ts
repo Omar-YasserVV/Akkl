@@ -5,6 +5,8 @@ import { SvcBranchService } from './svc-branch.service';
 import { DbModule } from '@app/db';
 import { PrismaService } from '@app/db';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { MenuModule } from './menu/menu.module';
+import { OrderModule } from './orders/order.module';
 
 @Module({
   imports: [
@@ -13,6 +15,8 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
       envFilePath: './.env',
     }),
     DbModule,
+    MenuModule,
+    OrderModule,
     ClientsModule.register([
       {
         name: 'BRANCH_SERVICE',
