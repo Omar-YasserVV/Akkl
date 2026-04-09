@@ -31,8 +31,8 @@ model User {
   otpExpires   DateTime?
   username     String        @unique
   salary       Decimal?      @db.Decimal(10, 2)
-  brancheId    Int?
-  bransh       Branch?       @relation(fields: [brancheId], references: [id])
+  branchId    Int?
+  branch       Branch?       @relation(fields: [branchId], references: [id])
   orders       Order[]
   reservations Reservation[]
   restaurants  Restaurant[]

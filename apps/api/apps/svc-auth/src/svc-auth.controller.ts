@@ -8,11 +8,7 @@ import { BlackListService } from '@app/guards/services/blacklist.service';
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { GoogleUserDto, ResetPasswordDto } from '../dtos/auth.dto';
-import {
-  AuthResult,
-  MessageResult,
-  UserResponse,
-} from './interfaces/auth.interface';
+import { AuthResult, MessageResult } from './interfaces/auth.interface';
 import { SvcAuthService } from './svc-auth.service';
 
 @Controller()
@@ -23,12 +19,12 @@ export class SvcAuthController {
   ) {}
 
   @MessagePattern('signup')
-  async signup(@Payload() data: CreateUserDto): Promise<AuthResult> {
+  async signup(@Payload() data: CreateUserDto) {
     return this.svcAuthService.signup(data);
   }
 
   @MessagePattern('login')
-  async login(@Payload() data: LoginDto): Promise<AuthResult> {
+  async login(@Payload() data: LoginDto) {
     return this.svcAuthService.login(data);
   }
 
@@ -68,7 +64,7 @@ export class SvcAuthController {
   }
 
   @MessagePattern('get-employee-profile')
-  async getEmployeeProfile(@Payload() id: number): Promise<UserResponse> {
+  async getEmployeeProfile(@Payload() id: number) {
     return this.svcAuthService.getEmployeeProfile(id);
   }
 }
