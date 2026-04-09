@@ -1,7 +1,7 @@
-import { Injectable, Inject, HttpStatus } from '@nestjs/common';
 import { CreateBranchDto, UpdateBranchDto } from '@app/common';
 import { PrismaService } from '@app/db';
-import { RpcException, ClientKafka } from '@nestjs/microservices';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { ClientKafka, RpcException } from '@nestjs/microservices';
 
 @Injectable()
 export class SvcBranchService {
@@ -148,14 +148,22 @@ export class SvcBranchService {
   }
 
   async deleteBranch(restaurantId: number, branchId: number) {
-    await this.prisma.branch.deleteMany({
-      where: {
-        restaurantId: Number(restaurantId),
-        id: Number(branchId),
-      },
-    });
-    this.kafkaClient.emit('branch.deleted', { id: branchId, restaurantId });
+    return await this.prisma.$transaction(async (tx) => {
+      await tx.table.deleteMany({ where: { branchId: Number(branchId) } });
 
-    return { deleted: true };
+      const result = await tx.branch.deleteMany({
+        where: {
+          restaurantId: Number(restaurantId),
+          id: Number(branchId),
+        },
+      });
+
+      if (result.count === 0) {
+        throw new RpcException({ message: 'Branch not found', status: 404 });
+      }
+
+      this.kafkaClient.emit('branch.deleted', { id: branchId, restaurantId });
+      return { deleted: true };
+    });
   }
 }

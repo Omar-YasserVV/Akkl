@@ -103,8 +103,6 @@ model BranchMenuItem {
   orders      OrderItem[]
   recipe      Recipe[]
   dietaryTags DietaryTag[]        @relation("BranchMenuItemToDietaryTag")
-
-  @@unique([branchId, menuItemId])
 }
 
 model MenuItemVariation {
