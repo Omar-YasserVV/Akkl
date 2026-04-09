@@ -2,13 +2,12 @@ import { RpcExceptionFilter } from '@app/common';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import cookieParser from 'cookie-parser'; // Try standard default import first
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
 
-  // Swagger Setup
   const config = new DocumentBuilder()
     .setTitle('Gateway Service')
     .setDescription('API Gateway handling HTTP and Kafka events')
@@ -23,13 +22,12 @@ async function bootstrap(): Promise<void> {
   app.useGlobalFilters(new RpcExceptionFilter());
 
   app.enableCors({
-    origin: true, // or specify 'http://localhost:5173'
+    origin: true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
-  // If "cookieParser is not a function" persists, change to: (cookieParser as any)()
   app.use(cookieParser());
 
   const randomId = Math.random().toString(36).substring(7);

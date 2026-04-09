@@ -86,7 +86,7 @@ export class SvcAuthService {
         email: user.email,
         fullName: user.fullName,
         role: user.role,
-        image: user.image ?? undefined, // Fix null -> undefined
+        image: user.image ?? undefined,
       },
     };
   }
@@ -123,7 +123,7 @@ export class SvcAuthService {
         fullName: newUser.fullName,
         username: newUser.username,
         role: newUser.role,
-        image: newUser.image ?? undefined, // Explicit mapping
+        image: newUser.image ?? undefined,
       },
     };
   }
@@ -162,7 +162,6 @@ export class SvcAuthService {
 
     const tokens = this.generateToken({ sub: newUser.id });
 
-    // FIX: Map the database object to the restricted UserResponse interface
     return {
       ...tokens,
       user: {

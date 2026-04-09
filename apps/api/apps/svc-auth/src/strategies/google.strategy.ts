@@ -16,7 +16,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   }
 
   async validate(
-    _accessToken: string, // Prefixed with _ if unused to satisfy linters
+    _accessToken: string,
     _refreshToken: string,
     profile: Profile,
     done: VerifyCallback,
@@ -32,11 +32,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       const user = await this.authService.findUserByEmail(email);
 
       if (user) {
-        // If user exists, pass the user object
         return done(null, user);
       }
 
-      // If user doesn't exist, create a temporary token for the "Complete Signup" step
       const tempSecret = process.env.JWT_TEMP_SECRET;
       if (!tempSecret) {
         return done(new Error('JWT_TEMP_SECRET not set'));
@@ -53,10 +51,8 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         { expiresIn: '15m' },
       );
 
-      // Pass the token as the user object to be handled by the controller
       return done(null, { tempToken });
     } catch (error) {
-      // FIX: Handle the error safely for ESLint
       return done(error instanceof Error ? error : new Error(String(error)));
     }
   }

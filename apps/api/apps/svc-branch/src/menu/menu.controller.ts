@@ -3,7 +3,6 @@ import { BadRequestException, Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { MenuService } from './menu.service';
 
-// 1. Define an interface for what Kafka actually sends
 interface KafkaBuffer {
   type: 'Buffer';
   data: number[];
@@ -34,12 +33,11 @@ export class MenuController {
   @MessagePattern('upload_menu_excel')
   async uploadExcel(
     @Payload('branchId') branchId: number,
-    @Payload('fileBuffer') fileBuffer: unknown, // 2. Change 'any' to 'unknown'
+    @Payload('fileBuffer') fileBuffer: unknown,
   ) {
     let buffer: Buffer;
 
     if (Buffer.isBuffer(fileBuffer)) {
-      // If it's already a real Buffer
       buffer = fileBuffer;
     } else if (
       fileBuffer &&
@@ -47,8 +45,6 @@ export class MenuController {
       'data' in fileBuffer &&
       Array.isArray((fileBuffer as Record<string, unknown>).data)
     ) {
-      // 3. Cast to our interface only after verifying the structure
-      // This satisfies ESLint because we checked that .data is an Array
       const kafkaBuffer = fileBuffer as unknown as KafkaBuffer;
       buffer = Buffer.from(kafkaBuffer.data);
     } else {
