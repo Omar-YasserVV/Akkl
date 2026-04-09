@@ -8,14 +8,11 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
-<<<<<<< HEAD
     "prisma:generate": "pnpm --filter api exec prisma generate",
     "start:all:prod": "pnpm --filter api run start:all:prod",
-    "start:all:dev": "pnpm --filter api run start:all:dev"
-=======
-    "dev:mobile": " turbo run dev android --filter=api --filter=mobile",
+    "start:all:dev": "pnpm --filter api run start:all:dev",
+    "dev:mobile": "turbo run dev android --filter=api --filter=mobile",
     "dev:desktop": "turbo run dev --filter=api --filter=desktop"
->>>>>>> 1c862746cbf2b73c9cc84f06ab4adb0bf2b7829b
   },
   "devDependencies": {
     "prettier": "^3.7.4",
