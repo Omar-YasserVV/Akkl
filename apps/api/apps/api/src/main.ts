@@ -3,7 +3,9 @@ import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser'; // Try standard default import first
+import type { RequestHandler } from 'express';
 import { AppModule } from './app.module';
+import { setupOrpc } from './orpc/setup-orpc';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
@@ -30,7 +32,11 @@ async function bootstrap(): Promise<void> {
   });
 
   // If "cookieParser is not a function" persists, change to: (cookieParser as any)()
-  app.use(cookieParser());
+  const cookieParserMiddleware =
+    cookieParser as unknown as () => RequestHandler;
+  app.use(cookieParserMiddleware());
+
+  await setupOrpc(app);
 
   const randomId = Math.random().toString(36).substring(7);
 
@@ -50,6 +56,7 @@ async function bootstrap(): Promise<void> {
 
   console.log(`🚀 HTTP Server: http://localhost:${port}`);
   console.log(`📄 Swagger Docs: http://localhost:${port}/api`);
+  console.log(`⚡ oRPC Endpoint: http://localhost:${port}/orpc`);
 }
 
 void bootstrap();

@@ -43,12 +43,15 @@
     "@nestjs/schedule": "^6.1.1",
     "@nestjs/swagger": "^11.2.6",
     "@nestjs/websockets": "^11.1.16",
+    "@orpc/contract": "^1.13.14",
+    "@orpc/server": "^1.13.14",
     "@prisma/adapter-pg": "^7.4.2",
     "@prisma/client": "^7.4.2",
     "@prisma/client-runtime-utils": "^7.4.2",
     "argon2": "^0.44.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.4",
+    "concurrently": "^9.2.1",
     "cookie-parser": "^1.4.7",
     "jsonwebtoken": "^9.0.3",
     "kafkajs": "^2.2.4",
@@ -60,7 +63,8 @@
     "rxjs": "^7.8.2",
     "socket.io": "^4.8.3",
     "swagger-ui-express": "^5.0.1",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.4",
