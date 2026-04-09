@@ -65,7 +65,7 @@ export class AuthController implements OnModuleInit {
       'forgot-password',
       'reset-password',
       'create-employee',
-      'get-employee-profile',
+      'get-user-profile',
     ];
 
     topics.forEach((topic) => {
@@ -193,9 +193,9 @@ export class AuthController implements OnModuleInit {
     );
   }
 
-  @Get('employee/me')
+  @Get('me')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Get authenticated employee profile' })
+  @ApiOperation({ summary: 'Get authenticated profile' })
   async getEmployeeMe(@Req() req: AuthenticatedRequest): Promise<UserResponse> {
     const userId = req.user.sub || req.user.id;
 
@@ -204,7 +204,7 @@ export class AuthController implements OnModuleInit {
     }
 
     const profile = await lastValueFrom(
-      this.authClient.send<UserResponse>('get-employee-profile', userId),
+      this.authClient.send<UserResponse>('get-user-profile', userId),
     );
 
     return profile;

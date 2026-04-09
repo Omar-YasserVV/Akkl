@@ -8,7 +8,7 @@ import * as jwt from 'jsonwebtoken';
 import * as nodemailer from 'nodemailer';
 import { comparePasswords, hashPassword } from '../../../utils/argon2';
 import { ResetPasswordDto } from '../dtos/auth.dto';
-import { AuthResult } from './interfaces/auth.interface';
+import { AuthResult, UserResponse } from './interfaces/auth.interface';
 
 interface JwtPayload extends Omit<jwt.JwtPayload, 'sub'> {
   sub: number;
@@ -268,12 +268,13 @@ export class SvcAuthService {
     }
   }
 
-  async getEmployeeProfile(id: number) {
-    const employee = await this.prisma.user.findUnique({
-      where: { id },
+  async getUserProfile(id: number): Promise<UserResponse> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: Number(id) },
       include: {
         branch: {
           select: {
+            id: true,
             name: true,
             restaurant: { select: { name: true } },
           },
@@ -281,13 +282,23 @@ export class SvcAuthService {
       },
     });
 
-    if (!employee) {
+    if (!user) {
       throw new RpcException({
-        message: 'Employee profile not found',
+        message: 'User profile not found',
         status: 404,
       });
     }
 
-    return employee;
+    return {
+      id: user.id,
+      email: user.email,
+      fullName: user.fullName,
+      username: user.username,
+      role: user.role,
+      image: user.image || undefined,
+      branchId: user.branch?.id,
+      branchName: user.branch?.name,
+      restaurantName: user.branch?.restaurant?.name,
+    };
   }
 }

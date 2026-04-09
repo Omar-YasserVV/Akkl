@@ -63,8 +63,8 @@ export class SvcAuthController {
     return this.svcAuthService.createEmployee(data);
   }
 
-  @MessagePattern('get-employee-profile')
+  @MessagePattern('get-user-profile')
   async getEmployeeProfile(@Payload() id: number) {
-    return this.svcAuthService.getEmployeeProfile(id);
+    return this.svcAuthService.getUserProfile(id);
   }
 }
