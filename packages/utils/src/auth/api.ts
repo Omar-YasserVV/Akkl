@@ -12,32 +12,15 @@ export interface User {
 
 export const authApis = {
   login: async (credentials: { email: string; password: string }) => {
-    try {
-      const res = await apiClient.post<{ status: string; data: User }>(
-        "/auth/login",
-        credentials,
-      );
-      return res;
-    } catch (error) {
-      throw error;
-    }
+    return apiClient.post<{ status: string; data: User }>(
+      "/auth/login",
+      credentials,
+    );
   },
   me: async () => {
-    try {
-      const res = await apiClient.get<{ status: string; data: User }>(
-        "/auth/me",
-      );
-      return res;
-    } catch (error) {
-      throw error;
-    }
+    return apiClient.get<{ status: string; data: User }>("/auth/me");
   },
   logout: async () => {
-    try {
-      const res = await apiClient.post<{ status: string }>("/auth/logout");
-      return res;
-    } catch (error) {
-      throw error;
-    }
+    return apiClient.post<{ status: string }>("/auth/logout");
   },
 };
