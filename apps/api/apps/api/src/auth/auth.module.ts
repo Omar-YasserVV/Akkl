@@ -5,9 +5,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AuthController } from './auth.controller';
 
-const authServiceHost = process.env.AUTH_SERVICE_HOST || '127.0.0.1';
-const authServicePort = Number(process.env.AUTH_SERVICE_PORT || 9015);
-
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -17,8 +14,19 @@ const authServicePort = Number(process.env.AUTH_SERVICE_PORT || 9015);
     ClientsModule.register([
       {
         name: 'AUTH_SERVICE',
-        transport: Transport.TCP,
-        options: { host: authServiceHost, port: authServicePort },
+        transport: Transport.KAFKA,
+        options: {
+          client: {
+            brokers: ['localhost:9094'],
+          },
+          consumer: {
+            groupId:
+              'svc-auth-server-group' + Math.random().toString(36).substring(7),
+            allowAutoTopicCreation: true,
+            sessionTimeout: 6000,
+            heartbeatInterval: 2000,
+          },
+        },
       },
     ]),
     JwtModule.register({

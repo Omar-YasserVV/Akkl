@@ -33,7 +33,6 @@ export class BranchController implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    // Defines the topics this gateway needs to listen to for responses
     const topics = [
       'get-branches',
       'get-branch-by-id',

@@ -7,12 +7,13 @@ import {
   HttpException,
   HttpStatus,
   Inject,
+  OnModuleInit,
   Post,
   Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
+import { ClientKafka } from '@nestjs/microservices';
 import { ApiOperation } from '@nestjs/swagger';
 import { ResetPasswordDto } from 'apps/svc-auth/dtos/auth.dto';
 import { UserResponse } from 'apps/svc-auth/src/interfaces/auth.interface';
@@ -50,11 +51,29 @@ interface AuthenticatedRequest extends Request {
 }
 
 @Controller('auth')
-export class AuthController {
+export class AuthController implements OnModuleInit {
   constructor(
-    @Inject('AUTH_SERVICE') private readonly authService: ClientProxy,
+    @Inject('AUTH_SERVICE') private readonly authClient: ClientKafka,
   ) {}
 
+  async onModuleInit() {
+    const topics = [
+      'signup',
+      'login',
+      'logout',
+      'complete-google-signup',
+      'forgot-password',
+      'reset-password',
+      'create-employee',
+      'get-employee-profile',
+    ];
+
+    topics.forEach((topic) => {
+      this.authClient.subscribeToResponseOf(topic);
+    });
+
+    await this.authClient.connect();
+  }
   private readonly cookieOptions = {
     httpOnly: true,
     sameSite: 'strict' as const,
@@ -82,8 +101,9 @@ export class AuthController {
     @Res() res: Response,
   ): Promise<Response> {
     const result = await lastValueFrom(
-      this.authService.send<AuthResponse>('signup', data),
+      this.authClient.send<AuthResponse>('signup', data),
     );
+
     const { access_token, refresh_token, user } = result;
 
     this.setAuthCookies(res, { access_token, refresh_token });
@@ -96,7 +116,7 @@ export class AuthController {
   @Post('login')
   async login(@Body() data: LoginDto, @Res() res: Response): Promise<Response> {
     const result = await lastValueFrom(
-      this.authService.send<AuthResponse>('login', data),
+      this.authClient.send<AuthResponse>('login', data),
     );
     const { access_token, refresh_token, user } = result;
 
@@ -115,7 +135,7 @@ export class AuthController {
 
     if (refreshToken) {
       await lastValueFrom(
-        this.authService.send('logout', { Token: refreshToken }),
+        this.authClient.send('logout', { Token: refreshToken }),
       );
     }
 
@@ -133,7 +153,7 @@ export class AuthController {
     @Res() res: Response,
   ): Promise<Response> {
     const result = await lastValueFrom(
-      this.authService.send<AuthResponse>('complete-google-signup', data),
+      this.authClient.send<AuthResponse>('complete-google-signup', data),
     );
     const { access_token, refresh_token, user } = result;
 
@@ -150,7 +170,7 @@ export class AuthController {
     @Res() res: Response,
   ): Promise<Response> {
     const result = await lastValueFrom(
-      this.authService.send<MessageResponse>('forgot-password', email),
+      this.authClient.send<MessageResponse>('forgot-password', email),
     );
     return res.status(HttpStatus.OK).json(result);
   }
@@ -161,7 +181,7 @@ export class AuthController {
     @Res() res: Response,
   ): Promise<Response> {
     const result = await lastValueFrom(
-      this.authService.send<MessageResponse>('reset-password', resetDto),
+      this.authClient.send<MessageResponse>('reset-password', resetDto),
     );
     return res.status(HttpStatus.OK).json(result);
   }
@@ -169,7 +189,7 @@ export class AuthController {
   @Post('staff/create')
   async createStaff(@Body() data: CreateUserDto): Promise<MessageResponse> {
     return await lastValueFrom(
-      this.authService.send<MessageResponse>('create-employee', data),
+      this.authClient.send<MessageResponse>('create-employee', data),
     );
   }
 
@@ -184,7 +204,7 @@ export class AuthController {
     }
 
     const profile = await lastValueFrom(
-      this.authService.send<UserResponse>('get-employee-profile', userId),
+      this.authClient.send<UserResponse>('get-employee-profile', userId),
     );
 
     return profile;
