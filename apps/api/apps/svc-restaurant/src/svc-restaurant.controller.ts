@@ -8,7 +8,7 @@ export class SvcRestaurantController {
   constructor(private readonly svcRestaurantService: SvcRestaurantService) {}
 
   @MessagePattern('get-restaurants')
-  async getRestaurants(@Payload() data: any) {
+  async getRestaurants() {
     return await this.svcRestaurantService.GetRestaurants();
   }
 
