@@ -1,13 +1,8 @@
-import {
-  // BadRequestException,
-  Injectable,
-  // NotFoundException,
-  // UnauthorizedException,
-} from '@nestjs/common';
-import { RpcException } from '@nestjs/microservices';
-import { PrismaService } from '@app/db';
 import { CreateRestaurantDto } from '@app/common/dtos/RestaurantDto/create.restaurant.dto';
 import { UpdateRestaurantDto } from '@app/common/dtos/RestaurantDto/update.restaurant.dto';
+import { PrismaService } from '@app/db';
+import { Injectable } from '@nestjs/common';
+import { RpcException } from '@nestjs/microservices';
 
 @Injectable()
 export class SvcRestaurantService {

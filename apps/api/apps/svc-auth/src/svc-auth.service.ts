@@ -8,7 +8,7 @@ import * as jwt from 'jsonwebtoken';
 import * as nodemailer from 'nodemailer';
 import { comparePasswords, hashPassword } from '../../../utils/argon2';
 import { ResetPasswordDto } from '../dtos/auth.dto';
-import { AuthResult, UserResponse } from './interfaces/auth.interface';
+import { AuthResult } from './interfaces/auth.interface';
 
 interface JwtPayload extends Omit<jwt.JwtPayload, 'sub'> {
   sub: number;
@@ -69,7 +69,7 @@ export class SvcAuthService {
     return { access_token, refresh_token };
   }
 
-  async login(data: LoginDto): Promise<AuthResult> {
+  async login(data: LoginDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: data.email },
     });
@@ -86,12 +86,12 @@ export class SvcAuthService {
         email: user.email,
         fullName: user.fullName,
         role: user.role,
-        image: user.image ?? undefined, // Fix null -> undefined
+        image: user.image ?? undefined,
       },
     };
   }
 
-  async signup(data: CreateUserDto): Promise<AuthResult> {
+  async signup(data: CreateUserDto) {
     const existingUser = await this.prisma.user.findFirst({
       where: {
         OR: [
@@ -123,7 +123,7 @@ export class SvcAuthService {
         fullName: newUser.fullName,
         username: newUser.username,
         role: newUser.role,
-        image: newUser.image ?? undefined, // Explicit mapping
+        image: newUser.image ?? undefined,
       },
     };
   }
@@ -162,7 +162,6 @@ export class SvcAuthService {
 
     const tokens = this.generateToken({ sub: newUser.id });
 
-    // FIX: Map the database object to the restricted UserResponse interface
     return {
       ...tokens,
       user: {
@@ -269,11 +268,11 @@ export class SvcAuthService {
     }
   }
 
-  async getEmployeeProfile(id: number): Promise<UserResponse> {
+  async getEmployeeProfile(id: number) {
     const employee = await this.prisma.user.findUnique({
       where: { id },
       include: {
-        bransh: {
+        branch: {
           select: {
             name: true,
             restaurant: { select: { name: true } },
@@ -289,6 +288,6 @@ export class SvcAuthService {
       });
     }
 
-    return { ...employee, image: employee.image ?? undefined };
+    return employee;
   }
 }

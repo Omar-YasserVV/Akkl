@@ -1,12 +1,11 @@
+import { DbModule, PrismaService } from '@app/db';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { SvcBranchController } from './svc-branch.controller';
-import { SvcBranchService } from './svc-branch.service';
-import { DbModule } from '@app/db';
-import { PrismaService } from '@app/db';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { MenuModule } from './menu/menu.module';
 import { OrderModule } from './orders/order.module';
+import { SvcBranchController } from './svc-branch.controller';
+import { SvcBranchService } from './svc-branch.service';
 
 @Module({
   imports: [

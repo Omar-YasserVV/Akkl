@@ -1,21 +1,14 @@
-import {
-  Controller,
-  //  Get
-} from '@nestjs/common';
-import {
-  MessagePattern,
-  //  EventPattern,
-  Payload,
-} from '@nestjs/microservices';
-import { SvcRestaurantService } from './svc-restaurant.service';
 import { CreateRestaurantDto } from '@app/common/dtos/RestaurantDto/create.restaurant.dto';
 import { UpdateRestaurantDto } from '@app/common/dtos/RestaurantDto/update.restaurant.dto';
+import { Controller } from '@nestjs/common';
+import { MessagePattern, Payload } from '@nestjs/microservices';
+import { SvcRestaurantService } from './svc-restaurant.service';
 @Controller()
 export class SvcRestaurantController {
   constructor(private readonly svcRestaurantService: SvcRestaurantService) {}
 
   @MessagePattern('get-restaurants')
-  async getRestaurants(@Payload() data: any) {
+  async getRestaurants() {
     return await this.svcRestaurantService.GetRestaurants();
   }
 

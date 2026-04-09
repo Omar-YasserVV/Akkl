@@ -10,18 +10,19 @@ export class OrderService {
     @Inject('BRANCH_SERVICE') private readonly kafkaClient: ClientKafka,
   ) {}
 
-  async createOrder(BranchId: number, data: CreateOrderDto) {
+  async createOrder(branchId: number, data: CreateOrderDto) {
     const branch = await this.prisma.branch.findUnique({
-      where: { id: BranchId },
+      where: { id: Number(branchId) },
     });
+
     if (!branch) {
-      throw new Error(`Branch with ID ${BranchId} not found`);
+      return new Error(`Branch with ID ${branchId} not found`);
     }
 
     const newOrder = await this.prisma.order.create({
       data: {
         ...data,
-        branchId: BranchId,
+        branchId: Number(branchId),
       },
     });
 
@@ -31,7 +32,7 @@ export class OrderService {
 
   async updateOrder(orderId: number, data: UpdateOrderDto) {
     const updatedOrder = await this.prisma.order.update({
-      where: { id: orderId },
+      where: { id: Number(orderId) },
       data,
     });
     this.kafkaClient.emit('order.updated', updatedOrder);
@@ -40,12 +41,11 @@ export class OrderService {
 
   async deleteOrder(orderId: number) {
     await this.prisma.order.delete({
-      where: { id: orderId },
+      where: { id: Number(orderId) },
     });
     this.kafkaClient.emit('order.deleted', { id: orderId });
     return { message: `Order with ID ${orderId} deleted successfully` };
   }
-
   async getOrdersByBranch(branchId: number) {
     return this.prisma.order.findMany({
       where: {
@@ -56,7 +56,7 @@ export class OrderService {
 
   async getOrderById(orderId: number) {
     return this.prisma.order.findUnique({
-      where: { id: orderId },
+      where: { id: Number(orderId) },
     });
   }
 }
