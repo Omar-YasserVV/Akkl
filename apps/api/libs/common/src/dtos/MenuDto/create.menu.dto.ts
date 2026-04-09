@@ -93,13 +93,11 @@ export class BranchMenuItemDetailDto {
     description: 'Available variations for the item',
     example: [
       {
-        id: 1,
-        name: 'Small',
+        size: 'Small', // Changed from 'name' to 'size' to match your DTO
         price: 50,
       },
       {
-        id: 2,
-        name: 'Large',
+        size: 'Large', // Changed from 'name' to 'size' to match your DTO
         price: 80,
       },
     ],

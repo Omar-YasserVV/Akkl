@@ -45,7 +45,13 @@ export class MenuService {
   async getBranchMenu(branchId: number) {
     return this.prisma.branchMenuItem.findMany({
       where: { branchId: Number(branchId) },
-      include: this.commonInclude,
+      include: {
+        variations: true,
+        dietaryTags: true,
+        recipe: {
+          include: { ingredient: true },
+        },
+      },
     });
   }
 
@@ -55,17 +61,27 @@ export class MenuService {
     });
 
     if (!branch) {
-      throw new NotFoundException(`Branch with ID ${branchId} not found`);
+      return new NotFoundException(`Branch with ID ${branchId} not found`);
     }
 
-    const menuItem = await this.prisma.branchMenuItem.create({
+    const menuItem = await this.prisma.branchMenuItem.findFirst({
+      where: { name: data.name, branchId: Number(branchId) },
+    });
+
+    if (data.name === menuItem?.name) {
+      return new BadRequestException(
+        `Menu item with name "${data.name}" already exists in this branch`,
+      );
+    }
+
+    const newMenuItem = await this.prisma.branchMenuItem.create({
       data: {
         name: data.name,
         description: data.description,
         image: data.image,
-        isAvailable: data.isAvailable ?? true,
+        isAvailable: data.isAvailable,
         menuItemId: data.menuItemId,
-        branch: { connect: { id: Number(branchId) } },
+        branchId: Number(branchId),
         variations: {
           create: data.variations?.map((v) => ({
             size: v.size,
@@ -76,17 +92,18 @@ export class MenuService {
         dietaryTags: {
           connect: data.dietaryTags?.map((tagId) => ({ id: tagId })),
         },
-        recipe: {
-          create: data.recipe?.map((r) => ({
-            ingredientId: r.ingredientId,
-            quantityRequired: r.quantityRequired,
-          })),
-        },
+        // recipe: {
+        //   create: data.recipe?.map((r) => ({
+        //     ingredientId: r.ingredientId,
+        //     quantityRequired: r.quantityRequired,
+        //   })),
+        // },
       },
       include: this.commonInclude,
     });
-    this.kafkaClient.emit('menu-item.created', menuItem);
-    return menuItem;
+
+    this.kafkaClient.emit('menu-item.created', newMenuItem);
+    return newMenuItem;
   }
 
   async updateMenuItem(
@@ -143,24 +160,24 @@ export class MenuService {
     return updatedMenuItemn;
   }
 
-  async deleteMenuItem(menuItemId: number, branchId?: number) {
-    const menuItem = await this.prisma.branchMenuItem.findUnique({
-      where: { id: Number(menuItemId) },
+  async deleteMenuItem(id: number, branchId: number) {
+    const menuItem = await this.prisma.branchMenuItem.findFirst({
+      where: { id: Number(id), branchId: Number(branchId) },
     });
 
     if (!menuItem) {
-      throw new NotFoundException(`Menu item with ID ${menuItemId} not found`);
+      return new NotFoundException(`Menu item with ID ${id} not found`);
     }
 
     if (branchId && menuItem.branchId !== Number(branchId)) {
-      throw new BadRequestException('Action denied: Branch ID mismatch');
+      return new BadRequestException('Action denied: Branch ID mismatch');
     }
 
     await this.prisma.branchMenuItem.delete({
-      where: { id: Number(menuItemId) },
+      where: { id: Number(id) },
     });
-    this.kafkaClient.emit('menu-item.deleted', { id: Number(menuItemId) });
-    return { message: `Menu item with ID ${menuItemId} deleted successfully` };
+    this.kafkaClient.emit('menu-item.deleted', { id: Number(id) });
+    return { message: `Menu item with ID ${id} deleted successfully` };
   }
 
   // --- Bulk & Excel Operations ---

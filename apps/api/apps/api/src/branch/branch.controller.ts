@@ -116,24 +116,18 @@ export class BranchController implements OnModuleInit {
   // --- Menu Endpoints ---
 
   @Get(':restaurantId/:branchId/menu')
-  getBranchMenu(
-    @Param('restaurantId') restaurantId: number,
-    @Param('branchId') branchId: number,
-  ) {
+  getBranchMenu(@Param('branchId') branchId: number) {
     return this.branchClient.send('get_branch_menu', {
-      restaurantId,
       branchId,
     });
   }
 
   @Post(':restaurantId/:branchId/menu')
   createMenuItem(
-    @Param('restaurantId') restaurantId: number,
     @Param('branchId') branchId: number,
     @Body() data: BranchMenuItemDetailDto,
   ) {
     return this.branchClient.send('create_menu_item', {
-      restaurantId,
       branchId,
       data,
     });
@@ -155,13 +149,11 @@ export class BranchController implements OnModuleInit {
 
   @Patch(':restaurantId/:branchId/menu/:menuItemId')
   updateMenuItem(
-    @Param('restaurantId') restaurantId: number,
     @Param('branchId') branchId: number,
     @Param('menuItemId') id: number,
     @Body() data: UpdateBranchMenuItemDto,
   ) {
     return this.branchClient.send('update_menu_item', {
-      restaurantId,
       branchId,
       id,
       data,
@@ -170,14 +162,12 @@ export class BranchController implements OnModuleInit {
 
   @Delete(':restaurantId/:branchId/menu/:menuItemId')
   deleteMenuItem(
-    @Param('restaurantId') restaurantId: number,
     @Param('branchId') branchId: number,
     @Param('menuItemId') id: number,
   ) {
     return this.branchClient.send('delete_menu_item', {
-      restaurantId,
-      branchId,
       id,
+      branchId,
     });
   }
 
@@ -185,65 +175,40 @@ export class BranchController implements OnModuleInit {
 
   @Post(':restaurantId/:branchId/orders')
   createOrder(
-    @Param('restaurantId') restaurantId: number,
     @Param('branchId') branchId: number,
     @Body() data: CreateOrderDto,
   ) {
     return this.branchClient.send('create_order', {
-      restaurantId,
       branchId,
       data,
     });
   }
 
   @Get(':restaurantId/:branchId/orders')
-  getOrdersByBranch(
-    @Param('restaurantId') restaurantId: number,
-    @Param('branchId') branchId: number,
-  ) {
+  getOrdersByBranch(@Param('branchId') branchId: number) {
     return this.branchClient.send('get_orders_by_branch', {
-      restaurantId,
       branchId,
     });
   }
 
   @Get(':restaurantId/:branchId/orders/:orderId')
-  getOrderById(
-    @Param('restaurantId') restaurantId: number,
-    @Param('branchId') branchId: number,
-    @Param('orderId') orderId: number,
-  ) {
+  getOrderById(@Param('orderId') orderId: number) {
     return this.branchClient.send('get_order_by_id', {
-      restaurantId,
-      branchId,
       orderId,
     });
   }
 
   @Patch(':restaurantId/:branchId/orders/:orderId')
-  updateOrder(
-    @Param('restaurantId') restaurantId: number,
-    @Param('branchId') branchId: number,
-    @Param('orderId') orderId: number,
-    @Body() data: UpdateOrderDto,
-  ) {
+  updateOrder(@Param('orderId') orderId: number, @Body() data: UpdateOrderDto) {
     return this.branchClient.send('update_order', {
-      restaurantId,
-      branchId,
       orderId,
       data,
     });
   }
 
   @Delete(':restaurantId/:branchId/orders/:orderId')
-  deleteOrder(
-    @Param('restaurantId') restaurantId: number,
-    @Param('branchId') branchId: number,
-    @Param('orderId') orderId: number,
-  ) {
+  deleteOrder(@Param('orderId') orderId: number) {
     return this.branchClient.send('delete_order', {
-      restaurantId,
-      branchId,
       orderId,
     });
   }
