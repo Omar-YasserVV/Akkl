@@ -14,7 +14,7 @@ export const authApis = {
   login: async (credentials: { email: string; password: string }) => {
     try {
       const res = await apiClient.post<{ status: string; data: User }>(
-        "/auth/employee/login",
+        "/auth/login",
         credentials,
       );
       return res;
@@ -25,7 +25,7 @@ export const authApis = {
   me: async () => {
     try {
       const res = await apiClient.get<{ status: string; data: User }>(
-        "/auth/employee/me",
+        "/auth/me",
       );
       return res;
     } catch (error) {
