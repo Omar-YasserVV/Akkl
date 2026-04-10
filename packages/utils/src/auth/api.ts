@@ -12,10 +12,7 @@ export interface User {
 
 export const authApis = {
   login: async (credentials: { email: string; password: string }) => {
-    return apiClient.post<{ status: string; data: { user: User } }>(
-      "/auth/login",
-      credentials,
-    );
+    return apiClient.post<{ data: { user: User } }>("/auth/login", credentials);
   },
   me: async () => {
     return apiClient.get<User>("/auth/me");

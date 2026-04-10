@@ -33,7 +33,7 @@ export class CreateOrderDto {
   @IsOptional()
   status?: OrderState;
 
-  // Future:
+  // TODO: Add items property for CreateOrderDto:
   // @ApiProperty({ type: [CreateOrderItemDto] })
   // items: CreateOrderItemDto[];
 }
