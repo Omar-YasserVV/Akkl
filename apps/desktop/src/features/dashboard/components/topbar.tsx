@@ -1,7 +1,9 @@
-import { Avatar, Button, Divider, Input, Badge } from "@heroui/react";
-import { LuBell, LuSearch, LuGlobe } from "react-icons/lu";
+import { useAuthStore } from "@/store/AuthStore";
+import { Avatar, Badge, Button, Divider, Input } from "@heroui/react";
+import { LuBell, LuGlobe, LuSearch } from "react-icons/lu";
 
 const Topbar = () => {
+  const { user } = useAuthStore();
   return (
     <div className="h-20 px-8 flex items-center justify-between bg-background/70 backdrop-blur-md sticky top-0 z-30">
       {/* Search Bar - refined width and styling */}
@@ -45,11 +47,13 @@ const Topbar = () => {
           <Avatar
             as="button"
             className="transition-transform"
-            name="Admin"
-            src="https://i.pravatar.cc/150?u=a042581f4e29026704d"
+            name={user?.fullName}
+            src={user?.image}
           />
           <div className="flex flex-col items-end">
-            <p className="text-sm font-semibold text-default-900">Admin User</p>
+            <p className="text-sm font-semibold text-default-900">
+              {user?.fullName}
+            </p>
           </div>
         </div>
       </div>

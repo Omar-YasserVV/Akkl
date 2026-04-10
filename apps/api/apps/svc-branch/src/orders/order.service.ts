@@ -11,12 +11,22 @@ export class OrderService {
   ) {}
 
   async createOrder(branchId: number, data: CreateOrderDto) {
+    // Check if branch exists
     const branch = await this.prisma.branch.findUnique({
       where: { id: Number(branchId) },
     });
 
     if (!branch) {
       return new Error(`Branch with ID ${branchId} not found`);
+    }
+
+    // Check if user exists
+    const user = await this.prisma.user.findUnique({
+      where: { id: Number(data.userId) },
+    });
+
+    if (!user) {
+      return new Error(`User with ID ${data.userId} not found`);
     }
 
     const newOrder = await this.prisma.order.create({

@@ -2,7 +2,6 @@ import { apiClient } from "../api";
 
 export interface User {
   id: number;
-  username: string;
   fullName: string;
   branchId: number;
   role: string;
@@ -12,13 +11,13 @@ export interface User {
 
 export const authApis = {
   login: async (credentials: { email: string; password: string }) => {
-    return apiClient.post<{ status: string; data: User }>(
+    return apiClient.post<{ status: string; data: { user: User } }>(
       "/auth/login",
       credentials,
     );
   },
   me: async () => {
-    return apiClient.get<{ status: string; data: User }>("/auth/me");
+    return apiClient.get<{ status: string; data: { user: User } }>("/auth/me");
   },
   logout: async () => {
     return apiClient.post<{ status: string }>("/auth/logout");

@@ -21,7 +21,7 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
         try {
           const res = await authApis.me();
-          set({ user: res.data, isAuthenticated: true, isLoading: false });
+          set({ user: res.data.user, isAuthenticated: true, isLoading: false });
         } catch {
           set({ user: null, isAuthenticated: false, isLoading: false });
         }
@@ -30,7 +30,7 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
         try {
           const res = await authApis.login(credentials);
-          set({ user: res.data, isAuthenticated: true, isLoading: false });
+          set({ user: res.data.user, isAuthenticated: true, isLoading: false });
         } catch (error) {
           set({ isLoading: false });
           throw error;
