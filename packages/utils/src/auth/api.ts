@@ -3,6 +3,7 @@ import { apiClient } from "../api";
 export interface User {
   id: number;
   fullName: string;
+  username: string;
   branchId: number;
   role: string;
   email: string;
@@ -17,7 +18,7 @@ export const authApis = {
     );
   },
   me: async () => {
-    return apiClient.get<{ status: string; data: { user: User } }>("/auth/me");
+    return apiClient.get<User>("/auth/me");
   },
   logout: async () => {
     return apiClient.post<{ status: string }>("/auth/logout");
