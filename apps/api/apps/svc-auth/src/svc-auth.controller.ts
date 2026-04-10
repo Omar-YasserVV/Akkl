@@ -7,7 +7,7 @@ import {
 import { BlackListService } from '@app/guards/services/blacklist.service';
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { GoogleUserDto, ResetPasswordDto } from '../dtos/auth.dto';
+import { ResetPasswordDto } from '../dtos/auth.dto';
 import { AuthResult, MessageResult } from './interfaces/auth.interface';
 import { SvcAuthService } from './svc-auth.service';
 
@@ -34,10 +34,10 @@ export class SvcAuthController {
     return { success: true };
   }
 
-  @MessagePattern('google-callback')
-  googleAuthCallback(@Payload() user: GoogleUserDto): GoogleUserDto {
-    return user;
-  }
+  // @MessagePattern('google-callback')
+  // googleAuthCallback(@Payload() user: GoogleUserDto): GoogleUserDto {
+  //   return user;
+  // }
 
   @MessagePattern('complete-google-signup')
   async completeGoogleSignup(
