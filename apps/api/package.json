@@ -31,6 +31,9 @@
     "prisma:push": "prisma db push"
   },
   "dependencies": {
+    "@repo/contract": "workspace:*",
+    "@orpc/nest": "latest",
+    "@orpc/server": "latest",
     "@nestjs/common": "^11.1.16",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.1.16",
