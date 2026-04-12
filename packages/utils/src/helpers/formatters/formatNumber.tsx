@@ -4,7 +4,7 @@ interface FormatterOptions {
   isCurrency?: boolean;
   isCompact?: boolean;
   decimals?: number;
-  Unit?: string;
+  unit?: string;
   unitStyle?: string;
 }
 
@@ -14,7 +14,7 @@ export class NumberFormatter {
     isCurrency: false,
     isCompact: false,
     decimals: 0,
-    Unit: "kg",
+    unit: "kg",
     unitStyle: "",
   };
 
@@ -45,7 +45,7 @@ export class NumberFormatter {
 
     return (
       <span>
-        {formattedValue} <span className={opts.unitStyle}>{opts.Unit}</span>
+        {formattedValue} <span className={opts.unitStyle}>{opts.unit}</span>
       </span>
     );
   }
