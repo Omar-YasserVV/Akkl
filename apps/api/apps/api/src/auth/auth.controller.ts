@@ -74,23 +74,27 @@ export class AuthController implements OnModuleInit {
 
     await this.authClient.connect();
   }
-  private readonly cookieOptions = {
-    httpOnly: true,
-    sameSite: 'none' as const,
-    secure: process.env.NODE_ENV === 'production',
-    path: '/',
-  };
+  // private readonly cookieOptions = {
+  //   httpOnly: true,
+  //   sameSite: 'strict' as const,
+  //   secure: process.env.NODE_ENV === 'production',
+  //   path: '/',
+  // };
 
   private setAuthCookies(
     res: Response,
     tokens: { access_token: string; refresh_token: string },
   ): void {
     res.cookie('access_token', tokens.access_token, {
-      ...this.cookieOptions,
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
       maxAge: 1000 * 60 * 60 * 7,
     });
     res.cookie('refresh_token', tokens.refresh_token, {
-      ...this.cookieOptions,
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
       maxAge: 1000 * 60 * 60 * 24 * 7,
     });
   }

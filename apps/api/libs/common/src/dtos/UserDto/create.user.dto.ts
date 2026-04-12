@@ -55,5 +55,5 @@ export class CreateUserDto {
   })
   @IsOptional()
   @IsInt()
-  brancheId?: number;
+  branchId?: number;
 }
