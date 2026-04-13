@@ -22,7 +22,7 @@ async function bootstrap(): Promise<void> {
   app.useGlobalFilters(new RpcExceptionFilter());
 
   app.enableCors({
-    origin: ['http://localhost:5173', 'app://-'],
+    origin: ['http://localhost:5173', 'app://-', '*'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],

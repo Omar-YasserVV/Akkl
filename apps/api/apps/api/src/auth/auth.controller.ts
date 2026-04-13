@@ -74,6 +74,7 @@ export class AuthController implements OnModuleInit {
 
     await this.authClient.connect();
   }
+
   private readonly cookieOptions = {
     httpOnly: true,
     sameSite: 'strict' as const,

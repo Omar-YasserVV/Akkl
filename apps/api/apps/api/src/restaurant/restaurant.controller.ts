@@ -1,24 +1,21 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Inject,
-  Post,
-  Req,
-  Res,
-  HttpStatus,
-  UseGuards,
-  Param,
-  Patch,
-  Delete,
-} from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
-import { Response, Request } from 'express';
 import { CreateRestaurantDto, UpdateRestaurantDto } from '@app/common';
-import { lastValueFrom } from 'rxjs';
 import { JwtAuthGuard } from '@app/guards/jwt-auth.guard';
 import { RolesGuard } from '@app/guards/role.guard';
 import { Roles } from '@app/guards/roles.decorator';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Inject,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
+import { lastValueFrom } from 'rxjs';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('restaurants')

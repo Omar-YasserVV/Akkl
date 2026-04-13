@@ -1,7 +1,12 @@
 import { CreateOrderDto, UpdateOrderDto } from '@app/common';
 import { PrismaService } from '@app/db';
-import { Inject, Injectable } from '@nestjs/common';
-import { ClientKafka } from '@nestjs/microservices';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { ClientKafka, RpcException } from '@nestjs/microservices';
 
 @Injectable()
 export class OrderService {
@@ -11,44 +16,135 @@ export class OrderService {
   ) {}
 
   async createOrder(branchId: number, data: CreateOrderDto) {
-    // Check if branch exists
-    const branch = await this.prisma.branch.findUnique({
-      where: { id: Number(branchId) },
-    });
-
-    if (!branch) {
-      return new Error(`Branch with ID ${branchId} not found`);
+    if (!data) {
+      throw new RpcException('Invalid request payload');
     }
 
-    // Check if user exists
-    const user = await this.prisma.user.findUnique({
-      where: { id: Number(data.userId) },
-    });
+    const { items = [], userId, status = 'PENDING' } = data;
+    const bId = Number(branchId);
+    const uId = Number(userId);
 
-    if (!user) {
-      return new Error(`User with ID ${data.userId} not found`);
+    if (!items || items.length === 0) {
+      throw new RpcException('Order must contain at least one item.');
     }
 
-    const newOrder = await this.prisma.order.create({
-      data: {
-        ...data,
-        branchId: Number(branchId),
-      },
-    });
+    if (isNaN(bId) || isNaN(uId)) {
+      throw new RpcException('Invalid Branch ID or User ID');
+    }
 
-    this.kafkaClient.emit('order.created', newOrder);
-    return newOrder;
+    try {
+      const [branch, user] = await Promise.all([
+        this.prisma.branch.findUnique({ where: { id: bId } }),
+        this.prisma.user.findUnique({ where: { id: uId } }),
+      ]);
+
+      if (!branch) throw new RpcException(`Branch ${bId} not found`);
+      if (!user) throw new RpcException(`User ${uId} not found`);
+
+      const menuItems = await this.prisma.branchMenuItem.findMany({
+        where: {
+          id: { in: items.map((i) => i.menuItemId) },
+          branchId: bId,
+        },
+        include: { variations: true },
+      });
+
+      let calculatedTotal = 0;
+      let calculatedItemCount = 0;
+
+      const orderItemsData = items.map((itemInput) => {
+        const dbItem = menuItems.find((m) => m.id === itemInput.menuItemId);
+
+        if (!dbItem) {
+          throw new RpcException(
+            `Item ${itemInput.menuItemId} is not available at this branch.`,
+          );
+        }
+
+        if (!dbItem.variations || dbItem.variations.length === 0) {
+          throw new RpcException(
+            `Item "${dbItem.name}" has no pricing defined.`,
+          );
+        }
+
+        const unitPrice = Number(dbItem.variations[0].price || 0);
+
+        calculatedTotal += unitPrice * itemInput.quantity;
+        calculatedItemCount += itemInput.quantity;
+
+        return {
+          menuItemId: itemInput.menuItemId,
+          quantity: itemInput.quantity,
+          price: unitPrice,
+        };
+      });
+
+      const newOrder = await this.prisma.order.create({
+        data: {
+          totalPrice: calculatedTotal,
+          userId: uId,
+          branchId: bId,
+          itemCount: calculatedItemCount,
+          status: status,
+          items: {
+            create: orderItemsData,
+          },
+        },
+        include: {
+          items: true,
+        },
+      });
+
+      this.kafkaClient.emit('order.created', newOrder);
+
+      return newOrder;
+    } catch (error) {
+      if (error instanceof RpcException) throw error;
+
+      const message =
+        error instanceof Error ? error.message : 'An unexpected error occurred';
+      throw new RpcException(message);
+    }
   }
 
   async updateOrder(orderId: number, data: UpdateOrderDto) {
+    const existingOrder = await this.prisma.order.findUnique({
+      where: { id: Number(orderId) },
+    });
+
+    if (!existingOrder) {
+      throw new NotFoundException(`Order with ID ${orderId} not found`);
+    }
+
+    if (existingOrder.status !== 'PENDING') {
+      throw new BadRequestException(
+        `Order cannot be updated because it is already ${existingOrder.status}`,
+      );
+    }
+
+    const { items, ...updateData } = data;
+
     const updatedOrder = await this.prisma.order.update({
       where: { id: Number(orderId) },
-      data,
+      data: {
+        ...updateData,
+        ...(items && {
+          items: {
+            deleteMany: {},
+            create: items.map((item) => ({
+              menuItemId: item.menuItemId,
+              quantity: item.quantity,
+              price: item.price,
+            })),
+          },
+        }),
+      },
+      include: { items: true },
     });
+
     this.kafkaClient.emit('order.updated', updatedOrder);
     return updatedOrder;
   }
-
   async deleteOrder(orderId: number) {
     await this.prisma.order.delete({
       where: { id: Number(orderId) },
@@ -61,6 +157,7 @@ export class OrderService {
       where: {
         branchId: Number(branchId),
       },
+      include: { items: { include: { branchMenuItem: true } } },
     });
   }
 
