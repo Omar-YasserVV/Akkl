@@ -77,7 +77,7 @@ function SignIn() {
 
   return (
     <div className="relative flex bg-white">
-      <div className="w-1/2 h-screen">
+      <div className="w-1/2 h-screen max-lg:w-full">
         <div className="full h-screen flex flex-col items-center justify-center px-20">
           <div className="w-full max-w-md">
             <h1 className="text-4xl font-bold text-gray-900 mb-2">Sign in</h1>
