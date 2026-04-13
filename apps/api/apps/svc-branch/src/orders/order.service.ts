@@ -6,7 +6,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ClientKafka } from '@nestjs/microservices';
+import { ClientKafka, RpcException } from '@nestjs/microservices';
 
 @Injectable()
 export class OrderService {
@@ -14,68 +14,107 @@ export class OrderService {
     private readonly prisma: PrismaService,
     @Inject('BRANCH_SERVICE') private readonly kafkaClient: ClientKafka,
   ) {}
+
   async createOrder(branchId: number, data: CreateOrderDto) {
-    const [branch, user] = await Promise.all([
-      this.prisma.branch.findUnique({ where: { id: Number(branchId) } }),
-      this.prisma.user.findUnique({ where: { id: Number(data.userId) } }),
-    ]);
+    // 1. Destructure with defaults to prevent "undefined" errors
+    if (!data) {
+      throw new RpcException('Invalid request payload');
+    }
 
-    if (!branch) throw new NotFoundException(`Branch ${branchId} not found`);
-    if (!user) throw new NotFoundException(`User ${data.userId} not found`);
+    const { items = [], userId, status = 'PENDING' } = data;
+    const bId = Number(branchId);
+    const uId = Number(userId);
 
-    const menuItems = await this.prisma.branchMenuItem.findMany({
-      where: {
-        id: { in: data.items.map((i) => i.menuItemId) },
-        branchId: Number(branchId),
-      },
-      include: { variations: true },
-    });
+    // 2. Initial Guard: Ensure items exist and are valid
+    if (!items || items.length === 0) {
+      throw new RpcException('Order must contain at least one item.');
+    }
 
-    let calculatedTotal = 0;
-    let calculatedItemCount = 0;
+    if (isNaN(bId) || isNaN(uId)) {
+      throw new RpcException('Invalid Branch ID or User ID');
+    }
 
-    const orderItemsData = data.items.map((itemInput) => {
-      const dbItem = menuItems.find((m) => m.id === itemInput.menuItemId);
+    try {
+      // 3. Parallel check for Branch and User existence
+      const [branch, user] = await Promise.all([
+        this.prisma.branch.findUnique({ where: { id: bId } }),
+        this.prisma.user.findUnique({ where: { id: uId } }),
+      ]);
 
-      if (!dbItem) {
-        throw new BadRequestException(
-          `Item ${itemInput.menuItemId} is not available at this branch.`,
-        );
-      }
+      if (!branch) throw new RpcException(`Branch ${bId} not found`);
+      if (!user) throw new RpcException(`User ${uId} not found`);
 
-      // Use the first variation price as the base price
-      const unitPrice = Number(dbItem.variations[0]?.price || 0);
-
-      calculatedTotal += unitPrice * itemInput.quantity;
-      calculatedItemCount += itemInput.quantity;
-
-      return {
-        menuItemId: itemInput.menuItemId,
-        quantity: itemInput.quantity,
-        price: unitPrice, // Save the actual price at the time of purchase
-      };
-    });
-
-    // 4. Create the Order in the database
-    const newOrder = await this.prisma.order.create({
-      data: {
-        totalPrice: calculatedTotal,
-        userId: Number(data.userId),
-        branchId: Number(branchId),
-        itemCount: calculatedItemCount,
-        status: data.status || 'PENDING',
-        items: {
-          create: orderItemsData,
+      // 4. Fetch Branch Menu Items and their Variations
+      const menuItems = await this.prisma.branchMenuItem.findMany({
+        where: {
+          id: { in: items.map((i) => i.menuItemId) },
+          branchId: bId,
         },
-      },
-      include: {
-        items: true,
-      },
-    });
+        include: { variations: true },
+      });
 
-    this.kafkaClient.emit('order.created', newOrder);
+      let calculatedTotal = 0;
+      let calculatedItemCount = 0;
 
-    return newOrder;
+      // 5. Map Order Items and calculate pricing
+      const orderItemsData = items.map((itemInput) => {
+        const dbItem = menuItems.find((m) => m.id === itemInput.menuItemId);
+
+        if (!dbItem) {
+          throw new RpcException(
+            `Item ${itemInput.menuItemId} is not available at this branch.`,
+          );
+        }
+
+        // Safety: Prevent crash if a menu item has no variations/prices
+        if (!dbItem.variations || dbItem.variations.length === 0) {
+          throw new RpcException(
+            `Item "${dbItem.name}" has no pricing defined.`,
+          );
+        }
+
+        // Using the first variation as the default price
+        const unitPrice = Number(dbItem.variations[0].price || 0);
+
+        calculatedTotal += unitPrice * itemInput.quantity;
+        calculatedItemCount += itemInput.quantity;
+
+        return {
+          menuItemId: itemInput.menuItemId,
+          quantity: itemInput.quantity,
+          price: unitPrice,
+        };
+      });
+
+      // 6. Create the Order within a transaction or single call
+      const newOrder = await this.prisma.order.create({
+        data: {
+          totalPrice: calculatedTotal,
+          userId: uId,
+          branchId: bId,
+          itemCount: calculatedItemCount,
+          status: status,
+          items: {
+            create: orderItemsData,
+          },
+        },
+        include: {
+          items: true,
+        },
+      });
+
+      // 7. Emit to Kafka
+      this.kafkaClient.emit('order.created', newOrder);
+
+      return newOrder;
+    } catch (error) {
+      // Catching any unexpected errors and ensuring they stay as RpcExceptions
+      if (error instanceof RpcException) throw error;
+
+      const message =
+        error instanceof Error ? error.message : 'An unexpected error occurred';
+      throw new RpcException(message);
+    }
   }
 
   async updateOrder(orderId: number, data: UpdateOrderDto) {
