@@ -11,7 +11,7 @@ import {
 import { OrderState } from '../../../../db/generated/client/client';
 
 export class CreateOrderItemDto {
-  @ApiProperty({ example: 1 })
+  @ApiProperty({ example: 9 })
   @IsInt()
   menuItemId!: number;
 
@@ -19,26 +19,14 @@ export class CreateOrderItemDto {
   @IsInt()
   quantity!: number;
 
-  @ApiProperty({ example: 15.5 })
   @IsNumber({ maxDecimalPlaces: 2 })
   price!: number;
 }
-export class CreateOrderDto {
-  @ApiProperty({ example: 150.75 })
-  @IsNumber({ maxDecimalPlaces: 2 })
-  totalPrice!: number;
 
-  @ApiProperty({ example: 25 })
+export class CreateOrderDto {
+  @ApiProperty({ example: 2 })
   @IsInt()
   userId!: number;
-
-  @ApiProperty({ example: 3 })
-  @IsInt()
-  itemCount!: number;
-
-  @IsArray()
-  @IsInt({ each: true })
-  itemsId!: number[]; // [1, 2, 3, 4, 5]
 
   @ApiProperty({ type: [CreateOrderItemDto] })
   @IsArray()
