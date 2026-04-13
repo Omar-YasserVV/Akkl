@@ -34,6 +34,10 @@ export class JwtAuthGuard implements CanActivate {
       throw new UnauthorizedException('Token is blacklisted');
     }
 
+    if (!accessToken) {
+      return this.handleRefreshToken(request, response, refreshToken);
+    }
+
     try {
       const decoded = await this.jwtService.verifyAsync(accessToken, {
         secret: process.env.JWT_SECRET,
@@ -58,7 +62,16 @@ export class JwtAuthGuard implements CanActivate {
         secret: process.env.JWT_REFRESH_SECRET,
       });
 
-      const payload = { sub: decodedRefresh.sub };
+      const payload: Record<string, unknown> = { sub: decodedRefresh.sub };
+      if (decodedRefresh['role'] !== undefined) {
+        payload['role'] = decodedRefresh['role'];
+      }
+      if (decodedRefresh['type'] !== undefined) {
+        payload['type'] = decodedRefresh['type'];
+      }
+      if (decodedRefresh['branchId'] !== undefined) {
+        payload['branchId'] = decodedRefresh['branchId'];
+      }
 
       const newAccessToken = await this.jwtService.signAsync(payload, {
         secret: process.env.JWT_SECRET,

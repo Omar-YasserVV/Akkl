@@ -27,7 +27,10 @@ export class BlackListService {
       throw error;
     }
   }
-  async isTokenBlacklisted(token: string) {
+  async isTokenBlacklisted(token: string | undefined) {
+    if (!token) {
+      return false;
+    }
     const found = await this.prisma.tokenBlacklist.findUnique({
       where: { token },
     });

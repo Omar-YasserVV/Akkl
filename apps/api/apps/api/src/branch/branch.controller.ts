@@ -6,6 +6,7 @@ import {
   UpdateBranchMenuItemDto,
   UpdateOrderDto,
 } from '@app/common';
+import { JwtAuthGuard } from '@app/guards/jwt-auth.guard';
 import {
   Body,
   Controller,
@@ -19,6 +20,7 @@ import {
   Post,
   Res,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
@@ -26,6 +28,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { lastValueFrom } from 'rxjs';
 
+@UseGuards(JwtAuthGuard)
 @Controller('branches')
 export class BranchController implements OnModuleInit {
   constructor(

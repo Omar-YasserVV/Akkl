@@ -12,6 +12,7 @@ import { AuthResult, UserResponse } from './interfaces/auth.interface';
 
 interface JwtPayload extends Omit<jwt.JwtPayload, 'sub'> {
   sub: number;
+  role?: string;
   type?: 'employee' | 'user';
   branchId?: number;
   email?: string;
@@ -78,7 +79,7 @@ export class SvcAuthService {
       throw new RpcException({ message: 'Invalid credentials', status: 401 });
     }
 
-    const tokens = this.generateToken({ sub: user.id });
+    const tokens = this.generateToken({ sub: user.id, role: user.role });
     return {
       ...tokens,
       user: {
@@ -114,7 +115,7 @@ export class SvcAuthService {
       data: { ...data, password: hashedPassword },
     });
 
-    const tokens = this.generateToken({ sub: newUser.id });
+    const tokens = this.generateToken({ sub: newUser.id, role: newUser.role });
     return {
       ...tokens,
       user: {
@@ -160,7 +161,7 @@ export class SvcAuthService {
       },
     });
 
-    const tokens = this.generateToken({ sub: newUser.id });
+    const tokens = this.generateToken({ sub: newUser.id, role: newUser.role });
 
     return {
       ...tokens,

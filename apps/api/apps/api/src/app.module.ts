@@ -1,14 +1,11 @@
-import { ConfigurableModuleBuilder, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AuthModule } from './auth/auth.module';
 import { RestaurantModule } from './restaurant/restaurant.module';
 import { BranchModule } from './branch/branch.module';
 import { DbModule } from '@app/db';
 import { GuardsModule } from '@app/guards';
 import { JwtModule } from '@nestjs/jwt';
-import { APP_GUARD } from '@nestjs/core/constants';
-import { RolesGuard } from '@app/guards/role.guard';
 
 @Module({
   imports: [
@@ -28,11 +25,6 @@ import { RolesGuard } from '@app/guards/role.guard';
     }),
   ],
   controllers: [],
-  providers: [
-    {
-      provide: APP_GUARD,
-      useClass: RolesGuard,
-    },
-  ],
+  providers: [],
 })
 export class AppModule {}

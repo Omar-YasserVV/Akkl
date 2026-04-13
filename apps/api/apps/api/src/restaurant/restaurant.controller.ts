@@ -35,7 +35,7 @@ export class RestaurantController {
 
   @Post()
   async createRestaurant(@Req() req: any, @Body() data: CreateRestaurantDto) {
-    const userId = req.user?.id;
+    const userId = req.user?.sub ?? req.user?.id;
     if (!userId) {
       throw new Error('User not found');
     }
