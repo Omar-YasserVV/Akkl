@@ -40,7 +40,10 @@ export class SvcAuthService {
     });
   }
 
-  private generateToken(payload: JwtPayload) {
+  private generateToken(payload: JwtPayload): {
+    access_token: string;
+    refresh_token: string;
+  } {
     const jwtSecret = process.env.JWT_SECRET;
     const refreshSecret = process.env.JWT_REFRESH_SECRET;
 
@@ -75,16 +78,10 @@ export class SvcAuthService {
       throw new RpcException({ message: 'Invalid credentials', status: 401 });
     }
 
-    const { access_token, refresh_token } = this.generateToken({
-      sub: user.id,
-    });
-
-    console.log(access_token, refresh_token);
-
+    const tokens = this.generateToken({ sub: user.id });
     return {
+      ...tokens,
       user: {
-        access_token,
-        refresh_token,
         id: user.id,
         email: user.email,
         fullName: user.fullName,
@@ -117,13 +114,9 @@ export class SvcAuthService {
       data: { ...data, password: hashedPassword },
     });
 
-    const { access_token, refresh_token } = this.generateToken({
-      sub: newUser.id,
-    });
-
+    const tokens = this.generateToken({ sub: newUser.id });
     return {
-      access_token,
-      refresh_token,
+      ...tokens,
       user: {
         id: newUser.id,
         email: newUser.email,
