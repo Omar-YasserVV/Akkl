@@ -76,7 +76,7 @@ export class AuthController implements OnModuleInit {
   }
   private readonly cookieOptions = {
     httpOnly: true,
-    sameSite: 'none' as const,
+    sameSite: 'strict' as const,
     secure: process.env.NODE_ENV === 'production',
     path: '/',
   };
