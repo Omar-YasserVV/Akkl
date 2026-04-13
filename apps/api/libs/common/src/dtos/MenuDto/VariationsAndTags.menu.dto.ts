@@ -1,7 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 
-// Enum matches your Prisma schema
 export enum DietaryType {
   VEGAN = 'VEGAN',
   GLUTEN_FREE = 'GLUTEN_FREE',
