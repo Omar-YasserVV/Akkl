@@ -157,6 +157,7 @@ export class OrderService {
       where: {
         branchId: Number(branchId),
       },
+      include: { items: { include: { branchMenuItem: true } } },
     });
   }
 
