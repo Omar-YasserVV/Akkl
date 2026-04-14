@@ -20,6 +20,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Res,
   UploadedFile,
   UseGuards,
@@ -193,9 +194,15 @@ export class BranchController implements OnModuleInit {
 
   @Roles(UserRole.CASHIER)
   @Get(':restaurantId/:branchId/orders')
-  getOrdersByBranch(@Param('branchId') branchId: number) {
+  getOrdersByBranch(
+    @Param('branchId') branchId: number,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
     return this.branchClient.send('get_orders_by_branch', {
-      branchId,
+      branchId: Number(branchId),
+      page: Number(page),
+      limit: Number(limit),
     });
   }
 

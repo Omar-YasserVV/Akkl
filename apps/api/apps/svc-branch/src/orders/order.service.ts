@@ -7,6 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { createPagination } from 'utils/pagination.util';
 
 @Injectable()
 export class OrderService {
@@ -152,13 +153,32 @@ export class OrderService {
     this.kafkaClient.emit('order.deleted', { id: orderId });
     return { message: `Order with ID ${orderId} deleted successfully` };
   }
-  async getOrdersByBranch(branchId: number) {
-    return this.prisma.order.findMany({
-      where: {
-        branchId: Number(branchId),
-      },
-      include: { items: { include: { branchMenuItem: true } } },
-    });
+  async getOrdersByBranch(
+    branchId: number,
+    page: number = 1,
+    limit: number = 10,
+  ) {
+    const skip = (page - 1) * limit;
+    const bId = Number(branchId);
+
+    const [total, orders] = await this.prisma.$transaction([
+      this.prisma.order.count({
+        where: { branchId: bId },
+      }),
+      this.prisma.order.findMany({
+        where: { branchId: bId },
+        skip,
+        take: limit,
+        include: {
+          items: {
+            include: { branchMenuItem: true },
+          },
+        },
+        orderBy: { createdAt: 'desc' }, // Latest orders first
+      }),
+    ]);
+
+    return createPagination(orders, total, page, limit);
   }
 
   async getOrderById(orderId: number) {
