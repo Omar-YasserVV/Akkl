@@ -179,7 +179,7 @@ export class BranchController implements OnModuleInit {
   }
 
   // --- Order Endpoints ---
-
+  @Roles(UserRole.CASHIER)
   @Post(':restaurantId/:branchId/orders')
   createOrder(
     @Param('branchId') branchId: number,
@@ -191,6 +191,7 @@ export class BranchController implements OnModuleInit {
     });
   }
 
+  @Roles(UserRole.CASHIER)
   @Get(':restaurantId/:branchId/orders')
   getOrdersByBranch(@Param('branchId') branchId: number) {
     return this.branchClient.send('get_orders_by_branch', {
@@ -198,6 +199,7 @@ export class BranchController implements OnModuleInit {
     });
   }
 
+  @Roles(UserRole.CASHIER)
   @Get(':restaurantId/:branchId/orders/:orderId')
   getOrderById(@Param('orderId') orderId: number) {
     return this.branchClient.send('get_order_by_id', {
@@ -205,6 +207,7 @@ export class BranchController implements OnModuleInit {
     });
   }
 
+  @Roles(UserRole.MANAGER)
   @Patch(':restaurantId/:branchId/orders/:orderId')
   updateOrder(@Param('orderId') orderId: number, @Body() data: UpdateOrderDto) {
     return this.branchClient.send('update_order', {
@@ -213,6 +216,7 @@ export class BranchController implements OnModuleInit {
     });
   }
 
+  @Roles(UserRole.MANAGER)
   @Delete(':restaurantId/:branchId/orders/:orderId')
   deleteOrder(@Param('orderId') orderId: number) {
     return this.branchClient.send('delete_order', {
