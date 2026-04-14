@@ -15,9 +15,13 @@ import { BranchGateway } from './branch.gateway';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    ClientsModule.registerAsync(
-      createKafkaClient('BRANCH_SERVICE', 'api-gateway-branch-group'),
-    ),
+    ClientsModule.registerAsync([
+      createKafkaClient(
+        'BRANCH_SERVICE',
+        'api-gateway-branch-group',
+        'api-gateway-branch',
+      ),
+    ]),
   ],
   controllers: [BranchController],
   providers: [JwtAuthGuard, RolesGuard, BranchGateway],

@@ -14,9 +14,13 @@ import { RestaurantController } from './restaurant.controller';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    ClientsModule.registerAsync(
-      createKafkaClient('RESTAURANT_SERVICE', 'api-gateway-restaurant-group'),
-    ),
+    ClientsModule.registerAsync([
+      createKafkaClient(
+        'RESTAURANT_SERVICE',
+        'api-gateway-restaurant-group',
+        'api-gateway-restaurant',
+      ),
+    ]),
   ],
   controllers: [RestaurantController],
   providers: [JwtAuthGuard, RolesGuard],

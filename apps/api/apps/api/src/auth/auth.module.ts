@@ -12,9 +12,13 @@ import { AuthController } from './auth.controller';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    ClientsModule.registerAsync(
-      createKafkaClient('AUTH_SERVICE', 'api-gateway-auth-group'),
-    ),
+    ClientsModule.registerAsync([
+      createKafkaClient(
+        'AUTH_SERVICE',
+        'api-gateway-auth-group',
+        'api-gateway-auth',
+      ),
+    ]),
     JwtModule.registerAsync({
       useFactory: (configService: ConfigService) => ({
         secret: configService.get('JWT_SECRET'),

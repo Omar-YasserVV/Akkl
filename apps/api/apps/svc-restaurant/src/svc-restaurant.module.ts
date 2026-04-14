@@ -13,9 +13,13 @@ import { SvcRestaurantService } from './svc-restaurant.service';
       envFilePath: './.env',
     }),
 
-    ClientsModule.registerAsync(
-      createKafkaClient('RESTAURANT_SERVICE', 'svc-restaurant-server-group'),
-    ),
+    ClientsModule.registerAsync([
+      createKafkaClient(
+        'RESTAURANT_SERVICE',
+        'svc-restaurant-server-group',
+        'svc-restaurant',
+      ),
+    ]),
     DbModule,
   ],
   controllers: [SvcRestaurantController],

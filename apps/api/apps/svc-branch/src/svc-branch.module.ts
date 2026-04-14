@@ -17,9 +17,13 @@ import { SvcBranchService } from './svc-branch.service';
     DbModule,
     MenuModule,
     OrderModule,
-    ClientsModule.registerAsync(
-      createKafkaClient('BRANCH_SERVICE', 'svc-branch-server-group'),
-    ),
+    ClientsModule.registerAsync([
+      createKafkaClient(
+        'BRANCH_SERVICE',
+        'svc-branch-server-group',
+        'svc-branch',
+      ),
+    ]),
   ],
   controllers: [SvcBranchController],
   providers: [SvcBranchService, PrismaService],
