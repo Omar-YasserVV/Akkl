@@ -7,6 +7,8 @@ import {
   UpdateOrderDto,
 } from '@app/common';
 import { JwtAuthGuard } from '@app/guards/jwt-auth.guard';
+import { RolesGuard } from '@app/guards/role.guard';
+import { Roles } from '@app/guards/roles.decorator';
 import {
   Body,
   Controller,
@@ -26,9 +28,11 @@ import {
 import { ClientKafka } from '@nestjs/microservices';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
+import { UserRole } from 'libs/db/generated/client/enums';
 import { lastValueFrom } from 'rxjs';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.BUSINESS_OWNER)
 @Controller('branches')
 export class BranchController implements OnModuleInit {
   constructor(
