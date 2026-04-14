@@ -1,7 +1,8 @@
 import {
   CompleteGoogleSignupDto,
-  CreateUserDto,
+  CreateStaffUserDto,
   LoginDto,
+  SignupUserDto,
   tokenDto,
 } from '@app/common';
 import { BlackListService } from '@app/guards/services/blacklist.service';
@@ -19,7 +20,7 @@ export class SvcAuthController {
   ) {}
 
   @MessagePattern('signup')
-  async signup(@Payload() data: CreateUserDto) {
+  async signup(@Payload() data: SignupUserDto) {
     return this.svcAuthService.signup(data);
   }
 
@@ -59,7 +60,7 @@ export class SvcAuthController {
   }
 
   @MessagePattern('create-employee')
-  async createEmployee(@Payload() data: CreateUserDto) {
+  async createEmployee(@Payload() data: CreateStaffUserDto) {
     return this.svcAuthService.createEmployee(data);
   }
 
