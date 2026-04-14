@@ -86,7 +86,7 @@ const StockLevelsTable = ({ data }: { data: any[] }) => {
                 </TableCell>
                 <TableCell className="font-semibold">
                   {NumberFormatter.getNumberOnly(item.currentStock, {
-                    weightUnit: item.unit,
+                    unit: item.unit,
                     isCompact: true,
                     unitStyle: "text-default-400",
                   })}

@@ -6,15 +6,18 @@ async function bootstrap() {
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     SvcRestaurantModule,
     {
-      transport: Transport.TCP,
+      transport: Transport.KAFKA,
       options: {
-        host: '127.0.0.1',
-        port: 9011,
+        client: {
+          brokers: ['localhost:9094'],
+        },
+        consumer: {
+          groupId: 'svc-restaurant-server-group',
+        },
       },
     },
   );
-
   await app.listen();
-  console.log('Restaurant Microservice is listening to TCP port 9011...');
+  console.log('svc-restaurant Microservice is listening...');
 }
-void bootstrap();
+bootstrap();

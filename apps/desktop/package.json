@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && electron-builder",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
     "@heroui/react": "^2.8.9",
@@ -21,6 +20,7 @@
     "@tanstack/react-query": "^5.76.0",
     "axios": "^1.14.0",
     "better-sqlite3": "^12.6.2",
+    "electron-serve": "^3.0.1",
     "framer-motion": "^12.0.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -40,7 +40,7 @@
     "@typescript-eslint/eslint-plugin": "^7.1.1",
     "@typescript-eslint/parser": "^7.1.1",
     "@vitejs/plugin-react": "^4.2.1",
-    "electron": "^30.0.1",
+    "electron": "41.2.0",
     "electron-builder": "^24.13.3",
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",

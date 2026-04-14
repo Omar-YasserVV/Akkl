@@ -1,7 +1,8 @@
+import { CreateOrderDto, UpdateOrderDto } from '@app/common';
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
+import { OrderState, source } from 'libs/db/generated/client/enums';
 import { OrderService } from './order.service';
-import { CreateOrderDto, UpdateOrderDto } from '@app/common';
 
 @Controller()
 export class OrderController {
@@ -29,8 +30,20 @@ export class OrderController {
   }
 
   @MessagePattern('get_orders_by_branch')
-  async getOrdersByBranch(@Payload('branchId') branchId: number) {
-    return this.orderService.getOrdersByBranch(branchId);
+  async getOrdersByBranch(
+    @Payload('branchId') branchId: number,
+    @Payload('page') page: number,
+    @Payload('limit') limit: number,
+    @Payload('status') status?: OrderState,
+    @Payload('source') source?: source,
+  ) {
+    return this.orderService.getOrdersByBranch(
+      branchId,
+      page,
+      limit,
+      status,
+      source,
+    );
   }
 
   @MessagePattern('get_order_by_id')

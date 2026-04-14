@@ -172,7 +172,7 @@ const Sidebar = () => {
       <div className="mt-auto p-4">
         <Button
           className="w-full justify-between text-red-500"
-          variant="ghost"
+          variant="bordered"
           onPress={logout}
           endContent={<LuLogOut />}
         >

@@ -1,4 +1,9 @@
-import { CompleteGoogleSignupDto, CreateUserDto, LoginDto } from '@app/common';
+import {
+  CompleteGoogleSignupDto,
+  CreateStaffUserDto,
+  LoginDto,
+  SignupUserDto,
+} from '@app/common';
 import { JwtAuthGuard } from '@app/guards/jwt-auth.guard';
 import {
   Body,
@@ -65,7 +70,7 @@ export class AuthController implements OnModuleInit {
       'forgot-password',
       'reset-password',
       'create-employee',
-      'get-employee-profile',
+      'get-user-profile',
     ];
 
     topics.forEach((topic) => {
@@ -74,6 +79,7 @@ export class AuthController implements OnModuleInit {
 
     await this.authClient.connect();
   }
+
   private readonly cookieOptions = {
     httpOnly: true,
     sameSite: 'strict' as const,
@@ -97,7 +103,7 @@ export class AuthController implements OnModuleInit {
 
   @Post('signup')
   async signup(
-    @Body() data: CreateUserDto,
+    @Body() data: SignupUserDto,
     @Res() res: Response,
   ): Promise<Response> {
     const result = await lastValueFrom(
@@ -187,15 +193,17 @@ export class AuthController implements OnModuleInit {
   }
 
   @Post('staff/create')
-  async createStaff(@Body() data: CreateUserDto): Promise<MessageResponse> {
+  async createStaff(
+    @Body() data: CreateStaffUserDto,
+  ): Promise<MessageResponse> {
     return await lastValueFrom(
       this.authClient.send<MessageResponse>('create-employee', data),
     );
   }
 
-  @Get('employee/me')
+  @Get('me')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Get authenticated employee profile' })
+  @ApiOperation({ summary: 'Get authenticated profile' })
   async getEmployeeMe(@Req() req: AuthenticatedRequest): Promise<UserResponse> {
     const userId = req.user.sub || req.user.id;
 
@@ -204,7 +212,7 @@ export class AuthController implements OnModuleInit {
     }
 
     const profile = await lastValueFrom(
-      this.authClient.send<UserResponse>('get-employee-profile', userId),
+      this.authClient.send<UserResponse>('get-user-profile', userId),
     );
 
     return profile;

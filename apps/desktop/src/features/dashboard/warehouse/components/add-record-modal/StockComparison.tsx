@@ -1,5 +1,5 @@
-import { IoArrowForward } from "react-icons/io5";
 import { NumberFormatter } from "@repo/utils";
+import { IoArrowForward } from "react-icons/io5";
 
 interface StockComparisonProps {
   currentStock: number;
@@ -20,7 +20,7 @@ export const StockComparison = ({
       <p className="text-xl font-bold">
         {NumberFormatter.getWithUnit(currentStock, {
           decimals: 2,
-          Unit: unit,
+          unit: unit,
           unitStyle: "text-default-500 text-sm font-medium",
         })}
       </p>
@@ -33,7 +33,7 @@ export const StockComparison = ({
       <p className="text-xl font-bold text-primary text-end">
         {NumberFormatter.getWithUnit(projectedStock, {
           decimals: 2,
-          Unit: unit,
+          unit: unit,
           unitStyle: "text-sm font-medium",
         })}
       </p>

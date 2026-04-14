@@ -155,21 +155,24 @@ model InventoryItem {
 }
 
 model Order {
-  id          Int         @id @default(autoincrement())
-  totalAmount Decimal     @db.Decimal(10, 2)
+  id          Int          @id @default(autoincrement())
+  totalPrice  Decimal      @db.Decimal(10, 2)
   branchId    Int
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
   userId      Int
-  status      OrderState  @default(PENDING)
-  branch      Branch      @relation(fields: [branchId], references: [id])
-  user        User        @relation(fields: [userId], references: [id])
+  CustomerName String
+  source      source       @default(STORE)
+  itemCount   Int
+  status      OrderState   @default(PENDING)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  branch      Branch       @relation(fields: [branchId], references: [id])
+  user        User         @relation(fields: [userId], references: [id])
   items       OrderItem[]
 }
 
 model OrderItem {
   id             Int            @id @default(autoincrement())
-  orderId        Int
+  orderId        Int            
   menuItemId     Int
   quantity       Int
   price          Decimal        @db.Decimal(10, 2)
@@ -238,6 +241,11 @@ enum DietaryType {
   VEGAN
   GLUTEN_FREE
   DAIRY_FREE
+}
+
+enum source {
+  APP
+  STORE
 }
 
 enum ExpenseType {

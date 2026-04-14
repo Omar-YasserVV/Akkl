@@ -1,11 +1,11 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { ClientsModule, Transport } from '@nestjs/microservices';
-import { RestaurantController } from './restaurant.controller';
 import { GuardsModule } from '@app/guards';
 import { JwtAuthGuard } from '@app/guards/jwt-auth.guard';
 import { RolesGuard } from '@app/guards/role.guard';
-import { JwtModule } from '@nestjs/jwt';
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { ClientsModule } from '@nestjs/microservices';
+import { createKafkaClient } from 'utils/kafka-client.factory';
+import { RestaurantController } from './restaurant.controller';
 
 @Module({
   imports: [
@@ -14,17 +14,9 @@ import { JwtModule } from '@nestjs/jwt';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    ClientsModule.register([
-      {
-        name: 'RESTAURANT_SERVICE',
-        transport: Transport.TCP,
-        options: { host: '127.0.0.1', port: 9011 },
-      },
-    ]),
-    JwtModule.register({
-      secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '7h' },
-    }),
+    ClientsModule.register(
+      createKafkaClient('RESTAURANT_SERVICE', 'svc-restaurant-server-group'),
+    ),
   ],
   controllers: [RestaurantController],
   providers: [JwtAuthGuard, RolesGuard],

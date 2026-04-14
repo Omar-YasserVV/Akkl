@@ -1,4 +1,9 @@
-import { CompleteGoogleSignupDto, CreateUserDto, LoginDto } from '@app/common';
+import {
+  CompleteGoogleSignupDto,
+  CreateStaffUserDto,
+  LoginDto,
+  SignupUserDto,
+} from '@app/common';
 import { PrismaService } from '@app/db';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -8,10 +13,11 @@ import * as jwt from 'jsonwebtoken';
 import * as nodemailer from 'nodemailer';
 import { comparePasswords, hashPassword } from '../../../utils/argon2';
 import { ResetPasswordDto } from '../dtos/auth.dto';
-import { AuthResult } from './interfaces/auth.interface';
+import { AuthResult, UserResponse } from './interfaces/auth.interface';
 
 interface JwtPayload extends Omit<jwt.JwtPayload, 'sub'> {
   sub: number;
+  role?: string;
   type?: 'employee' | 'user';
   branchId?: number;
   email?: string;
@@ -78,7 +84,7 @@ export class SvcAuthService {
       throw new RpcException({ message: 'Invalid credentials', status: 401 });
     }
 
-    const tokens = this.generateToken({ sub: user.id });
+    const tokens = this.generateToken({ sub: user.id, role: user.role });
     return {
       ...tokens,
       user: {
@@ -91,7 +97,7 @@ export class SvcAuthService {
     };
   }
 
-  async signup(data: CreateUserDto) {
+  async signup(data: SignupUserDto) {
     const existingUser = await this.prisma.user.findFirst({
       where: {
         OR: [
@@ -114,7 +120,7 @@ export class SvcAuthService {
       data: { ...data, password: hashedPassword },
     });
 
-    const tokens = this.generateToken({ sub: newUser.id });
+    const tokens = this.generateToken({ sub: newUser.id, role: newUser.role });
     return {
       ...tokens,
       user: {
@@ -160,7 +166,7 @@ export class SvcAuthService {
       },
     });
 
-    const tokens = this.generateToken({ sub: newUser.id });
+    const tokens = this.generateToken({ sub: newUser.id, role: newUser.role });
 
     return {
       ...tokens,
@@ -217,7 +223,7 @@ export class SvcAuthService {
     return { message: 'Success' };
   }
 
-  async createEmployee(data: CreateUserDto): Promise<{
+  async createEmployee(data: CreateStaffUserDto): Promise<{
     message: string;
     id: number;
     generatedUsername: string;
@@ -268,12 +274,13 @@ export class SvcAuthService {
     }
   }
 
-  async getEmployeeProfile(id: number) {
-    const employee = await this.prisma.user.findUnique({
-      where: { id },
+  async getUserProfile(id: number): Promise<UserResponse> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: Number(id) },
       include: {
         branch: {
           select: {
+            id: true,
             name: true,
             restaurant: { select: { name: true } },
           },
@@ -281,13 +288,23 @@ export class SvcAuthService {
       },
     });
 
-    if (!employee) {
+    if (!user) {
       throw new RpcException({
-        message: 'Employee profile not found',
+        message: 'User profile not found',
         status: 404,
       });
     }
 
-    return employee;
+    return {
+      id: user.id,
+      email: user.email,
+      fullName: user.fullName,
+      username: user.username,
+      role: user.role,
+      image: user.image || undefined,
+      branchId: user.branch?.id,
+      branchName: user.branch?.name,
+      restaurantName: user.branch?.restaurant?.name,
+    };
   }
 }

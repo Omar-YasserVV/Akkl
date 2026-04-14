@@ -1,13 +1,14 @@
 import {
   CompleteGoogleSignupDto,
-  CreateUserDto,
+  CreateStaffUserDto,
   LoginDto,
+  SignupUserDto,
   tokenDto,
 } from '@app/common';
 import { BlackListService } from '@app/guards/services/blacklist.service';
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { GoogleUserDto, ResetPasswordDto } from '../dtos/auth.dto';
+import { ResetPasswordDto } from '../dtos/auth.dto';
 import { AuthResult, MessageResult } from './interfaces/auth.interface';
 import { SvcAuthService } from './svc-auth.service';
 
@@ -19,7 +20,7 @@ export class SvcAuthController {
   ) {}
 
   @MessagePattern('signup')
-  async signup(@Payload() data: CreateUserDto) {
+  async signup(@Payload() data: SignupUserDto) {
     return this.svcAuthService.signup(data);
   }
 
@@ -34,10 +35,10 @@ export class SvcAuthController {
     return { success: true };
   }
 
-  @MessagePattern('google-callback')
-  googleAuthCallback(@Payload() user: GoogleUserDto): GoogleUserDto {
-    return user;
-  }
+  // @MessagePattern('google-callback')
+  // googleAuthCallback(@Payload() user: GoogleUserDto): GoogleUserDto {
+  //   return user;
+  // }
 
   @MessagePattern('complete-google-signup')
   async completeGoogleSignup(
@@ -59,12 +60,12 @@ export class SvcAuthController {
   }
 
   @MessagePattern('create-employee')
-  async createEmployee(@Payload() data: CreateUserDto) {
+  async createEmployee(@Payload() data: CreateStaffUserDto) {
     return this.svcAuthService.createEmployee(data);
   }
 
-  @MessagePattern('get-employee-profile')
+  @MessagePattern('get-user-profile')
   async getEmployeeProfile(@Payload() id: number) {
-    return this.svcAuthService.getEmployeeProfile(id);
+    return this.svcAuthService.getUserProfile(id);
   }
 }
