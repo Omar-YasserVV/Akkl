@@ -7,8 +7,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
-import { createPagination } from 'utils/pagination.util';
+import { Prisma } from 'libs/db/generated/client/client';
+import { OrderState, source } from 'libs/db/generated/client/enums';
 
+import { createPagination } from 'utils/pagination.util';
 @Injectable()
 export class OrderService {
   constructor(
@@ -21,7 +23,7 @@ export class OrderService {
       throw new RpcException('Invalid request payload');
     }
 
-    const { items = [], userId, status = 'PENDING' } = data;
+    const { items = [], userId, status = 'PENDING', CustomerName } = data;
     const bId = Number(branchId);
     const uId = Number(userId);
 
@@ -41,6 +43,8 @@ export class OrderService {
 
       if (!branch) throw new RpcException(`Branch ${bId} not found`);
       if (!user) throw new RpcException(`User ${uId} not found`);
+
+      const finalCustomerName = CustomerName || user.fullName;
 
       const menuItems = await this.prisma.branchMenuItem.findMany({
         where: {
@@ -62,14 +66,7 @@ export class OrderService {
           );
         }
 
-        if (!dbItem.variations || dbItem.variations.length === 0) {
-          throw new RpcException(
-            `Item "${dbItem.name}" has no pricing defined.`,
-          );
-        }
-
-        const unitPrice = Number(dbItem.variations[0].price || 0);
-
+        const unitPrice = Number(dbItem.variations[0]?.price || 0);
         calculatedTotal += unitPrice * itemInput.quantity;
         calculatedItemCount += itemInput.quantity;
 
@@ -87,6 +84,7 @@ export class OrderService {
           branchId: bId,
           itemCount: calculatedItemCount,
           status: status,
+          CustomerName: finalCustomerName,
           items: {
             create: orderItemsData,
           },
@@ -97,14 +95,12 @@ export class OrderService {
       });
 
       this.kafkaClient.emit('order.created', newOrder);
-
       return newOrder;
     } catch (error) {
       if (error instanceof RpcException) throw error;
-
-      const message =
-        error instanceof Error ? error.message : 'An unexpected error occurred';
-      throw new RpcException(message);
+      throw new RpcException(
+        error instanceof Error ? error.message : 'An unexpected error occurred',
+      );
     }
   }
 
@@ -153,28 +149,36 @@ export class OrderService {
     this.kafkaClient.emit('order.deleted', { id: orderId });
     return { message: `Order with ID ${orderId} deleted successfully` };
   }
+
   async getOrdersByBranch(
     branchId: number,
     page: number = 1,
     limit: number = 10,
+    status?: OrderState,
+    orderSource?: source,
   ) {
     const skip = (page - 1) * limit;
     const bId = Number(branchId);
 
+    const where: Prisma.OrderWhereInput = {
+      branchId: bId,
+      ...(status && { status }),
+      ...(orderSource && { source: orderSource }),
+    };
+
     const [total, orders] = await this.prisma.$transaction([
-      this.prisma.order.count({
-        where: { branchId: bId },
-      }),
+      this.prisma.order.count({ where }),
       this.prisma.order.findMany({
-        where: { branchId: bId },
+        where,
         skip,
         take: limit,
         include: {
           items: {
             include: { branchMenuItem: true },
           },
+          user: true,
         },
-        orderBy: { createdAt: 'desc' }, // Latest orders first
+        orderBy: { createdAt: 'desc' },
       }),
     ]);
 

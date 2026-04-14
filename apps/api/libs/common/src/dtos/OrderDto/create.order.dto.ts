@@ -28,6 +28,11 @@ export class CreateOrderDto {
   @IsInt()
   userId!: number;
 
+  @ApiProperty({ example: 'Eyad 5ales' })
+  @IsOptional()
+  @Type(() => String)
+  CustomerName?: string;
+
   @ApiProperty({ type: [CreateOrderItemDto] })
   @IsArray()
   @ValidateNested({ each: true })

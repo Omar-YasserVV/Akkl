@@ -28,8 +28,9 @@ import {
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiQuery } from '@nestjs/swagger';
 import { Response } from 'express';
-import { UserRole } from 'libs/db/generated/client/enums';
+import { OrderState, source, UserRole } from 'libs/db/generated/client/enums';
 import { lastValueFrom } from 'rxjs';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -194,15 +195,31 @@ export class BranchController implements OnModuleInit {
 
   @Roles(UserRole.CASHIER)
   @Get(':restaurantId/:branchId/orders')
+  @ApiQuery({
+    name: 'source',
+    enum: source,
+    required: false,
+    description: 'Filter orders by their source',
+  })
+  @ApiQuery({
+    name: 'status',
+    enum: OrderState,
+    required: false,
+    description: 'Filter orders by their status',
+  })
   getOrdersByBranch(
     @Param('branchId') branchId: number,
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
+    @Query('status') status?: OrderState,
+    @Query('source') source?: source,
   ) {
     return this.branchClient.send('get_orders_by_branch', {
       branchId: Number(branchId),
       page: Number(page),
       limit: Number(limit),
+      status,
+      source,
     });
   }
 

@@ -159,6 +159,8 @@ model Order {
   totalPrice  Decimal      @db.Decimal(10, 2)
   branchId    Int
   userId      Int
+  CustomerName String
+  source      source       @default(STORE)
   itemCount   Int
   status      OrderState   @default(PENDING)
   createdAt   DateTime     @default(now())
@@ -239,6 +241,11 @@ enum DietaryType {
   VEGAN
   GLUTEN_FREE
   DAIRY_FREE
+}
+
+enum source {
+  APP
+  STORE
 }
 
 enum ExpenseType {
