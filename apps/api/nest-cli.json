@@ -12,7 +12,10 @@
         "options": {
           "classValidatorShim": true,
           "introspectComments": true,
-          "dtoFileNameSuffix": [".dto.ts", ".entity.ts"]
+          "dtoFileNameSuffix": [
+            ".dto.ts",
+            ".entity.ts"
+          ]
         }
       }
     ]
@@ -54,6 +57,15 @@
       "sourceRoot": "libs/guards/src",
       "compilerOptions": {
         "tsConfigPath": "libs/guards/tsconfig.lib.json"
+      }
+    },
+    "svc-analytics": {
+      "type": "application",
+      "root": "apps/svc-analytics",
+      "entryFile": "main",
+      "sourceRoot": "apps/svc-analytics/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/svc-analytics/tsconfig.app.json"
       }
     },
     "svc-auth": {
