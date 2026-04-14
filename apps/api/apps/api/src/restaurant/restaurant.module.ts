@@ -14,7 +14,7 @@ import { RestaurantController } from './restaurant.controller';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    ClientsModule.register(
+    ClientsModule.registerAsync(
       createKafkaClient('RESTAURANT_SERVICE', 'svc-restaurant-server-group'),
     ),
   ],

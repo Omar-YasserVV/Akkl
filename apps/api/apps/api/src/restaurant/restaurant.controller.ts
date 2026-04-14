@@ -17,11 +17,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
+import { UserRole } from 'libs/db/generated/client/enums';
 import { lastValueFrom } from 'rxjs';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('restaurants')
-@Roles('BUSINESS_OWNER')
+@Roles(UserRole.BUSINESS_OWNER)
 export class RestaurantController implements OnModuleInit {
   constructor(
     @Inject('RESTAURANT_SERVICE')
