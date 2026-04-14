@@ -3,7 +3,8 @@ import { JwtAuthGuard } from '@app/guards/jwt-auth.guard';
 import { RolesGuard } from '@app/guards/role.guard';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ClientsModule } from '@nestjs/microservices';
+import { createKafkaClient } from 'utils/kafka-client.factory';
 import { BranchController } from './branch.controller';
 import { BranchGateway } from './branch.gateway';
 
@@ -14,25 +15,9 @@ import { BranchGateway } from './branch.gateway';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    ClientsModule.register([
-      {
-        name: 'BRANCH_SERVICE',
-        transport: Transport.KAFKA,
-        options: {
-          client: {
-            brokers: ['localhost:9094'],
-          },
-          consumer: {
-            groupId:
-              'svc-branch-server-group' +
-              Math.random().toString(36).substring(7),
-            allowAutoTopicCreation: true,
-            sessionTimeout: 6000,
-            heartbeatInterval: 2000,
-          },
-        },
-      },
-    ]),
+    ClientsModule.registerAsync(
+      createKafkaClient('BRANCH_SERVICE', 'svc-branch-server-group'),
+    ),
   ],
   controllers: [BranchController],
   providers: [JwtAuthGuard, RolesGuard, BranchGateway],
