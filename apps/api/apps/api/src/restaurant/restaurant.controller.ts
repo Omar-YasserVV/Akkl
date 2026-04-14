@@ -1,4 +1,5 @@
 import { CreateRestaurantDto, UpdateRestaurantDto } from '@app/common';
+import { RESTAURANT_TOPICS } from '@app/common/topics/restaurant.topics';
 import { JwtAuthGuard } from '@app/guards/jwt-auth.guard';
 import { RolesGuard } from '@app/guards/role.guard';
 import { Roles } from '@app/guards/roles.decorator';
@@ -8,28 +9,37 @@ import {
   Delete,
   Get,
   Inject,
+  OnModuleInit,
   Param,
   Patch,
   Post,
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
+import { ClientKafka } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('restaurants')
 @Roles('BUSINESS_OWNER')
-export class RestaurantController {
+export class RestaurantController implements OnModuleInit {
   constructor(
     @Inject('RESTAURANT_SERVICE')
-    private readonly restaurantService: ClientProxy,
+    private readonly restaurantClient: ClientKafka,
   ) {}
+
+  async onModuleInit() {
+    Object.values(RESTAURANT_TOPICS).forEach((topic) => {
+      this.restaurantClient.subscribeToResponseOf(topic);
+    });
+
+    await this.restaurantClient.connect();
+  }
 
   @Get()
   async getRestaurants() {
     return await lastValueFrom(
-      this.restaurantService.send('get-restaurants', {}),
+      this.restaurantClient.send('get-restaurants', {}),
     );
   }
 
@@ -40,21 +50,21 @@ export class RestaurantController {
       throw new Error('User not found');
     }
     return await lastValueFrom(
-      this.restaurantService.send('create-restaurant', { userId, ...data }),
+      this.restaurantClient.send('create-restaurant', { userId, ...data }),
     );
   }
 
   @Get(':id')
   async getRestaurantById(@Param('id') id: number) {
     return await lastValueFrom(
-      this.restaurantService.send('get-restaurant-by-id', { id }),
+      this.restaurantClient.send('get-restaurant-by-id', { id }),
     );
   }
 
   @Get('owner/:userId')
   async getRestaurantsByOwnerId(@Param('userId') userId: number) {
     return await lastValueFrom(
-      this.restaurantService.send('get-restaurants-by-owner-id', { userId }),
+      this.restaurantClient.send('get-restaurants-by-owner-id', { userId }),
     );
   }
 
@@ -64,14 +74,14 @@ export class RestaurantController {
     @Body() data: UpdateRestaurantDto,
   ) {
     return await lastValueFrom(
-      this.restaurantService.send('update-restaurant', { id, ...data }),
+      this.restaurantClient.send('update-restaurant', { id, ...data }),
     );
   }
 
   @Delete('delete/:id')
   async deleteRestaurant(@Param('id') id: number) {
     return await lastValueFrom(
-      this.restaurantService.send('delete-restaurant', { id }),
+      this.restaurantClient.send('delete-restaurant', { id }),
     );
   }
 }
