@@ -13,7 +13,7 @@ import { AuthController } from './auth.controller';
       envFilePath: '.env',
     }),
     ClientsModule.registerAsync(
-      createKafkaClient('AUTH_SERVICE', 'svc-auth-server-group'),
+      createKafkaClient('AUTH_SERVICE', 'api-gateway-auth-group'),
     ),
     JwtModule.registerAsync({
       useFactory: (configService: ConfigService) => ({

@@ -16,7 +16,7 @@ import { BranchGateway } from './branch.gateway';
       envFilePath: '.env',
     }),
     ClientsModule.registerAsync(
-      createKafkaClient('BRANCH_SERVICE', 'svc-branch-server-group'),
+      createKafkaClient('BRANCH_SERVICE', 'api-gateway-branch-group'),
     ),
   ],
   controllers: [BranchController],
