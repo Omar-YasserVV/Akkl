@@ -12,7 +12,7 @@ import {
 } from 'class-validator';
 import { UserRole } from '../../../../db/generated/client/client';
 
-// Base DTO for user creation, does NOT include branchId
+// Base DTO for user creation (NO role here)
 export class BaseUserDto {
   @ApiProperty({ example: 'omar@email.com' })
   @IsEmail()
@@ -44,17 +44,23 @@ export class BaseUserDto {
   @IsString()
   @IsUrl()
   image?: string;
+}
 
+// Signup DTO (role optional, defaults to CUSTOMER)
+export class SignupUserDto extends BaseUserDto {
   @ApiPropertyOptional({ enum: UserRole, default: UserRole.CUSTOMER })
   @IsOptional()
   @IsEnum(UserRole)
   role?: UserRole;
 }
 
-export class SignupUserDto extends BaseUserDto {}
-
-// Used for staff/user creation by admin, INCLUDES branchId
+// Staff creation DTO (admin use)
 export class CreateStaffUserDto extends BaseUserDto {
+  @ApiPropertyOptional({ enum: UserRole, default: UserRole.CASHIER })
+  @IsOptional()
+  @IsEnum(UserRole)
+  role?: UserRole;
+
   @ApiPropertyOptional({
     example: 1,
     description: 'The ID of the branch the user belongs to',
