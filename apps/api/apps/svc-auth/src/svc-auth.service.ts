@@ -1,4 +1,9 @@
-import { CompleteGoogleSignupDto, CreateUserDto, LoginDto } from '@app/common';
+import {
+  CompleteGoogleSignupDto,
+  CreateStaffUserDto,
+  LoginDto,
+  SignupUserDto,
+} from '@app/common';
 import { PrismaService } from '@app/db';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -92,7 +97,7 @@ export class SvcAuthService {
     };
   }
 
-  async signup(data: CreateUserDto) {
+  async signup(data: SignupUserDto) {
     const existingUser = await this.prisma.user.findFirst({
       where: {
         OR: [
@@ -218,7 +223,7 @@ export class SvcAuthService {
     return { message: 'Success' };
   }
 
-  async createEmployee(data: CreateUserDto): Promise<{
+  async createEmployee(data: CreateStaffUserDto): Promise<{
     message: string;
     id: number;
     generatedUsername: string;

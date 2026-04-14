@@ -1,4 +1,9 @@
-import { CompleteGoogleSignupDto, CreateUserDto, LoginDto } from '@app/common';
+import {
+  CompleteGoogleSignupDto,
+  CreateStaffUserDto,
+  LoginDto,
+  SignupUserDto,
+} from '@app/common';
 import { JwtAuthGuard } from '@app/guards/jwt-auth.guard';
 import {
   Body,
@@ -98,7 +103,7 @@ export class AuthController implements OnModuleInit {
 
   @Post('signup')
   async signup(
-    @Body() data: CreateUserDto,
+    @Body() data: SignupUserDto,
     @Res() res: Response,
   ): Promise<Response> {
     const result = await lastValueFrom(
@@ -188,7 +193,9 @@ export class AuthController implements OnModuleInit {
   }
 
   @Post('staff/create')
-  async createStaff(@Body() data: CreateUserDto): Promise<MessageResponse> {
+  async createStaff(
+    @Body() data: CreateStaffUserDto,
+  ): Promise<MessageResponse> {
     return await lastValueFrom(
       this.authClient.send<MessageResponse>('create-employee', data),
     );
