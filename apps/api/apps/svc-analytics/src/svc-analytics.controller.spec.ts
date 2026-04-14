@@ -14,9 +14,12 @@ describe('SvcAnalyticsController', () => {
     svcAnalyticsController = app.get<SvcAnalyticsController>(SvcAnalyticsController);
   });
 
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(svcAnalyticsController.getHello()).toBe('Hello World!');
+  describe('ping', () => {
+    it('should return chart-ready analytics response', () => {
+      const response = svcAnalyticsController.ping({ groupBy: 'day' });
+      expect(response.groupBy).toBe('day');
+      expect(Array.isArray(response.data)).toBe(true);
+      expect(response.data.length).toBeGreaterThan(0);
     });
   });
 });
