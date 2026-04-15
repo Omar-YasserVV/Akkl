@@ -5,6 +5,7 @@ import {
   SignupUserDto,
   tokenDto,
 } from '@app/common';
+import { AUTH_TOPICS } from '@app/common/topics/auth.topics';
 import { BlackListService } from '@app/guards/services/blacklist.service';
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
@@ -19,17 +20,17 @@ export class SvcAuthController {
     private readonly blackListService: BlackListService,
   ) {}
 
-  @MessagePattern('signup')
+  @MessagePattern(AUTH_TOPICS.SIGNUP)
   async signup(@Payload() data: SignupUserDto) {
     return this.svcAuthService.signup(data);
   }
 
-  @MessagePattern('login')
+  @MessagePattern(AUTH_TOPICS.LOGIN)
   async login(@Payload() data: LoginDto) {
     return this.svcAuthService.login(data);
   }
 
-  @MessagePattern('logout')
+  @MessagePattern(AUTH_TOPICS.LOGOUT)
   async handleLogout(@Payload() data: tokenDto): Promise<{ success: boolean }> {
     await this.blackListService.pushBlacklistedToken(data);
     return { success: true };
@@ -40,31 +41,31 @@ export class SvcAuthController {
   //   return user;
   // }
 
-  @MessagePattern('complete-google-signup')
+  @MessagePattern(AUTH_TOPICS.COMPLETE_GOOGLE_SIGNUP)
   async completeGoogleSignup(
     @Payload() completeDto: CompleteGoogleSignupDto,
   ): Promise<AuthResult> {
     return this.svcAuthService.finalizeGoogleSignup(completeDto);
   }
 
-  @MessagePattern('forgot-password')
+  @MessagePattern(AUTH_TOPICS.FORGOT_PASSWORD)
   async forgotPassword(@Payload() email: string): Promise<MessageResult> {
     return this.svcAuthService.forgotPassword(email);
   }
 
-  @MessagePattern('reset-password')
+  @MessagePattern(AUTH_TOPICS.RESET_PASSWORD)
   async resetPassword(
     @Payload() resetDto: ResetPasswordDto,
   ): Promise<MessageResult> {
     return this.svcAuthService.verifyOtpAndReset(resetDto);
   }
 
-  @MessagePattern('create-employee')
+  @MessagePattern(AUTH_TOPICS.CREATE_EMPLOYEE)
   async createEmployee(@Payload() data: CreateStaffUserDto) {
     return this.svcAuthService.createEmployee(data);
   }
 
-  @MessagePattern('get-user-profile')
+  @MessagePattern(AUTH_TOPICS.GET_USER_PROFILE)
   async getEmployeeProfile(@Payload() id: number) {
     return this.svcAuthService.getUserProfile(id);
   }

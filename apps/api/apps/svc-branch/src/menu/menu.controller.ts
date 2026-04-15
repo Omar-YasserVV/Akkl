@@ -1,4 +1,5 @@
 import { BranchMenuItemDetailDto, UpdateBranchMenuItemDto } from '@app/common';
+import { BRANCH_TOPICS } from '@app/common/topics/branch.topics';
 import { BadRequestException, Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { MenuService } from './menu.service';
@@ -12,17 +13,17 @@ interface KafkaBuffer {
 export class MenuController {
   constructor(private readonly menuService: MenuService) {}
 
-  @MessagePattern('get_all_menu_items')
+  @MessagePattern(BRANCH_TOPICS.MENU_GET_ALL)
   async getAllItems() {
     return this.menuService.getMenu();
   }
 
-  @MessagePattern('get_branch_menu')
+  @MessagePattern(BRANCH_TOPICS.MENU_GET)
   async getBranchMenu(@Payload('branchId') branchId: number) {
     return this.menuService.getBranchMenu(branchId);
   }
 
-  @MessagePattern('create_menu_item')
+  @MessagePattern(BRANCH_TOPICS.MENU_CREATE)
   async createMenuItem(
     @Payload('branchId') branchId: number,
     @Payload('data') data: BranchMenuItemDetailDto,
@@ -30,7 +31,7 @@ export class MenuController {
     return this.menuService.createMenu(branchId, data);
   }
 
-  @MessagePattern('upload_menu_excel')
+  @MessagePattern(BRANCH_TOPICS.MENU_UPLOAD)
   async uploadExcel(
     @Payload('branchId') branchId: number,
     @Payload('fileBuffer') fileBuffer: unknown,
@@ -54,7 +55,7 @@ export class MenuController {
     return this.menuService.handleExcelUpload(branchId, buffer);
   }
 
-  @MessagePattern('update_menu_item')
+  @MessagePattern(BRANCH_TOPICS.MENU_UPDATE)
   async updateMenuItem(
     @Payload('id') id: number,
     @Payload('branchId') branchId: number,
@@ -63,7 +64,7 @@ export class MenuController {
     return this.menuService.updateMenuItem(id, data, branchId);
   }
 
-  @MessagePattern('delete_menu_item')
+  @MessagePattern(BRANCH_TOPICS.MENU_DELETE)
   async deleteMenuItem(
     @Payload('id') id: number,
     @Payload('branchId') branchId: number,

@@ -1,4 +1,5 @@
 import { CreateBranchDto, UpdateBranchDto } from '@app/common';
+import { BRANCH_TOPICS } from '@app/common/topics/branch.topics';
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { SvcBranchService } from './svc-branch.service';
@@ -7,7 +8,7 @@ import { SvcBranchService } from './svc-branch.service';
 export class SvcBranchController {
   constructor(private readonly svcBranchService: SvcBranchService) {}
 
-  @MessagePattern('create-branch')
+  @MessagePattern(BRANCH_TOPICS.CREATE)
   async createBranch(
     @Payload() data: { restaurantId: number; dto: CreateBranchDto },
   ) {
@@ -17,12 +18,12 @@ export class SvcBranchController {
     );
   }
 
-  @MessagePattern('get-branches')
+  @MessagePattern(BRANCH_TOPICS.GET_ALL)
   async getBranches(@Payload() restaurantId: number) {
     return await this.svcBranchService.getBranches(restaurantId);
   }
 
-  @MessagePattern('get-branch-by-id')
+  @MessagePattern(BRANCH_TOPICS.GET_BY_ID)
   async getBranchById(
     @Payload()
     { restaurantId, branchId }: { restaurantId: number; branchId: number },
@@ -30,7 +31,7 @@ export class SvcBranchController {
     return await this.svcBranchService.getBranchById(restaurantId, branchId);
   }
 
-  @MessagePattern('update-branch')
+  @MessagePattern(BRANCH_TOPICS.UPDATE)
   async updateBranch(
     @Payload()
     {
@@ -50,7 +51,7 @@ export class SvcBranchController {
     );
   }
 
-  @MessagePattern('delete-branch')
+  @MessagePattern(BRANCH_TOPICS.DELETE)
   async deleteBranch(
     @Payload()
     { restaurantId, branchId }: { restaurantId: number; branchId: number },
