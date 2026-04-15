@@ -12,8 +12,43 @@ export class OrderService {
     private readonly prisma: PrismaService,
     @Inject('BRANCH_SERVICE') private readonly kafkaClient: ClientKafka,
   ) {}
-  async getOrderStatuses() {}
 
+  async getOrderStatuses(branchId: number) {
+    try {
+      const stats = await this.prisma.order.groupBy({
+        by: ['status'],
+        where: { branchId: Number(branchId) },
+        _count: {
+          status: true,
+        },
+      });
+
+      const formattedStats = stats.reduce(
+        (acc, curr) => {
+          acc[curr.status] = curr._count.status;
+          return acc;
+        },
+        {} as Record<OrderState, number>,
+      );
+
+      const allStatuses: OrderState[] = [
+        OrderState.PENDING,
+        OrderState.IN_PROGRESS,
+        OrderState.COMPLETED,
+        OrderState.CANCELLED,
+      ];
+
+      allStatuses.forEach((status) => {
+        if (!formattedStats[status]) {
+          formattedStats[status] = 0;
+        }
+      });
+
+      return formattedStats;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
   async createOrder(branchId: number, data: CreateOrderDto, userId: number) {
     try {
       if (!data)

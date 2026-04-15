@@ -18,6 +18,11 @@ export class OrderController {
     return this.orderService.createOrder(branchId, data, userId);
   }
 
+  @MessagePattern(BRANCH_TOPICS.ORDER_GET_STATUSES) // Ensure this topic exists in your constants
+  async getOrderStatuses(@Payload('branchId') branchId: number) {
+    return this.orderService.getOrderStatuses(branchId);
+  }
+
   @MessagePattern(BRANCH_TOPICS.ORDER_UPDATE)
   async updateOrder(
     @Payload('orderId') orderId: number,

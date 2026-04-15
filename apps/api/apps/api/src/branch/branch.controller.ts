@@ -191,6 +191,14 @@ export class BranchController implements OnModuleInit {
     });
   }
 
+  @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER, UserRole.CASHIER)
+  @Get(':restaurantId/:branchId/orders/stats')
+  getOrderStats(@GetBranchContext() context: BranchContext) {
+    return this.branchClient.send(BRANCH_TOPICS.ORDER_GET_STATUSES, {
+      branchId: Number(context.branchId),
+    });
+  }
+
   @Roles(UserRole.BUSINESS_OWNER, UserRole.CASHIER, UserRole.MANAGER)
   @Get(':restaurantId/:branchId/orders')
   @ApiQuery({

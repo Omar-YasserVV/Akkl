@@ -18,4 +18,5 @@ export const BRANCH_TOPICS = {
   ORDER_CREATE: 'create_order',
   ORDER_UPDATE: 'update_order',
   ORDER_DELETE: 'delete_order',
+  ORDER_GET_STATUSES: 'get_order_statuses',
 } as const;
