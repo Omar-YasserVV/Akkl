@@ -46,14 +46,14 @@ model TokenBlacklist {
 }
 
 model Restaurant {
-  id        String    @id @default(uuid())
-  name      String    @unique
+  id        String   @id @default(uuid())
+  name      String   @unique
   logoUrl   String?
   ownerId   String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   branches  Branch[]
-  user      User      @relation(fields: [ownerId], references: [id])
+  user      User     @relation(fields: [ownerId], references: [id])
 }
 
 model Branch {
@@ -77,47 +77,48 @@ model Branch {
   tables           Table[]
   warehouses       Warehouse[]
 }
+
 model Shift {
-  id         String      @id @default(uuid())
-  userId     String
-  branchId   String
-  startTime  DateTime    @default(now())
-  endTime    DateTime?
-  status     ShiftStatus @default(ACTIVE)
-  branch     Branch      @relation(fields: [branchId], references: [id])
-  employee   User        @relation(fields: [userId], references: [id])
+  id        String      @id @default(uuid())
+  userId    String
+  branchId  String
+  startTime DateTime    @default(now())
+  endTime   DateTime?
+  status    ShiftStatus @default(ACTIVE)
+  branch    Branch      @relation(fields: [branchId], references: [id])
+  employee  User        @relation(fields: [userId], references: [id])
 }
 
 model BranchMenuItem {
-  id          String               @id @default(uuid())
+  id          String              @id @default(uuid())
   branchId    String
   menuItemId  String
-  isAvailable Boolean              @default(true)
+  isAvailable Boolean             @default(true)
   name        String
   description String?
   image       String?
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
-  branch      Branch               @relation(fields: [branchId], references: [id])
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  branch      Branch              @relation(fields: [branchId], references: [id])
   variations  MenuItemVariation[]
   orders      OrderItem[]
   recipe      Recipe[]
-  dietaryTags DietaryTag[]         @relation("BranchMenuItemToDietaryTag")
+  dietaryTags DietaryTag[]        @relation("BranchMenuItemToDietaryTag")
 }
 
 model MenuItemVariation {
-  id               String          @id @default(uuid())
+  id               String         @id @default(uuid())
   size             String
-  price            Decimal         @db.Decimal(10, 2)
-  discountPrice    Decimal?        @db.Decimal(10, 2)
+  price            Decimal        @db.Decimal(10, 2)
+  discountPrice    Decimal?       @db.Decimal(10, 2)
   branchMenuItemId String
-  branchMenuItem   BranchMenuItem  @relation(fields: [branchMenuItemId], references: [id], onDelete: Cascade)
+  branchMenuItem   BranchMenuItem @relation(fields: [branchMenuItemId], references: [id], onDelete: Cascade)
 }
 
 model DietaryTag {
-  id              String             @id @default(uuid())
+  id              String           @id @default(uuid())
   name            DietaryType
-  branchMenuItems BranchMenuItem[]   @relation("BranchMenuItemToDietaryTag")
+  branchMenuItems BranchMenuItem[] @relation("BranchMenuItemToDietaryTag")
 }
 
 model Ingredient {
@@ -129,50 +130,50 @@ model Ingredient {
 }
 
 model Recipe {
-  id               String           @id @default(uuid())
+  id               String         @id @default(uuid())
   menuItemId       String
   ingredientId     String
   quantityRequired Float
-  ingredient       Ingredient       @relation(fields: [ingredientId], references: [id])
-  menuItem         BranchMenuItem   @relation(fields: [menuItemId], references: [id])
+  ingredient       Ingredient     @relation(fields: [ingredientId], references: [id])
+  menuItem         BranchMenuItem @relation(fields: [menuItemId], references: [id])
 }
 
 model Warehouse {
-  id       String         @id @default(uuid())
+  id       String          @id @default(uuid())
   name     String
   branchId String
   items    InventoryItem[]
-  branch   Branch         @relation(fields: [branchId], references: [id])
+  branch   Branch          @relation(fields: [branchId], references: [id])
 }
 
 model InventoryItem {
-  id           String      @id @default(uuid())
+  id           String     @id @default(uuid())
   ingredientId String
   quantity     Float
   warehouseId  String
-  ingredient   Ingredient  @relation(fields: [ingredientId], references: [id])
-  warehouse    Warehouse   @relation(fields: [warehouseId], references: [id])
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+  warehouse    Warehouse  @relation(fields: [warehouseId], references: [id])
 }
 
 model Order {
-  id           String       @id @default(uuid())
-  totalPrice   Decimal      @db.Decimal(10, 2)
+  id           String      @id @default(uuid())
+  totalPrice   Decimal     @db.Decimal(10, 2)
   branchId     String
   userId       String
   CustomerName String
-  source       source       @default(STORE)
+  source       source      @default(STORE)
   itemCount    Int
-  status       OrderState   @default(PENDING)
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  branch       Branch       @relation(fields: [branchId], references: [id])
-  user         User         @relation(fields: [userId], references: [id])
+  status       OrderState  @default(PENDING)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  branch       Branch      @relation(fields: [branchId], references: [id])
+  user         User        @relation(fields: [userId], references: [id])
   items        OrderItem[]
 }
 
 model OrderItem {
   id             String         @id @default(uuid())
-  orderId        String            
+  orderId        String
   menuItemId     String
   quantity       Int
   price          Decimal        @db.Decimal(10, 2)
@@ -181,28 +182,28 @@ model OrderItem {
 }
 
 model Table {
-  id           String         @id @default(uuid())
+  id           String        @id @default(uuid())
   tableNumber  String
   capacity     Int
   branchId     String
   reservations Reservation[]
-  branch       Branch         @relation(fields: [branchId], references: [id])
+  branch       Branch        @relation(fields: [branchId], references: [id])
 
   @@unique([tableNumber, branchId])
 }
 
 model Reservation {
-  id              String    @id @default(uuid())
+  id              String   @id @default(uuid())
   reservationTime DateTime
-  depositAmount   Decimal   @db.Decimal(10, 2)
-  isPaid          Boolean   @default(false)
+  depositAmount   Decimal  @db.Decimal(10, 2)
+  isPaid          Boolean  @default(false)
   tableId         String
   branchId        String
-  createdAt       DateTime  @default(now())
+  createdAt       DateTime @default(now())
   userId          String
-  branch          Branch    @relation(fields: [branchId], references: [id])
-  table           Table     @relation(fields: [tableId], references: [id])
-  user            User      @relation(fields: [userId], references: [id])
+  branch          Branch   @relation(fields: [branchId], references: [id])
+  table           Table    @relation(fields: [tableId], references: [id])
+  user            User     @relation(fields: [userId], references: [id])
 }
 
 model Expense {

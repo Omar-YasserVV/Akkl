@@ -161,7 +161,7 @@ async function main() {
   const menuItem = await prisma.branchMenuItem.create({
     data: {
       branchId: branch.id,
-      menuItemId: 101,
+      menuItemId: crypto.randomUUID(),
       name: 'Double Cheeseburger',
       description: 'The signature beef burger with extra cheese',
       isAvailable: true,
