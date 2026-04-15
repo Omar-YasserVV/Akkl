@@ -13,7 +13,7 @@ export class OrderController {
   async createOrder(
     @Payload('branchId') branchId: number,
     @Payload('data') data: CreateOrderDto,
-    @Payload('userId') userId: number, // Matches the key sent by the Gateway
+    @Payload('userId') userId: number,
   ) {
     return this.orderService.createOrder(branchId, data, userId);
   }

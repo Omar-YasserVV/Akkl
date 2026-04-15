@@ -12,6 +12,7 @@ export class OrderService {
     private readonly prisma: PrismaService,
     @Inject('BRANCH_SERVICE') private readonly kafkaClient: ClientKafka,
   ) {}
+  async getOrderStatuses() {}
 
   async createOrder(branchId: number, data: CreateOrderDto, userId: number) {
     try {
@@ -173,10 +174,9 @@ export class OrderService {
     orderSource?: source,
   ) {
     const skip = (page - 1) * limit;
-    const bId = Number(branchId);
 
     const where: Prisma.OrderWhereInput = {
-      branchId: bId,
+      branchId,
       ...(status && { status }),
       ...(orderSource && { source: orderSource }),
     };
