@@ -13,11 +13,11 @@ export class OrderService {
     @Inject('BRANCH_SERVICE') private readonly kafkaClient: ClientKafka,
   ) {}
 
-  async getOrderStatuses(branchId: number) {
+  async getOrderStatuses(branchId: string) {
     try {
       const stats = await this.prisma.order.groupBy({
         by: ['status'],
-        where: { branchId: Number(branchId) },
+        where: { branchId: branchId },
         _count: {
           status: true,
         },
@@ -49,7 +49,7 @@ export class OrderService {
       this.handleError(error);
     }
   }
-  async createOrder(branchId: number, data: CreateOrderDto, userId: number) {
+  async createOrder(branchId: string, data: CreateOrderDto, userId: string) {
     try {
       if (!data)
         throw new RpcException({
@@ -58,8 +58,8 @@ export class OrderService {
         });
 
       const { items = [], status = OrderState.PENDING, CustomerName } = data;
-      const bId = Number(branchId);
-      const uId = Number(userId);
+      const bId = branchId;
+      const uId = userId;
 
       if (!items?.length)
         throw new RpcException({
