@@ -2,7 +2,6 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsEmail,
   IsEnum,
-  IsInt,
   IsNotEmpty,
   IsOptional,
   IsPhoneNumber,
@@ -66,6 +65,6 @@ export class CreateStaffUserDto extends BaseUserDto {
     description: 'The ID of the branch the user belongs to',
   })
   @IsOptional()
-  @IsInt()
-  branchId?: number;
+  @IsString()
+  branchId?: string;
 }

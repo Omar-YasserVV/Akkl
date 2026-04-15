@@ -56,14 +56,14 @@ export class RestaurantController implements OnModuleInit {
   }
 
   @Get(':id')
-  async getRestaurantById(@Param('id') id: number) {
+  async getRestaurantById(@Param('id') id: string) {
     return await lastValueFrom(
       this.restaurantClient.send('get-restaurant-by-id', { id }),
     );
   }
 
   @Get('owner/:userId')
-  async getRestaurantsByOwnerId(@Param('userId') userId: number) {
+  async getRestaurantsByOwnerId(@Param('userId') userId: string) {
     return await lastValueFrom(
       this.restaurantClient.send('get-restaurants-by-owner-id', { userId }),
     );
@@ -71,7 +71,7 @@ export class RestaurantController implements OnModuleInit {
 
   @Patch('update/:id')
   async updateRestaurant(
-    @Param('id') id: number,
+    @Param('id') id: string,
     @Body() data: UpdateRestaurantDto,
   ) {
     return await lastValueFrom(
@@ -80,7 +80,7 @@ export class RestaurantController implements OnModuleInit {
   }
 
   @Delete('delete/:id')
-  async deleteRestaurant(@Param('id') id: number) {
+  async deleteRestaurant(@Param('id') id: string) {
     return await lastValueFrom(
       this.restaurantClient.send('delete-restaurant', { id }),
     );

@@ -10,7 +10,7 @@ export class SvcBranchController {
 
   @MessagePattern(BRANCH_TOPICS.CREATE)
   async createBranch(
-    @Payload() data: { restaurantId: number; dto: CreateBranchDto },
+    @Payload() data: { restaurantId: string; dto: CreateBranchDto },
   ) {
     return await this.svcBranchService.createBranch(
       data.restaurantId,
@@ -19,14 +19,14 @@ export class SvcBranchController {
   }
 
   @MessagePattern(BRANCH_TOPICS.GET_ALL)
-  async getBranches(@Payload() restaurantId: number) {
+  async getBranches(@Payload() restaurantId: string) {
     return await this.svcBranchService.getBranches(restaurantId);
   }
 
   @MessagePattern(BRANCH_TOPICS.GET_BY_ID)
   async getBranchById(
     @Payload()
-    { restaurantId, branchId }: { restaurantId: number; branchId: number },
+    { restaurantId, branchId }: { restaurantId: string; branchId: string },
   ) {
     return await this.svcBranchService.getBranchById(restaurantId, branchId);
   }
@@ -39,8 +39,8 @@ export class SvcBranchController {
       branchId,
       data,
     }: {
-      restaurantId: number;
-      branchId: number;
+      restaurantId: string;
+      branchId: string;
       data: UpdateBranchDto;
     },
   ) {
@@ -54,7 +54,7 @@ export class SvcBranchController {
   @MessagePattern(BRANCH_TOPICS.DELETE)
   async deleteBranch(
     @Payload()
-    { restaurantId, branchId }: { restaurantId: number; branchId: number },
+    { restaurantId, branchId }: { restaurantId: string; branchId: string },
   ) {
     return await this.svcBranchService.deleteBranch(restaurantId, branchId);
   }

@@ -66,7 +66,7 @@ export class SvcAuthController {
   }
 
   @MessagePattern(AUTH_TOPICS.GET_USER_PROFILE)
-  async getEmployeeProfile(@Payload() id: number) {
+  async getEmployeeProfile(@Payload() id: string) {
     return this.svcAuthService.getUserProfile(id);
   }
 }

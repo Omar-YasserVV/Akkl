@@ -19,13 +19,13 @@ export class MenuController {
   }
 
   @MessagePattern(BRANCH_TOPICS.MENU_GET)
-  async getBranchMenu(@Payload('branchId') branchId: number) {
+  async getBranchMenu(@Payload('branchId') branchId: string) {
     return this.menuService.getBranchMenu(branchId);
   }
 
   @MessagePattern(BRANCH_TOPICS.MENU_CREATE)
   async createMenuItem(
-    @Payload('branchId') branchId: number,
+    @Payload('branchId') branchId: string,
     @Payload('data') data: BranchMenuItemDetailDto,
   ) {
     return this.menuService.createMenu(branchId, data);
@@ -33,7 +33,7 @@ export class MenuController {
 
   @MessagePattern(BRANCH_TOPICS.MENU_UPLOAD)
   async uploadExcel(
-    @Payload('branchId') branchId: number,
+    @Payload('branchId') branchId: string,
     @Payload('fileBuffer') fileBuffer: unknown,
   ) {
     let buffer: Buffer;
@@ -57,8 +57,8 @@ export class MenuController {
 
   @MessagePattern(BRANCH_TOPICS.MENU_UPDATE)
   async updateMenuItem(
-    @Payload('id') id: number,
-    @Payload('branchId') branchId: number,
+    @Payload('id') id: string,
+    @Payload('branchId') branchId: string,
     @Payload('data') data: UpdateBranchMenuItemDto,
   ) {
     return this.menuService.updateMenuItem(id, data, branchId);
@@ -66,8 +66,8 @@ export class MenuController {
 
   @MessagePattern(BRANCH_TOPICS.MENU_DELETE)
   async deleteMenuItem(
-    @Payload('id') id: number,
-    @Payload('branchId') branchId: number,
+    @Payload('id') id: string,
+    @Payload('branchId') branchId: string,
   ) {
     return this.menuService.deleteMenuItem(id, branchId);
   }

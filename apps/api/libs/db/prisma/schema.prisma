@@ -9,7 +9,7 @@ datasource db {
 }
 
 model SystemAdmin {
-  id        Int       @id @default(autoincrement())
+  id        String    @id @default(uuid())
   email     String    @unique
   password  String
   createdAt DateTime  @default(now())
@@ -18,7 +18,7 @@ model SystemAdmin {
 }
 
 model User {
-  id           Int           @id @default(autoincrement())
+  id           String        @id @default(uuid())
   email        String        @unique
   password     String
   fullName     String
@@ -31,7 +31,7 @@ model User {
   otpExpires   DateTime?
   username     String        @unique
   salary       Decimal?      @db.Decimal(10, 2)
-  branchId    Int?
+  branchId     String?
   branch       Branch?       @relation(fields: [branchId], references: [id])
   orders       Order[]
   reservations Reservation[]
@@ -40,28 +40,28 @@ model User {
 }
 
 model TokenBlacklist {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   token     String   @unique
   createdAt DateTime @default(now())
 }
 
 model Restaurant {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
+  id        String    @id @default(uuid())
+  name      String    @unique
   logoUrl   String?
-  ownerId   Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  ownerId   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   branches  Branch[]
-  user      User     @relation(fields: [ownerId], references: [id])
+  user      User      @relation(fields: [ownerId], references: [id])
 }
 
 model Branch {
-  id               Int              @id @default(autoincrement())
+  id               String           @id @default(uuid())
   branchNumber     String
   name             String
   address          String           @unique
-  restaurantId     Int
+  restaurantId     String
   haveTables       Boolean          @default(false)
   haveReservations Boolean          @default(false)
   haveWarehouses   Boolean          @default(false)
@@ -78,9 +78,9 @@ model Branch {
   warehouses       Warehouse[]
 }
 model Shift {
-  id         Int         @id @default(autoincrement())
-  userId     Int
-  branchId   Int
+  id         String      @id @default(uuid())
+  userId     String
+  branchId   String
   startTime  DateTime    @default(now())
   endTime    DateTime?
   status     ShiftStatus @default(ACTIVE)
@@ -89,39 +89,39 @@ model Shift {
 }
 
 model BranchMenuItem {
-  id          Int                 @id @default(autoincrement())
-  branchId    Int
-  menuItemId  Int
-  isAvailable Boolean             @default(true)
+  id          String               @id @default(uuid())
+  branchId    String
+  menuItemId  String
+  isAvailable Boolean              @default(true)
   name        String
   description String?
   image       String?
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
-  branch      Branch              @relation(fields: [branchId], references: [id])
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  branch      Branch               @relation(fields: [branchId], references: [id])
   variations  MenuItemVariation[]
   orders      OrderItem[]
   recipe      Recipe[]
-  dietaryTags DietaryTag[]        @relation("BranchMenuItemToDietaryTag")
+  dietaryTags DietaryTag[]         @relation("BranchMenuItemToDietaryTag")
 }
 
 model MenuItemVariation {
-  id               Int            @id @default(autoincrement())
+  id               String          @id @default(uuid())
   size             String
-  price            Decimal        @db.Decimal(10, 2)
-  discountPrice    Decimal?       @db.Decimal(10, 2)
-  branchMenuItemId Int
-  branchMenuItem   BranchMenuItem @relation(fields: [branchMenuItemId], references: [id], onDelete: Cascade)
+  price            Decimal         @db.Decimal(10, 2)
+  discountPrice    Decimal?        @db.Decimal(10, 2)
+  branchMenuItemId String
+  branchMenuItem   BranchMenuItem  @relation(fields: [branchMenuItemId], references: [id], onDelete: Cascade)
 }
 
 model DietaryTag {
-  id              Int              @id @default(autoincrement())
+  id              String             @id @default(uuid())
   name            DietaryType
-  branchMenuItems BranchMenuItem[] @relation("BranchMenuItemToDietaryTag")
+  branchMenuItems BranchMenuItem[]   @relation("BranchMenuItemToDietaryTag")
 }
 
 model Ingredient {
-  id             Int             @id @default(autoincrement())
+  id             String          @id @default(uuid())
   name           String          @unique
   unit           String
   inventoryItems InventoryItem[]
@@ -129,51 +129,51 @@ model Ingredient {
 }
 
 model Recipe {
-  id               Int            @id @default(autoincrement())
-  menuItemId       Int
-  ingredientId     Int
+  id               String           @id @default(uuid())
+  menuItemId       String
+  ingredientId     String
   quantityRequired Float
-  ingredient       Ingredient     @relation(fields: [ingredientId], references: [id])
-  menuItem         BranchMenuItem @relation(fields: [menuItemId], references: [id])
+  ingredient       Ingredient       @relation(fields: [ingredientId], references: [id])
+  menuItem         BranchMenuItem   @relation(fields: [menuItemId], references: [id])
 }
 
 model Warehouse {
-  id       Int             @id @default(autoincrement())
+  id       String         @id @default(uuid())
   name     String
-  branchId Int
+  branchId String
   items    InventoryItem[]
-  branch   Branch          @relation(fields: [branchId], references: [id])
+  branch   Branch         @relation(fields: [branchId], references: [id])
 }
 
 model InventoryItem {
-  id           Int        @id @default(autoincrement())
-  ingredientId Int
+  id           String      @id @default(uuid())
+  ingredientId String
   quantity     Float
-  warehouseId  Int
-  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
-  warehouse    Warehouse  @relation(fields: [warehouseId], references: [id])
+  warehouseId  String
+  ingredient   Ingredient  @relation(fields: [ingredientId], references: [id])
+  warehouse    Warehouse   @relation(fields: [warehouseId], references: [id])
 }
 
 model Order {
-  id          Int          @id @default(autoincrement())
-  totalPrice  Decimal      @db.Decimal(10, 2)
-  branchId    Int
-  userId      Int
+  id           String       @id @default(uuid())
+  totalPrice   Decimal      @db.Decimal(10, 2)
+  branchId     String
+  userId       String
   CustomerName String
-  source      source       @default(STORE)
-  itemCount   Int
-  status      OrderState   @default(PENDING)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  branch      Branch       @relation(fields: [branchId], references: [id])
-  user        User         @relation(fields: [userId], references: [id])
-  items       OrderItem[]
+  source       source       @default(STORE)
+  itemCount    Int
+  status       OrderState   @default(PENDING)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  branch       Branch       @relation(fields: [branchId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
+  items        OrderItem[]
 }
 
 model OrderItem {
-  id             Int            @id @default(autoincrement())
-  orderId        Int            
-  menuItemId     Int
+  id             String         @id @default(uuid())
+  orderId        String            
+  menuItemId     String
   quantity       Int
   price          Decimal        @db.Decimal(10, 2)
   branchMenuItem BranchMenuItem @relation(fields: [menuItemId], references: [id])
@@ -181,36 +181,36 @@ model OrderItem {
 }
 
 model Table {
-  id           Int           @id @default(autoincrement())
+  id           String         @id @default(uuid())
   tableNumber  String
   capacity     Int
-  branchId     Int
+  branchId     String
   reservations Reservation[]
-  branch       Branch        @relation(fields: [branchId], references: [id])
+  branch       Branch         @relation(fields: [branchId], references: [id])
 
   @@unique([tableNumber, branchId])
 }
 
 model Reservation {
-  id              Int      @id @default(autoincrement())
+  id              String    @id @default(uuid())
   reservationTime DateTime
-  depositAmount   Decimal  @db.Decimal(10, 2)
-  isPaid          Boolean  @default(false)
-  tableId         Int
-  branchId        Int
-  createdAt       DateTime @default(now())
-  userId          Int
-  branch          Branch   @relation(fields: [branchId], references: [id])
-  table           Table    @relation(fields: [tableId], references: [id])
-  user            User     @relation(fields: [userId], references: [id])
+  depositAmount   Decimal   @db.Decimal(10, 2)
+  isPaid          Boolean   @default(false)
+  tableId         String
+  branchId        String
+  createdAt       DateTime  @default(now())
+  userId          String
+  branch          Branch    @relation(fields: [branchId], references: [id])
+  table           Table     @relation(fields: [tableId], references: [id])
+  user            User      @relation(fields: [userId], references: [id])
 }
 
 model Expense {
-  id          Int         @id @default(autoincrement())
+  id          String      @id @default(uuid())
   amount      Decimal     @db.Decimal(10, 2)
   category    ExpenseType
   description String?
-  branchId    Int
+  branchId    String
   createdAt   DateTime    @default(now())
   branch      Branch      @relation(fields: [branchId], references: [id])
 }

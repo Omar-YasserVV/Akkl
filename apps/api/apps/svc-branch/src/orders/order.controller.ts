@@ -11,7 +11,7 @@ export class OrderController {
 
   @MessagePattern(BRANCH_TOPICS.ORDER_CREATE)
   async createOrder(
-    @Payload('branchId') branchId: number,
+    @Payload('branchId') branchId: string,
     @Payload('data') data: CreateOrderDto,
   ) {
     return this.orderService.createOrder(branchId, data);
@@ -19,20 +19,20 @@ export class OrderController {
 
   @MessagePattern(BRANCH_TOPICS.ORDER_UPDATE)
   async updateOrder(
-    @Payload('orderId') orderId: number,
+    @Payload('orderId') orderId: string,
     @Payload('data') data: UpdateOrderDto,
   ) {
     return this.orderService.updateOrder(orderId, data);
   }
 
   @MessagePattern(BRANCH_TOPICS.ORDER_DELETE)
-  async deleteOrder(@Payload('orderId') orderId: number) {
+  async deleteOrder(@Payload('orderId') orderId: string) {
     return this.orderService.deleteOrder(orderId);
   }
 
   @MessagePattern(BRANCH_TOPICS.ORDER_GET_ALL)
   async getOrdersByBranch(
-    @Payload('branchId') branchId: number,
+    @Payload('branchId') branchId: string,
     @Payload('page') page: number,
     @Payload('limit') limit: number,
     @Payload('status') status?: OrderState,
@@ -48,7 +48,7 @@ export class OrderController {
   }
 
   @MessagePattern(BRANCH_TOPICS.ORDER_GET_BY_ID)
-  async getOrderById(@Payload('orderId') orderId: number) {
+  async getOrderById(@Payload('orderId') orderId: string) {
     return this.orderService.getOrderById(orderId);
   }
 }

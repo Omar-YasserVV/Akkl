@@ -36,9 +36,9 @@ export class CreateBranchDto {
     example: 10,
     description: 'Restaurant ID this branch belongs to',
   })
-  @IsInt()
+  @IsString()
   @IsNotEmpty()
-  restaurantId!: number;
+  restaurantId!: string;
 
   @ApiPropertyOptional({
     example: true,

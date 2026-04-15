@@ -10,7 +10,7 @@ export class SvcBranchService {
     @Inject('BRANCH_SERVICE') private readonly kafkaClient: ClientKafka,
   ) {}
 
-  async createBranch(restaurantId: number, data: CreateBranchDto) {
+  async createBranch(restaurantId: string, data: CreateBranchDto) {
     if (data.haveWarehouses && !data.warehouseName) {
       throw new RpcException({
         status: HttpStatus.BAD_REQUEST,
@@ -28,7 +28,7 @@ export class SvcBranchService {
 
     const existingBranch = await this.prisma.branch.findFirst({
       where: {
-        restaurantId: Number(restaurantId),
+        restaurantId: restaurantId,
         name: data.name,
         address: data.address,
       },
@@ -54,7 +54,7 @@ export class SvcBranchService {
       data: {
         ...branchData,
         branchNumber: String(branchData.branchNumber),
-        restaurantId: Number(restaurantId),
+        restaurantId: restaurantId,
 
         warehouses:
           data.haveWarehouses && warehouseName
@@ -79,18 +79,18 @@ export class SvcBranchService {
     return newBranch;
   }
 
-  async getBranches(restaurantId: number) {
+  async getBranches(restaurantId: string) {
     return this.prisma.branch.findMany({
       where: {
-        restaurantId: Number(restaurantId),
+        restaurantId: restaurantId,
       },
     });
   }
-  async getBranchById(restaurantId: number, branchId: number) {
+  async getBranchById(restaurantId: string, branchId: string) {
     return this.prisma.branch.findFirst({
       where: {
-        restaurantId: Number(restaurantId),
-        id: Number(branchId),
+        restaurantId: restaurantId,
+        id: branchId,
       },
       include: {
         restaurant: true,
@@ -118,15 +118,15 @@ export class SvcBranchService {
     });
   }
   async updateBranch(
-    restaurantId: number,
-    branchId: number,
+    restaurantId: string,
+    branchId: string,
     data: UpdateBranchDto,
   ) {
     const { ...updateData } = data;
     const branch = await this.prisma.branch.update({
       where: {
-        restaurantId: Number(restaurantId),
-        id: Number(branchId),
+        restaurantId: restaurantId,
+        id: branchId,
       },
       data: updateData,
     });
@@ -139,7 +139,7 @@ export class SvcBranchService {
     }
 
     const updatedBranch = await this.prisma.branch.findUnique({
-      where: { id: Number(branchId) },
+      where: { id: branchId },
     });
 
     this.kafkaClient.emit('branch.updated', updatedBranch);
@@ -147,14 +147,14 @@ export class SvcBranchService {
     return updatedBranch;
   }
 
-  async deleteBranch(restaurantId: number, branchId: number) {
+  async deleteBranch(restaurantId: string, branchId: string) {
     return await this.prisma.$transaction(async (tx) => {
-      await tx.table.deleteMany({ where: { branchId: Number(branchId) } });
+      await tx.table.deleteMany({ where: { branchId: branchId } });
 
       const result = await tx.branch.deleteMany({
         where: {
-          restaurantId: Number(restaurantId),
-          id: Number(branchId),
+          restaurantId: restaurantId,
+          id: branchId,
         },
       });
 

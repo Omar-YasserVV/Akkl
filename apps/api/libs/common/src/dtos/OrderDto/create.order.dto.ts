@@ -6,14 +6,15 @@ import {
   IsInt,
   IsNumber,
   IsOptional,
+  IsString,
   ValidateNested,
 } from 'class-validator';
 import { OrderState } from '../../../../db/generated/client/client';
 
 export class CreateOrderItemDto {
   @ApiProperty({ example: 9 })
-  @IsInt()
-  menuItemId!: number;
+  @IsString()
+  menuItemId!: string;
 
   @ApiProperty({ example: 2 })
   @IsInt()
@@ -25,8 +26,8 @@ export class CreateOrderItemDto {
 
 export class CreateOrderDto {
   @ApiProperty({ example: 2 })
-  @IsInt()
-  userId!: number;
+  @IsString()
+  userId!: string;
 
   @ApiProperty({ example: 'Eyad 5ales' })
   @IsOptional()

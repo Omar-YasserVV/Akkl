@@ -14,7 +14,7 @@ interface ExcelMenuRow {
   Description?: string;
   Image?: string;
   Available?: string | boolean;
-  MenuItemID?: number | string;
+  MenuItemID?: string;
   Variations?: string;
   DietaryTags?: string;
   Recipe?: string;
@@ -42,9 +42,9 @@ export class MenuService {
     });
   }
 
-  async getBranchMenu(branchId: number) {
+  async getBranchMenu(branchId: string) {
     return this.prisma.branchMenuItem.findMany({
-      where: { branchId: Number(branchId) },
+      where: { branchId: branchId },
       include: {
         variations: true,
         dietaryTags: true,
@@ -55,9 +55,9 @@ export class MenuService {
     });
   }
 
-  async createMenu(branchId: number, data: BranchMenuItemDetailDto) {
+  async createMenu(branchId: string, data: BranchMenuItemDetailDto) {
     const branch = await this.prisma.branch.findUnique({
-      where: { id: Number(branchId) },
+      where: { id: branchId },
     });
 
     if (!branch) {
@@ -65,7 +65,7 @@ export class MenuService {
     }
 
     const menuItem = await this.prisma.branchMenuItem.findFirst({
-      where: { name: data.name, branchId: Number(branchId) },
+      where: { name: data.name, branchId: branchId },
     });
 
     if (data.name === menuItem?.name) {
@@ -81,7 +81,7 @@ export class MenuService {
         image: data.image,
         isAvailable: data.isAvailable,
         menuItemId: data.menuItemId,
-        branchId: Number(branchId),
+        branchId: branchId,
         variations: {
           create: data.variations?.map((v) => ({
             size: v.size,
@@ -107,12 +107,12 @@ export class MenuService {
   }
 
   async updateMenuItem(
-    menuItemId: number,
+    menuItemId: string,
     data: UpdateBranchMenuItemDto,
-    branchId?: number,
+    branchId?: string,
   ) {
     const menuItem = await this.prisma.branchMenuItem.findUnique({
-      where: { id: Number(menuItemId) },
+      where: { id: menuItemId },
     });
 
     if (!menuItem) {
@@ -120,14 +120,14 @@ export class MenuService {
     }
 
     // Security: Ensure the item belongs to the branch provided in the URL
-    if (branchId && menuItem.branchId !== Number(branchId)) {
+    if (branchId && menuItem.branchId !== branchId) {
       throw new BadRequestException(
         'This menu item does not belong to the specified branch',
       );
     }
 
     const updatedMenuItemn = await this.prisma.branchMenuItem.update({
-      where: { id: Number(menuItemId) },
+      where: { id: menuItemId },
       data: {
         name: data.name,
         description: data.description,
@@ -160,21 +160,21 @@ export class MenuService {
     return updatedMenuItemn;
   }
 
-  async deleteMenuItem(id: number, branchId: number) {
+  async deleteMenuItem(id: string, branchId: string) {
     const menuItem = await this.prisma.branchMenuItem.findFirst({
-      where: { id: Number(id), branchId: Number(branchId) },
+      where: { id: id, branchId: branchId },
     });
 
     if (!menuItem) {
       return new NotFoundException(`Menu item with ID ${id} not found`);
     }
 
-    if (branchId && menuItem.branchId !== Number(branchId)) {
+    if (branchId && menuItem.branchId !== branchId) {
       return new BadRequestException('Action denied: Branch ID mismatch');
     }
 
     await this.prisma.branchMenuItem.delete({
-      where: { id: Number(id) },
+      where: { id: id },
     });
     this.kafkaClient.emit('menu-item.deleted', { id: Number(id) });
     return { message: `Menu item with ID ${id} deleted successfully` };
@@ -182,7 +182,7 @@ export class MenuService {
 
   // --- Bulk & Excel Operations ---
 
-  async handleExcelUpload(branchId: number, fileBuffer: Buffer) {
+  async handleExcelUpload(branchId: string, fileBuffer: Buffer) {
     const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
@@ -198,32 +198,30 @@ export class MenuService {
   }
 
   private parseExcelRows(
-    branchId: number,
+    branchId: string,
     rows: ExcelMenuRow[],
   ): BranchMenuItemDetailDto[] {
     return rows.map((row) => {
       try {
         return {
-          branchId: Number(branchId),
+          branchId: branchId,
           name: String(row.Name || ''),
           description: row.Description ? String(row.Description) : undefined,
           image: row.Image ? String(row.Image) : undefined,
           isAvailable:
             row.Available === 'false' || row.Available === false ? false : true,
-          menuItemId: Number(row.MenuItemID || 0),
-
+          menuItemId: String(row.MenuItemID || ''),
           variations: row.Variations
             ? (JSON.parse(
                 row.Variations,
               ) as BranchMenuItemDetailDto['variations'])
             : [],
-
           dietaryTags: row.DietaryTags
             ? String(row.DietaryTags)
                 .split(',')
-                .map((id) => Number(id.trim()))
+                .filter((id) => id.trim() !== '')
+                .map((id) => id.trim())
             : [],
-
           recipe: row.Recipe
             ? (JSON.parse(row.Recipe) as BranchMenuItemDetailDto['recipe'])
             : [],
@@ -236,9 +234,9 @@ export class MenuService {
     });
   }
 
-  async bulkCreateMenuItem(branchId: number, items: BranchMenuItemDetailDto[]) {
+  async bulkCreateMenuItem(branchId: string, items: BranchMenuItemDetailDto[]) {
     const branch = await this.prisma.branch.findUnique({
-      where: { id: Number(branchId) },
+      where: { id: branchId },
     });
 
     if (!branch) {
@@ -255,7 +253,7 @@ export class MenuService {
               image: item.image,
               isAvailable: item.isAvailable,
               menuItemId: item.menuItemId,
-              branchId: Number(branchId),
+              branchId: branchId,
               variations: {
                 create: item.variations?.map((v) => ({
                   size: v.size,

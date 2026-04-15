@@ -13,7 +13,7 @@ export class OrderService {
     @Inject('BRANCH_SERVICE') private readonly kafkaClient: ClientKafka,
   ) {}
 
-  async createOrder(branchId: number, data: CreateOrderDto) {
+  async createOrder(branchId: string, data: CreateOrderDto) {
     try {
       if (!data)
         throw new RpcException({
@@ -27,15 +27,15 @@ export class OrderService {
         status = OrderState.PENDING,
         CustomerName,
       } = data;
-      const bId = Number(branchId);
-      const uId = Number(userId);
+      const bId = branchId;
+      const uId = userId;
 
       if (!items?.length)
         throw new RpcException({
           statusCode: 400,
           message: 'Order must contain at least one item.',
         });
-      if (isNaN(bId) || isNaN(uId))
+      if (!bId || !uId)
         throw new RpcException({
           statusCode: 400,
           message: 'Invalid Branch or User ID',
@@ -106,10 +106,10 @@ export class OrderService {
     }
   }
 
-  async updateOrder(orderId: number, data: UpdateOrderDto) {
+  async updateOrder(orderId: string, data: UpdateOrderDto) {
     try {
       const existingOrder = await this.prisma.order.findUnique({
-        where: { id: Number(orderId) },
+        where: { id: orderId },
       });
 
       if (!existingOrder)
@@ -127,7 +127,7 @@ export class OrderService {
       const { items, ...updateData } = data;
 
       const updatedOrder = await this.prisma.order.update({
-        where: { id: Number(orderId) },
+        where: { id: orderId },
         data: {
           ...updateData,
           ...(items && {
@@ -151,9 +151,9 @@ export class OrderService {
     }
   }
 
-  async deleteOrder(orderId: number) {
+  async deleteOrder(orderId: string) {
     try {
-      await this.prisma.order.delete({ where: { id: Number(orderId) } });
+      await this.prisma.order.delete({ where: { id: orderId } });
       this.kafkaClient.emit('order.deleted', { id: orderId });
       return { message: `Order ${orderId} deleted successfully` };
     } catch (error) {
@@ -162,14 +162,14 @@ export class OrderService {
   }
 
   async getOrdersByBranch(
-    branchId: number,
+    branchId: string,
     page = 1,
     limit = 10,
     status?: OrderState,
     orderSource?: source,
   ) {
     const skip = (page - 1) * limit;
-    const bId = Number(branchId);
+    const bId = branchId;
 
     const where: Prisma.OrderWhereInput = {
       branchId: bId,
@@ -200,10 +200,10 @@ export class OrderService {
     }
   }
 
-  async getOrderById(orderId: number) {
+  async getOrderById(orderId: string) {
     try {
       const order = await this.prisma.order.findUnique({
-        where: { id: Number(orderId) },
+        where: { id: orderId },
         include: { items: true, user: true },
       });
       if (!order)

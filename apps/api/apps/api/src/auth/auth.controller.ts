@@ -29,7 +29,7 @@ interface AuthResponse {
   access_token: string;
   refresh_token: string;
   user: {
-    id: number;
+    id: string; // changed from number to string
     email: string;
     fullName?: string;
     username?: string;
@@ -43,10 +43,10 @@ interface MessageResponse {
 }
 interface AuthenticatedRequest extends Request {
   user: {
-    sub: number;
+    sub: string; // changed from number to string
     type?: 'employee' | 'user';
-    branchId?: number;
-    id: number;
+    branchId?: string; // changed from number to string
+    id: string; // changed from number to string
     email: string;
     fullName?: string;
     username?: string;

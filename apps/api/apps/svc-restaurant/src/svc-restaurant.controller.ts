@@ -15,19 +15,19 @@ export class SvcRestaurantController {
 
   @MessagePattern(RESTAURANT_TOPICS.CREATE_RESTAURANT)
   async createRestaurant(
-    @Payload() data: { userId: number } & CreateRestaurantDto,
+    @Payload() data: { userId: string } & CreateRestaurantDto,
   ) {
     const { userId, ...restOfData } = data;
     return await this.svcRestaurantService.CreateRestaurant(userId, restOfData);
   }
 
   @MessagePattern(RESTAURANT_TOPICS.GET_RESTAURANT_BY_ID)
-  async getRestaurantById(@Payload() data: { id: number }) {
+  async getRestaurantById(@Payload() data: { id: string }) {
     return await this.svcRestaurantService.GetRestaurantById(data.id);
   }
 
   @MessagePattern(RESTAURANT_TOPICS.GET_RESTAURANTS_BY_OWNER_ID)
-  async getRestaurantsByOwnerId(@Payload() data: { ownerId: number }) {
+  async getRestaurantsByOwnerId(@Payload() data: { ownerId: string }) {
     return await this.svcRestaurantService.GetRestaurantsByOwnerId(
       data.ownerId,
     );
@@ -35,14 +35,14 @@ export class SvcRestaurantController {
 
   @MessagePattern(RESTAURANT_TOPICS.UPDATE_RESTAURANT)
   async updateRestaurant(
-    @Payload() data: { id: number } & UpdateRestaurantDto,
+    @Payload() data: { id: string } & UpdateRestaurantDto,
   ) {
     const { id, ...updateData } = data;
     return await this.svcRestaurantService.UpdateRestaurant(id, updateData);
   }
 
   @MessagePattern(RESTAURANT_TOPICS.DELETE_RESTAURANT)
-  async deleteRestaurant(@Payload() data: { id: number }) {
+  async deleteRestaurant(@Payload() data: { id: string }) {
     return await this.svcRestaurantService.DeleteRestaurant(data.id);
   }
 }

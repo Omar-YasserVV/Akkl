@@ -7,8 +7,9 @@ import { RpcException } from '@nestjs/microservices';
 @Injectable()
 export class SvcRestaurantService {
   constructor(private readonly prisma: PrismaService) {}
-  async CreateRestaurant(userId: number, data: CreateRestaurantDto) {
-    const ownerId = Number(userId);
+
+  async CreateRestaurant(userId: string, data: CreateRestaurantDto) {
+    const ownerId = userId;
 
     const user = await this.prisma.user.findUnique({
       where: { id: ownerId },
@@ -37,6 +38,7 @@ export class SvcRestaurantService {
       },
     });
   }
+
   async GetRestaurants() {
     return await this.prisma.restaurant.findMany({
       include: {
@@ -45,26 +47,26 @@ export class SvcRestaurantService {
     });
   }
 
-  async GetRestaurantsByOwnerId(ownerId: number) {
+  async GetRestaurantsByOwnerId(ownerId: string) {
     return await this.prisma.restaurant.findMany({
       where: { ownerId },
     });
   }
 
-  async GetRestaurantById(id: number) {
+  async GetRestaurantById(id: string) {
     return await this.prisma.restaurant.findUnique({
       where: { id },
     });
   }
 
-  async UpdateRestaurant(id: number, data: UpdateRestaurantDto) {
+  async UpdateRestaurant(id: string, data: UpdateRestaurantDto) {
     return await this.prisma.restaurant.update({
       where: { id },
       data,
     });
   }
 
-  async DeleteRestaurant(id: number) {
+  async DeleteRestaurant(id: string) {
     return await this.prisma.restaurant.delete({
       where: { id },
     });

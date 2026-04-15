@@ -16,7 +16,7 @@ import { ResetPasswordDto } from '../dtos/auth.dto';
 import { AuthResult, UserResponse } from './interfaces/auth.interface';
 
 interface JwtPayload extends Omit<jwt.JwtPayload, 'sub'> {
-  sub: number;
+  sub: string;
   role?: string;
   type?: 'employee' | 'user';
   branchId?: number;
@@ -225,7 +225,7 @@ export class SvcAuthService {
 
   async createEmployee(data: CreateStaffUserDto): Promise<{
     message: string;
-    id: number;
+    id: string;
     generatedUsername: string;
     tempPassword: string;
   }> {
@@ -274,9 +274,9 @@ export class SvcAuthService {
     }
   }
 
-  async getUserProfile(id: number): Promise<UserResponse> {
+  async getUserProfile(id: string): Promise<UserResponse> {
     const user = await this.prisma.user.findUnique({
-      where: { id: Number(id) },
+      where: { id },
       include: {
         branch: {
           select: {
