@@ -13,7 +13,43 @@ export class OrderService {
     @Inject('BRANCH_SERVICE') private readonly kafkaClient: ClientKafka,
   ) {}
 
-  async createOrder(branchId: string, data: CreateOrderDto) {
+  async getOrderStatuses(branchId: number) {
+    try {
+      const stats = await this.prisma.order.groupBy({
+        by: ['status'],
+        where: { branchId: Number(branchId) },
+        _count: {
+          status: true,
+        },
+      });
+
+      const formattedStats = stats.reduce(
+        (acc, curr) => {
+          acc[curr.status] = curr._count.status;
+          return acc;
+        },
+        {} as Record<OrderState, number>,
+      );
+
+      const allStatuses: OrderState[] = [
+        OrderState.PENDING,
+        OrderState.IN_PROGRESS,
+        OrderState.COMPLETED,
+        OrderState.CANCELLED,
+      ];
+
+      allStatuses.forEach((status) => {
+        if (!formattedStats[status]) {
+          formattedStats[status] = 0;
+        }
+      });
+
+      return formattedStats;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+  async createOrder(branchId: number, data: CreateOrderDto, userId: number) {
     try {
       if (!data)
         throw new RpcException({
@@ -21,14 +57,9 @@ export class OrderService {
           message: 'Invalid request payload',
         });
 
-      const {
-        items = [],
-        userId,
-        status = OrderState.PENDING,
-        CustomerName,
-      } = data;
-      const bId = branchId;
-      const uId = userId;
+      const { items = [], status = OrderState.PENDING, CustomerName } = data;
+      const bId = Number(branchId);
+      const uId = Number(userId);
 
       if (!items?.length)
         throw new RpcException({
@@ -60,7 +91,10 @@ export class OrderService {
       const finalCustomerName = CustomerName || user.fullName;
 
       const menuItems = await this.prisma.branchMenuItem.findMany({
-        where: { id: { in: items.map((i) => i.menuItemId) }, branchId: bId },
+        where: {
+          menuItemId: { in: items.map((i) => i.menuItemId) },
+          branchId: bId,
+        },
         include: { variations: true },
       });
 
@@ -68,19 +102,23 @@ export class OrderService {
       let calculatedItemCount = 0;
 
       const orderItemsData = items.map((itemInput) => {
-        const dbItem = menuItems.find((m) => m.id === itemInput.menuItemId);
-        if (!dbItem)
+        const dbItem = menuItems.find(
+          (m) => m.menuItemId === itemInput.menuItemId,
+        );
+
+        if (!dbItem) {
           throw new RpcException({
             statusCode: 400,
-            message: `Item ${itemInput.menuItemId} unavailable at this branch.`,
+            message: `Item ${itemInput.menuItemId} not found.`,
           });
+        }
 
         const unitPrice = Number(dbItem.variations[0]?.price || 0);
         calculatedTotal += unitPrice * itemInput.quantity;
         calculatedItemCount += itemInput.quantity;
 
         return {
-          menuItemId: itemInput.menuItemId,
+          menuItemId: dbItem.id,
           quantity: itemInput.quantity,
           price: unitPrice,
         };
@@ -94,7 +132,9 @@ export class OrderService {
           itemCount: calculatedItemCount,
           status,
           CustomerName: finalCustomerName,
-          items: { create: orderItemsData },
+          items: {
+            create: orderItemsData,
+          },
         },
         include: { items: true },
       });
@@ -169,10 +209,9 @@ export class OrderService {
     orderSource?: source,
   ) {
     const skip = (page - 1) * limit;
-    const bId = branchId;
 
     const where: Prisma.OrderWhereInput = {
-      branchId: bId,
+      branchId,
       ...(status && { status }),
       ...(orderSource && { source: orderSource }),
     };
@@ -213,13 +252,14 @@ export class OrderService {
       this.handleError(error);
     }
   }
+
   // TODO: make this more generic and reusable across the app, maybe as a global exception filter or a base service class method
   private handleError(error: unknown) {
     if (error instanceof RpcException) {
       throw error;
     }
 
-    const err = error as Record<string, any>;
+    const err = error as Record<string, unknown>;
 
     if (err?.code === 'P2025') {
       throw new RpcException({ statusCode: 404, message: 'Record not found' });
