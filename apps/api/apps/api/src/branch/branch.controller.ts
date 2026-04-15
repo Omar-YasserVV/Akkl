@@ -7,6 +7,7 @@ import {
   UpdateOrderDto,
 } from '@app/common';
 import { BRANCH_TOPICS } from '@app/common/topics/branch.topics';
+import { CurrentUser } from '@app/guards/current-user.decorator';
 import { JwtAuthGuard } from '@app/guards/jwt-auth.guard';
 import { RolesGuard } from '@app/guards/role.guard';
 import { Roles } from '@app/guards/roles.decorator';
@@ -172,18 +173,19 @@ export class BranchController implements OnModuleInit {
   }
 
   // --- Order Endpoints ---
-  // Create, view (get), and update orders: CASHIER and MANAGER. Delete order: MANAGER only.
 
-  // BUSINESS_OWNER, CASHIER and MANAGER can create orders
   @Roles(UserRole.BUSINESS_OWNER, UserRole.CASHIER, UserRole.MANAGER)
   @Post(':restaurantId/:branchId/orders')
+  @UseGuards(JwtAuthGuard)
   createOrder(
     @Param('branchId') branchId: number,
     @Body() data: CreateOrderDto,
+    @CurrentUser('sub') userId: number,
   ) {
     return this.branchClient.send('create_order', {
-      branchId,
+      branchId: Number(branchId),
       data,
+      userId: Number(userId),
     });
   }
 
