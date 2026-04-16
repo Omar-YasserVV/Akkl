@@ -1,4 +1,5 @@
 import {
+  AUTH_TOPICS,
   CompleteGoogleSignupDto,
   CreateStaffUserDto,
   LoginDto,
@@ -62,20 +63,9 @@ export class AuthController implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    const topics = [
-      'signup',
-      'login',
-      'logout',
-      'complete-google-signup',
-      'forgot-password',
-      'reset-password',
-      'create-employee',
-      'get-user-profile',
-    ];
-
-    topics.forEach((topic) => {
-      this.authClient.subscribeToResponseOf(topic);
-    });
+    Object.values(AUTH_TOPICS).forEach((topic) =>
+      this.authClient.subscribeToResponseOf(topic),
+    );
 
     await this.authClient.connect();
   }
@@ -159,7 +149,10 @@ export class AuthController implements OnModuleInit {
     @Res() res: Response,
   ): Promise<Response> {
     const result = await lastValueFrom(
-      this.authClient.send<AuthResponse>('complete-google-signup', data),
+      this.authClient.send<AuthResponse>(
+        AUTH_TOPICS.COMPLETE_GOOGLE_SIGNUP,
+        data,
+      ),
     );
     const { access_token, refresh_token, user } = result;
 
@@ -176,7 +169,7 @@ export class AuthController implements OnModuleInit {
     @Res() res: Response,
   ): Promise<Response> {
     const result = await lastValueFrom(
-      this.authClient.send<MessageResponse>('forgot-password', email),
+      this.authClient.send<MessageResponse>(AUTH_TOPICS.FORGOT_PASSWORD, email),
     );
     return res.status(HttpStatus.OK).json(result);
   }
@@ -187,7 +180,10 @@ export class AuthController implements OnModuleInit {
     @Res() res: Response,
   ): Promise<Response> {
     const result = await lastValueFrom(
-      this.authClient.send<MessageResponse>('reset-password', resetDto),
+      this.authClient.send<MessageResponse>(
+        AUTH_TOPICS.RESET_PASSWORD,
+        resetDto,
+      ),
     );
     return res.status(HttpStatus.OK).json(result);
   }
@@ -197,7 +193,7 @@ export class AuthController implements OnModuleInit {
     @Body() data: CreateStaffUserDto,
   ): Promise<MessageResponse> {
     return await lastValueFrom(
-      this.authClient.send<MessageResponse>('create-employee', data),
+      this.authClient.send<MessageResponse>(AUTH_TOPICS.CREATE_EMPLOYEE, data),
     );
   }
 
@@ -212,7 +208,7 @@ export class AuthController implements OnModuleInit {
     }
 
     const profile = await lastValueFrom(
-      this.authClient.send<UserResponse>('get-user-profile', userId),
+      this.authClient.send<UserResponse>(AUTH_TOPICS.GET_USER_PROFILE, userId),
     );
 
     return profile;

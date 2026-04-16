@@ -9,7 +9,6 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { AnalyticsBaseDto } from './analytics.base.dto';
-import { AnalyticsDateRangeDto } from './analytics.date.range.dto';
 
 // ─── Record shape ─────────────────────────────────────────────
 export class LineChartRecordDto {
@@ -34,35 +33,24 @@ export class LineChartRecordDto {
 
 // ─── Request DTO ──────────────────────────────────────────────
 export class LineChartAnalyticsRequestDto {
-  @ApiProperty({
-    type: AnalyticsDateRangeDto,
-    description: 'Date range to query',
-  })
-  @ValidateNested()
-  @Type(() => AnalyticsDateRangeDto)
-  dateRange: AnalyticsDateRangeDto;
-
   @ApiPropertyOptional({
-    example: 'daily',
-    enum: ['hourly', 'daily', 'weekly', 'monthly'],
-    description: 'Granularity of data points',
-  })
-  @IsOptional()
-  @IsString()
-  granularity?: 'hourly' | 'daily' | 'weekly' | 'monthly';
-
-  @ApiPropertyOptional({
-    example: 100,
-    description: 'Max number of records to return',
+    example: 7,
+    description: 'Number of days ago to start fetching data',
   })
   @IsOptional()
   @IsInt()
   @Min(1)
-  limit?: number;
+  daysAgo?: number;
 }
 
 // ─── Response DTO ─────────────────────────────────────────────
 export class LineChartAnalyticsResponseDto extends AnalyticsBaseDto {
+  @ApiProperty({
+    example: 15.5,
+    description: 'Percentage change compared to previous period',
+  })
+  percentageChange: number;
+
   @ApiProperty({
     type: [LineChartRecordDto],
     description: 'Time-series data points',

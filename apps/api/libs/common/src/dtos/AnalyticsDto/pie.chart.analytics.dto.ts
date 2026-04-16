@@ -2,7 +2,6 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsOptional, IsString, ValidateNested } from 'class-validator';
 import { AnalyticsBaseDto } from './analytics.base.dto';
-import { AnalyticsDateRangeDto } from './analytics.date.range.dto';
 
 // ─── Slice shape ──────────────────────────────────────────────
 export class PieChartSliceDto {
@@ -16,14 +15,6 @@ export class PieChartSliceDto {
 
 // ─── Request DTO ──────────────────────────────────────────────
 export class PieChartAnalyticsRequestDto {
-  @ApiProperty({
-    type: AnalyticsDateRangeDto,
-    description: 'Date range to query',
-  })
-  @ValidateNested()
-  @Type(() => AnalyticsDateRangeDto)
-  dateRange: AnalyticsDateRangeDto;
-
   @ApiPropertyOptional({
     example: 5,
     description: 'Limit to top N slices (rest grouped as "Other")',
