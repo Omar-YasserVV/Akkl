@@ -2,6 +2,7 @@ import { BranchMenuItemDetailDto, UpdateBranchMenuItemDto } from '@app/common';
 import { PrismaService } from '@app/db';
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices'; // Added RpcException
+import { Prisma } from 'libs/db/generated/client/client';
 import * as XLSX from 'xlsx';
 
 interface ExcelMenuRow {
@@ -72,12 +73,10 @@ export class MenuService {
             })),
           },
           dietaryTags: {
-            // Prisma fails here if these IDs aren't in the DB
             connect: data.dietaryTags?.map((tagId) => ({ id: tagId })),
           },
           recipe: {
             create: data.recipe?.map((r) => ({
-              // Prisma fails here if ingredientId isn't in the DB
               ingredientId: r.ingredientId,
               quantityRequired: r.quantityRequired,
             })),
@@ -88,9 +87,11 @@ export class MenuService {
 
       this.kafkaClient.emit('menu-item.created', newMenuItem);
       return newMenuItem;
-    } catch (error) {
-      // This catches the P2025 error and sends it correctly to the Gateway
-      if (error.code === 'P2025') {
+    } catch (error: unknown) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
         throw new RpcException({
           message:
             'One or more Dietary Tags or Ingredients were not found in the database.',
@@ -98,10 +99,12 @@ export class MenuService {
         });
       }
 
-      throw new RpcException({
-        message: error.message || 'Internal Server Error',
-        statusCode: 500,
-      });
+      if (error instanceof Error) {
+        throw new RpcException({
+          message: error.message || 'Internal Server Error',
+          statusCode: 500,
+        });
+      }
     }
   }
 
