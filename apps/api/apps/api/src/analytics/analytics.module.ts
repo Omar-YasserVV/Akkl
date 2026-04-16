@@ -1,3 +1,6 @@
+import { GuardsModule } from '@app/guards/guards.module';
+import { JwtAuthGuard } from '@app/guards/jwt-auth.guard';
+import { RolesGuard } from '@app/guards/role.guard';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ClientsModule } from '@nestjs/microservices';
@@ -6,6 +9,7 @@ import { AnalyticsController } from './analytics.controller';
 
 @Module({
   imports: [
+    GuardsModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
@@ -19,5 +23,6 @@ import { AnalyticsController } from './analytics.controller';
     ]),
   ],
   controllers: [AnalyticsController],
+  providers: [JwtAuthGuard, RolesGuard],
 })
 export class AnalyticsModule {}
