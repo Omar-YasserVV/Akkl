@@ -7,8 +7,8 @@ import {
 } from '@nestjs/common';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { Request, Response } from 'express';
+import type { StringValue } from 'ms';
 import { BlackListService } from './services/blacklist.service';
-
 /**
  * Using 'type' instead of 'interface' to satisfy JwtService's internal Record types
  */
@@ -118,13 +118,13 @@ export class JwtAuthGuard implements CanActivate {
       // 3. Cast 'expiresIn' to 'any' inside a strictly typed object to satisfy the JWT Overload
       const accessOptions: JwtSignOptions = {
         secret: String(process.env['JWT_SECRET'] ?? ''),
-        expiresIn: (process.env['JWT_EXPIRATION_TIME'] ?? '7h') as any,
+        expiresIn: (process.env['JWT_EXPIRATION_TIME'] ?? '7h') as StringValue,
       };
 
       const refreshOptions: JwtSignOptions = {
         secret: String(process.env['JWT_REFRESH_SECRET'] ?? ''),
         expiresIn: (process.env['JWT_EXPIRATION_TIME_REFRESH_TOKEN'] ??
-          '7d') as any,
+          '7d') as StringValue,
       };
 
       const newAccessToken = await this.jwtService.signAsync(
