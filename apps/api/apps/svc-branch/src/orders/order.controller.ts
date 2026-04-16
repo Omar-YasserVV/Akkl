@@ -9,7 +9,7 @@ import { OrderService } from './order.service';
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
-  @MessagePattern(BRANCH_TOPICS.ORDER_CREATE)
+  @MessagePattern('create_order')
   async createOrder(
     @Payload('branchId') branchId: string,
     @Payload('data') data: CreateOrderDto,
@@ -18,12 +18,12 @@ export class OrderController {
     return this.orderService.createOrder(branchId, data, userId);
   }
 
-  @MessagePattern(BRANCH_TOPICS.ORDER_GET_STATUSES) // Ensure this topic exists in your constants
+  @MessagePattern(BRANCH_TOPICS.ORDER_GET_STATUSES)
   async getOrderStatuses(@Payload('branchId') branchId: string) {
     return this.orderService.getOrderStatuses(branchId);
   }
 
-  @MessagePattern(BRANCH_TOPICS.ORDER_UPDATE)
+  @MessagePattern('update_order')
   async updateOrder(
     @Payload('orderId') orderId: string,
     @Payload('data') data: UpdateOrderDto,
@@ -31,12 +31,12 @@ export class OrderController {
     return this.orderService.updateOrder(orderId, data);
   }
 
-  @MessagePattern(BRANCH_TOPICS.ORDER_DELETE)
+  @MessagePattern('delete_order')
   async deleteOrder(@Payload('orderId') orderId: string) {
     return this.orderService.deleteOrder(orderId);
   }
 
-  @MessagePattern(BRANCH_TOPICS.ORDER_GET_ALL)
+  @MessagePattern('get_orders_by_branch')
   async getOrdersByBranch(
     @Payload('branchId') branchId: string,
     @Payload('page') page: number,
@@ -53,7 +53,7 @@ export class OrderController {
     );
   }
 
-  @MessagePattern(BRANCH_TOPICS.ORDER_GET_BY_ID)
+  @MessagePattern('get_order_by_id')
   async getOrderById(@Payload('orderId') orderId: string) {
     return this.orderService.getOrderById(orderId);
   }

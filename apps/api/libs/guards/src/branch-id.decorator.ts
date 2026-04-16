@@ -4,39 +4,16 @@ import {
   ExecutionContext,
 } from '@nestjs/common';
 import { Request } from 'express';
-
-interface AuthenticatedRequest extends Request {
-  branchId?: string | number;
-  user?: {
-    sub: number;
-    role: string;
-  };
+interface CustomRequest extends Request {
+  branchId?: number | string;
 }
+export const GetBranchId = createParamDecorator((ctx: ExecutionContext) => {
+  const request = ctx.switchToHttp().getRequest<CustomRequest>();
+  const branchId = request.params.branchId || request.branchId;
 
-export interface BranchContext {
-  restaurantId: number;
-  branchId: number;
-}
+  if (!branchId) {
+    throw new BadRequestException('Branch ID is required');
+  }
 
-export const GetBranchContext = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext): BranchContext => {
-    const request = ctx.switchToHttp().getRequest<AuthenticatedRequest>();
-
-    const restaurantId = request.params.restaurantId;
-
-    const branchId =
-      request.params.branchId || request.branchId || request.params.id;
-
-    const rId = Number(restaurantId);
-    const bId = Number(branchId);
-
-    if (!restaurantId || isNaN(rId)) {
-      throw new BadRequestException('Invalid Restaurant ID');
-    }
-    if (!branchId || isNaN(bId)) {
-      throw new BadRequestException('Invalid Branch ID');
-    }
-
-    return { restaurantId: rId, branchId: bId };
-  },
-);
+  return String(branchId);
+});

@@ -13,6 +13,9 @@ export class OrderService {
     @Inject('BRANCH_SERVICE') private readonly kafkaClient: ClientKafka,
   ) {}
 
+  /**
+   * Calculates order statistics for a specific branch.
+   */
   async getOrderStatuses(branchId: string) {
     try {
       const stats = await this.prisma.order.groupBy({
@@ -31,12 +34,8 @@ export class OrderService {
         {} as Record<OrderState, number>,
       );
 
-      const allStatuses: OrderState[] = [
-        OrderState.PENDING,
-        OrderState.IN_PROGRESS,
-        OrderState.COMPLETED,
-        OrderState.CANCELLED,
-      ];
+      // Ensure all enum values are present in the response even if count is 0
+      const allStatuses: OrderState[] = Object.values(OrderState);
 
       allStatuses.forEach((status) => {
         if (!formattedStats[status]) {
@@ -49,6 +48,11 @@ export class OrderService {
       this.handleError(error);
     }
   }
+
+  /**
+   * Creates a new order.
+   * Validates branch/user existence and calculates totals based on BranchMenuItem variations.
+   */
   async createOrder(branchId: string, data: CreateOrderDto, userId: string) {
     try {
       if (!data)
@@ -58,42 +62,34 @@ export class OrderService {
         });
 
       const { items = [], status = OrderState.PENDING, CustomerName } = data;
-      const bId = branchId;
-      const uId = userId;
 
       if (!items?.length)
         throw new RpcException({
           statusCode: 400,
           message: 'Order must contain at least one item.',
         });
-      if (!bId || !uId)
-        throw new RpcException({
-          statusCode: 400,
-          message: 'Invalid Branch or User ID',
-        });
 
+      // 1. Validate Branch and User existence
       const [branch, user] = await Promise.all([
-        this.prisma.branch.findUnique({ where: { id: bId } }),
-        this.prisma.user.findUnique({ where: { id: uId } }),
+        this.prisma.branch.findUnique({ where: { id: branchId } }),
+        this.prisma.user.findUnique({ where: { id: userId } }),
       ]);
 
       if (!branch)
         throw new RpcException({
           statusCode: 404,
-          message: `Branch ${bId} not found`,
+          message: `Branch ${branchId} not found`,
         });
       if (!user)
         throw new RpcException({
           statusCode: 404,
-          message: `User ${uId} not found`,
+          message: `User ${userId} not found`,
         });
-
-      const finalCustomerName = CustomerName || user.fullName;
 
       const menuItems = await this.prisma.branchMenuItem.findMany({
         where: {
-          menuItemId: { in: items.map((i) => i.menuItemId) },
-          branchId: bId,
+          id: { in: items.map((i) => i.menuItemId) },
+          branchId: branchId,
         },
         include: { variations: true },
       });
@@ -102,36 +98,37 @@ export class OrderService {
       let calculatedItemCount = 0;
 
       const orderItemsData = items.map((itemInput) => {
-        const dbItem = menuItems.find(
-          (m) => m.menuItemId === itemInput.menuItemId,
-        );
+        const dbItem = menuItems.find((m) => m.id === itemInput.menuItemId);
 
         if (!dbItem) {
           throw new RpcException({
             statusCode: 400,
-            message: `Item ${itemInput.menuItemId} not found.`,
+            message: `Item ${itemInput.menuItemId} is not available in this branch menu.`,
           });
         }
 
+        // Logic: Use the first variation price.
+        // Note: If your DTO supports specific variation selection (size), update this logic.
         const unitPrice = Number(dbItem.variations[0]?.price || 0);
         calculatedTotal += unitPrice * itemInput.quantity;
         calculatedItemCount += itemInput.quantity;
 
         return {
-          menuItemId: dbItem.id,
+          menuItemId: dbItem.id, // Links to BranchMenuItem.id per schema
           quantity: itemInput.quantity,
           price: unitPrice,
         };
       });
 
+      // 3. Create the Order and items in a transaction
       const newOrder = await this.prisma.order.create({
         data: {
           totalPrice: calculatedTotal,
-          userId: uId,
-          branchId: bId,
+          userId: userId,
+          branchId: branchId,
           itemCount: calculatedItemCount,
           status,
-          CustomerName: finalCustomerName,
+          CustomerName: CustomerName || user.fullName,
           items: {
             create: orderItemsData,
           },
@@ -146,6 +143,9 @@ export class OrderService {
     }
   }
 
+  /**
+   * Updates an existing order. Only allows updates if the order is still PENDING.
+   */
   async updateOrder(orderId: string, data: UpdateOrderDto) {
     try {
       const existingOrder = await this.prisma.order.findUnique({
@@ -157,10 +157,12 @@ export class OrderService {
           statusCode: 404,
           message: `Order ${orderId} not found`,
         });
+
+      // Business rule: Cannot update orders that are already processed or cancelled
       if (existingOrder.status !== OrderState.PENDING) {
         throw new RpcException({
           statusCode: 400,
-          message: `Order already ${existingOrder.status}`,
+          message: `Order cannot be modified because it is already ${existingOrder.status}`,
         });
       }
 
@@ -172,7 +174,7 @@ export class OrderService {
           ...updateData,
           ...(items && {
             items: {
-              deleteMany: {},
+              deleteMany: {}, // Clear old items
               create: items.map((item) => ({
                 menuItemId: item.menuItemId,
                 quantity: item.quantity,
@@ -191,6 +193,9 @@ export class OrderService {
     }
   }
 
+  /**
+   * Deletes an order from the system.
+   */
   async deleteOrder(orderId: string) {
     try {
       await this.prisma.order.delete({ where: { id: orderId } });
@@ -201,6 +206,9 @@ export class OrderService {
     }
   }
 
+  /**
+   * Retrieves paginated orders for a branch with optional status/source filtering.
+   */
   async getOrdersByBranch(
     branchId: string,
     page = 1,
@@ -217,28 +225,28 @@ export class OrderService {
     };
 
     try {
-      return await this.prisma.$transaction(
-        async (tx) => {
-          const total = await tx.order.count({ where });
-          const orders = await tx.order.findMany({
-            where,
-            skip,
-            take: limit,
-            include: {
-              items: { include: { branchMenuItem: true } },
-              user: { select: { id: true, fullName: true, email: true } },
-            },
-            orderBy: { createdAt: 'desc' },
-          });
-          return createPagination(orders, total, page, limit);
-        },
-        { timeout: 10000 },
-      );
+      return await this.prisma.$transaction(async (tx) => {
+        const total = await tx.order.count({ where });
+        const orders = await tx.order.findMany({
+          where,
+          skip,
+          take: limit,
+          include: {
+            items: { include: { branchMenuItem: true } },
+            user: { select: { id: true, fullName: true, email: true } },
+          },
+          orderBy: { createdAt: 'desc' },
+        });
+        return createPagination(orders, total, page, limit);
+      });
     } catch (error) {
       this.handleError(error);
     }
   }
 
+  /**
+   * Retrieves a single order by ID with item and user details.
+   */
   async getOrderById(orderId: string) {
     try {
       const order = await this.prisma.order.findUnique({
@@ -253,18 +261,20 @@ export class OrderService {
     }
   }
 
-  // TODO: make this more generic and reusable across the app, maybe as a global exception filter or a base service class method
+  /**
+   * Centralized error handler to map Prisma errors to RpcExceptions.
+   */
   private handleError(error: unknown) {
-    if (error instanceof RpcException) {
-      throw error;
-    }
+    if (error instanceof RpcException) throw error;
 
     const err = error as Record<string, unknown>;
 
+    // Prisma error for "Record not found"
     if (err?.code === 'P2025') {
       throw new RpcException({ statusCode: 404, message: 'Record not found' });
     }
 
+    // Prisma error for "Unique constraint failed"
     if (err?.code === 'P2002') {
       throw new RpcException({
         statusCode: 409,
@@ -272,13 +282,9 @@ export class OrderService {
       });
     }
 
-    const status = typeof err?.status === 'number' ? err.status : 500;
-    const message =
-      typeof err?.message === 'string' ? err.message : 'Internal Server Error';
-
     throw new RpcException({
-      statusCode: status,
-      message: message,
+      statusCode: err?.status || 500,
+      message: err?.message || 'Internal Server Error',
     });
   }
 }
