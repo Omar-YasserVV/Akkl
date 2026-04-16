@@ -1,5 +1,6 @@
 import { CreateRestaurantDto } from '@app/common/dtos/RestaurantDto/create.restaurant.dto';
 import { UpdateRestaurantDto } from '@app/common/dtos/RestaurantDto/update.restaurant.dto';
+import { RESTAURANT_TOPICS } from '@app/common/topics/restaurant.topics';
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { SvcRestaurantService } from './svc-restaurant.service';
@@ -7,41 +8,41 @@ import { SvcRestaurantService } from './svc-restaurant.service';
 export class SvcRestaurantController {
   constructor(private readonly svcRestaurantService: SvcRestaurantService) {}
 
-  @MessagePattern('get-restaurants')
+  @MessagePattern(RESTAURANT_TOPICS.GET_RESTAURANTS)
   async getRestaurants() {
     return await this.svcRestaurantService.GetRestaurants();
   }
 
-  @MessagePattern('create-restaurant')
+  @MessagePattern(RESTAURANT_TOPICS.CREATE_RESTAURANT)
   async createRestaurant(
-    @Payload() data: { userId: number } & CreateRestaurantDto,
+    @Payload() data: { userId: string } & CreateRestaurantDto,
   ) {
     const { userId, ...restOfData } = data;
     return await this.svcRestaurantService.CreateRestaurant(userId, restOfData);
   }
 
-  @MessagePattern('get-restaurant-by-id')
-  async getRestaurantById(@Payload() data: { id: number }) {
+  @MessagePattern(RESTAURANT_TOPICS.GET_RESTAURANT_BY_ID)
+  async getRestaurantById(@Payload() data: { id: string }) {
     return await this.svcRestaurantService.GetRestaurantById(data.id);
   }
 
-  @MessagePattern('get-restaurants-by-owner-id')
-  async getRestaurantsByOwnerId(@Payload() data: { ownerId: number }) {
+  @MessagePattern(RESTAURANT_TOPICS.GET_RESTAURANTS_BY_OWNER_ID)
+  async getRestaurantsByOwnerId(@Payload() data: { ownerId: string }) {
     return await this.svcRestaurantService.GetRestaurantsByOwnerId(
       data.ownerId,
     );
   }
 
-  @MessagePattern('update-restaurant')
+  @MessagePattern(RESTAURANT_TOPICS.UPDATE_RESTAURANT)
   async updateRestaurant(
-    @Payload() data: { id: number } & UpdateRestaurantDto,
+    @Payload() data: { id: string } & UpdateRestaurantDto,
   ) {
     const { id, ...updateData } = data;
     return await this.svcRestaurantService.UpdateRestaurant(id, updateData);
   }
 
-  @MessagePattern('delete-restaurant')
-  async deleteRestaurant(@Payload() data: { id: number }) {
+  @MessagePattern(RESTAURANT_TOPICS.DELETE_RESTAURANT)
+  async deleteRestaurant(@Payload() data: { id: string }) {
     return await this.svcRestaurantService.DeleteRestaurant(data.id);
   }
 }

@@ -15,11 +15,11 @@ import {
 
 export class IngredientDetailDto {
   @ApiProperty({
-    example: 1,
+    example: '1',
     description: 'Ingredient ID',
   })
-  @IsNumber()
-  ingredientId!: number;
+  @IsString()
+  ingredientId!: string;
 
   @ApiProperty({
     example: 'Tomato',
@@ -45,18 +45,18 @@ export class IngredientDetailDto {
 
 export class BranchMenuItemDetailDto {
   @ApiProperty({
-    example: 101,
+    example: '101',
     description: 'Menu item ID',
   })
-  @IsNumber()
-  menuItemId!: number;
+  @IsString()
+  menuItemId!: string;
 
   @ApiProperty({
-    example: 1,
+    example: '1',
     description: 'Branch ID',
   })
-  @IsNumber()
-  branchId!: number;
+  @IsString()
+  branchId!: string;
 
   @ApiProperty({
     example: 'Chicken Shawarma',
@@ -93,11 +93,11 @@ export class BranchMenuItemDetailDto {
     description: 'Available variations for the item',
     example: [
       {
-        size: 'Small', // Changed from 'name' to 'size' to match your DTO
+        size: 'Small',
         price: 50,
       },
       {
-        size: 'Large', // Changed from 'name' to 'size' to match your DTO
+        size: 'Large',
         price: 80,
       },
     ],
@@ -108,24 +108,24 @@ export class BranchMenuItemDetailDto {
   variations!: MenuItemVariationDto[];
 
   @ApiPropertyOptional({
-    example: [1, 2],
+    example: ['1', '2'],
     description: 'Dietary tag IDs (e.g., vegan, spicy)',
   })
   @IsArray()
   @IsOptional()
-  @IsNumber({}, { each: true })
-  dietaryTags?: number[];
+  @IsString({ each: true })
+  dietaryTags?: string[];
 
   @ApiProperty({
     type: [RecipeIngredientDto],
     description: 'Recipe ingredients required',
     example: [
       {
-        ingredientId: 1,
+        ingredientId: '1',
         quantityRequired: 0.2,
       },
       {
-        ingredientId: 2,
+        ingredientId: '2',
         quantityRequired: 0.1,
       },
     ],

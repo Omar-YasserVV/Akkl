@@ -1,12 +1,7 @@
 import { BranchMenuItemDetailDto, UpdateBranchMenuItemDto } from '@app/common';
 import { PrismaService } from '@app/db';
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { ClientKafka } from '@nestjs/microservices';
+import { Inject, Injectable } from '@nestjs/common';
+import { ClientKafka, RpcException } from '@nestjs/microservices'; // Added RpcException
 import * as XLSX from 'xlsx';
 
 interface ExcelMenuRow {
@@ -14,7 +9,7 @@ interface ExcelMenuRow {
   Description?: string;
   Image?: string;
   Available?: string | boolean;
-  MenuItemID?: number | string;
+  MenuItemID?: string;
   Variations?: string;
   DietaryTags?: string;
   Recipe?: string;
@@ -34,7 +29,6 @@ export class MenuService {
       include: { ingredient: true },
     },
   };
-  // --- External API Methods ---
 
   async getMenu() {
     return this.prisma.branchMenuItem.findMany({
@@ -42,92 +36,100 @@ export class MenuService {
     });
   }
 
-  async getBranchMenu(branchId: number) {
+  async getBranchMenu(branchId: string) {
     return this.prisma.branchMenuItem.findMany({
-      where: { branchId: Number(branchId) },
-      include: {
-        variations: true,
-        dietaryTags: true,
-        recipe: {
-          include: { ingredient: true },
-        },
-      },
+      where: { branchId: branchId },
+      include: this.commonInclude,
     });
   }
 
-  async createMenu(branchId: number, data: BranchMenuItemDetailDto) {
+  async createMenu(branchId: string, data: BranchMenuItemDetailDto) {
     const branch = await this.prisma.branch.findUnique({
-      where: { id: Number(branchId) },
+      where: { id: branchId },
     });
 
     if (!branch) {
-      return new NotFoundException(`Branch with ID ${branchId} not found`);
+      throw new RpcException({
+        message: `Branch with ID ${branchId} not found`,
+        statusCode: 404,
+      });
     }
 
-    const menuItem = await this.prisma.branchMenuItem.findFirst({
-      where: { name: data.name, branchId: Number(branchId) },
-    });
+    try {
+      const newMenuItem = await this.prisma.branchMenuItem.create({
+        data: {
+          name: data.name,
+          description: data.description,
+          image: data.image,
+          isAvailable: data.isAvailable,
+          menuItemId: data.menuItemId,
+          branchId: branchId,
+          variations: {
+            create: data.variations?.map((v) => ({
+              size: v.size,
+              price: v.price,
+              discountPrice: v.discountPrice,
+            })),
+          },
+          dietaryTags: {
+            // Prisma fails here if these IDs aren't in the DB
+            connect: data.dietaryTags?.map((tagId) => ({ id: tagId })),
+          },
+          recipe: {
+            create: data.recipe?.map((r) => ({
+              // Prisma fails here if ingredientId isn't in the DB
+              ingredientId: r.ingredientId,
+              quantityRequired: r.quantityRequired,
+            })),
+          },
+        },
+        include: this.commonInclude,
+      });
 
-    if (data.name === menuItem?.name) {
-      return new BadRequestException(
-        `Menu item with name "${data.name}" already exists in this branch`,
-      );
+      this.kafkaClient.emit('menu-item.created', newMenuItem);
+      return newMenuItem;
+    } catch (error) {
+      // This catches the P2025 error and sends it correctly to the Gateway
+      if (error.code === 'P2025') {
+        throw new RpcException({
+          message:
+            'One or more Dietary Tags or Ingredients were not found in the database.',
+          statusCode: 400,
+        });
+      }
+
+      throw new RpcException({
+        message: error.message || 'Internal Server Error',
+        statusCode: 500,
+      });
     }
-
-    const newMenuItem = await this.prisma.branchMenuItem.create({
-      data: {
-        name: data.name,
-        description: data.description,
-        image: data.image,
-        isAvailable: data.isAvailable,
-        menuItemId: data.menuItemId,
-        branchId: Number(branchId),
-        variations: {
-          create: data.variations?.map((v) => ({
-            size: v.size,
-            price: v.price,
-            discountPrice: v.discountPrice,
-          })),
-        },
-        dietaryTags: {
-          connect: data.dietaryTags?.map((tagId) => ({ id: tagId })),
-        },
-        // recipe: {
-        //   create: data.recipe?.map((r) => ({
-        //     ingredientId: r.ingredientId,
-        //     quantityRequired: r.quantityRequired,
-        //   })),
-        // },
-      },
-      include: this.commonInclude,
-    });
-
-    this.kafkaClient.emit('menu-item.created', newMenuItem);
-    return newMenuItem;
   }
 
   async updateMenuItem(
-    menuItemId: number,
+    menuItemId: string,
     data: UpdateBranchMenuItemDto,
-    branchId?: number,
+    branchId?: string,
   ) {
     const menuItem = await this.prisma.branchMenuItem.findUnique({
-      where: { id: Number(menuItemId) },
+      where: { id: menuItemId },
     });
 
     if (!menuItem) {
-      throw new NotFoundException(`Menu item with ID ${menuItemId} not found`);
+      throw new RpcException({
+        message: `Menu item with ID ${menuItemId} not found`,
+        statusCode: 404,
+      });
     }
 
-    // Security: Ensure the item belongs to the branch provided in the URL
-    if (branchId && menuItem.branchId !== Number(branchId)) {
-      throw new BadRequestException(
-        'This menu item does not belong to the specified branch',
-      );
+    if (branchId && menuItem.branchId !== branchId) {
+      throw new RpcException({
+        message: 'This menu item does not belong to the specified branch',
+        statusCode: 403,
+      });
     }
 
-    const updatedMenuItemn = await this.prisma.branchMenuItem.update({
-      where: { id: Number(menuItemId) },
+    const updatedMenuItem = await this.prisma.branchMenuItem.update({
+      where: { id: menuItemId },
       data: {
         name: data.name,
         description: data.description,
@@ -156,33 +158,33 @@ export class MenuService {
       },
       include: this.commonInclude,
     });
-    this.kafkaClient.emit('menu-item.updated', updatedMenuItemn);
-    return updatedMenuItemn;
+    this.kafkaClient.emit('menu-item.updated', updatedMenuItem);
+    return updatedMenuItem;
   }
 
-  async deleteMenuItem(id: number, branchId: number) {
+  async deleteMenuItem(id: string, branchId: string) {
     const menuItem = await this.prisma.branchMenuItem.findFirst({
-      where: { id: Number(id), branchId: Number(branchId) },
+      where: { id: id, branchId: branchId },
     });
 
     if (!menuItem) {
-      return new NotFoundException(`Menu item with ID ${id} not found`);
-    }
-
-    if (branchId && menuItem.branchId !== Number(branchId)) {
-      return new BadRequestException('Action denied: Branch ID mismatch');
+      throw new RpcException({
+        message: `Menu item with ID ${id} not found`,
+        statusCode: 404,
+      });
     }
 
     await this.prisma.branchMenuItem.delete({
-      where: { id: Number(id) },
+      where: { id: id },
     });
-    this.kafkaClient.emit('menu-item.deleted', { id: Number(id) });
+
+    this.kafkaClient.emit('menu-item.deleted', { id });
     return { message: `Menu item with ID ${id} deleted successfully` };
   }
 
   // --- Bulk & Excel Operations ---
 
-  async handleExcelUpload(branchId: number, fileBuffer: Buffer) {
+  async handleExcelUpload(branchId: string, fileBuffer: Buffer) {
     const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
@@ -190,7 +192,10 @@ export class MenuService {
     const rows = XLSX.utils.sheet_to_json<ExcelMenuRow>(sheet);
 
     if (!rows || rows.length === 0) {
-      throw new BadRequestException('The uploaded Excel file is empty.');
+      throw new RpcException({
+        message: 'The uploaded Excel file is empty.',
+        statusCode: 400,
+      });
     }
 
     const items = this.parseExcelRows(branchId, rows);
@@ -198,51 +203,53 @@ export class MenuService {
   }
 
   private parseExcelRows(
-    branchId: number,
+    branchId: string,
     rows: ExcelMenuRow[],
   ): BranchMenuItemDetailDto[] {
     return rows.map((row) => {
       try {
         return {
-          branchId: Number(branchId),
+          branchId: branchId,
           name: String(row.Name || ''),
           description: row.Description ? String(row.Description) : undefined,
           image: row.Image ? String(row.Image) : undefined,
           isAvailable:
             row.Available === 'false' || row.Available === false ? false : true,
-          menuItemId: Number(row.MenuItemID || 0),
-
+          menuItemId: String(row.MenuItemID || ''),
           variations: row.Variations
             ? (JSON.parse(
                 row.Variations,
               ) as BranchMenuItemDetailDto['variations'])
             : [],
-
           dietaryTags: row.DietaryTags
             ? String(row.DietaryTags)
                 .split(',')
-                .map((id) => Number(id.trim()))
+                .filter((id) => id.trim() !== '')
+                .map((id) => id.trim())
             : [],
-
           recipe: row.Recipe
             ? (JSON.parse(row.Recipe) as BranchMenuItemDetailDto['recipe'])
             : [],
         } as BranchMenuItemDetailDto;
       } catch (e) {
-        throw new BadRequestException(
-          `Parsing failed for row "${row.Name || 'Unknown'}". Ensure JSON columns are valid. ${e}`,
-        );
+        throw new RpcException({
+          message: `Parsing failed for row "${row.Name || 'Unknown'}". ${e}`,
+          statusCode: 400,
+        });
       }
     });
   }
 
-  async bulkCreateMenuItem(branchId: number, items: BranchMenuItemDetailDto[]) {
+  async bulkCreateMenuItem(branchId: string, items: BranchMenuItemDetailDto[]) {
     const branch = await this.prisma.branch.findUnique({
-      where: { id: Number(branchId) },
+      where: { id: branchId },
     });
 
     if (!branch) {
-      throw new NotFoundException(`Branch with ID ${branchId} not found`);
+      throw new RpcException({
+        message: `Branch with ID ${branchId} not found`,
+        statusCode: 404,
+      });
     }
 
     try {
@@ -255,7 +262,7 @@ export class MenuService {
               image: item.image,
               isAvailable: item.isAvailable,
               menuItemId: item.menuItemId,
-              branchId: Number(branchId),
+              branchId: branchId,
               variations: {
                 create: item.variations?.map((v) => ({
                   size: v.size,
@@ -284,7 +291,7 @@ export class MenuService {
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Bulk upload failed';
-      throw new BadRequestException(message);
+      throw new RpcException({ message, statusCode: 400 });
     }
   }
 }

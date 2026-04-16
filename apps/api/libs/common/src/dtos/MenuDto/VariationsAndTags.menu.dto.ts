@@ -36,8 +36,8 @@ export class RecipeIngredientDto {
     example: 1,
     description: 'Ingredient ID',
   })
-  @IsNumber()
-  ingredientId!: number;
+  @IsString()
+  ingredientId!: string;
 
   @ApiProperty({
     example: 0.25,

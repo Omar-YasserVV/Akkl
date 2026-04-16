@@ -1,11 +1,11 @@
 export interface UserResponse {
-  id: number;
+  id: string;
   email: string;
   fullName?: string;
   username?: string;
   role?: string;
   image?: string;
-  branchId?: number;
+  branchId?: string;
   branchName?: string;
   restaurantName?: string;
 }

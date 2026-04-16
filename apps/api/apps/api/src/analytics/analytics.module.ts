@@ -1,11 +1,11 @@
-import { GuardsModule } from '@app/guards';
+import { GuardsModule } from '@app/guards/guards.module';
 import { JwtAuthGuard } from '@app/guards/jwt-auth.guard';
 import { RolesGuard } from '@app/guards/role.guard';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ClientsModule } from '@nestjs/microservices';
 import { createKafkaClient } from 'utils/kafka-client.factory';
-import { RestaurantController } from './restaurant.controller';
+import { AnalyticsController } from './analytics.controller';
 
 @Module({
   imports: [
@@ -16,13 +16,13 @@ import { RestaurantController } from './restaurant.controller';
     }),
     ClientsModule.registerAsync([
       createKafkaClient(
-        'RESTAURANT_SERVICE',
-        'api-gateway-restaurant-group',
-        'api-gateway-restaurant',
+        'ANALYTICS_SERVICE',
+        'api-gateway-analytics-group',
+        'api-gateway-analytics',
       ),
     ]),
   ],
-  controllers: [RestaurantController],
+  controllers: [AnalyticsController],
   providers: [JwtAuthGuard, RolesGuard],
 })
-export class RestaurantModule {}
+export class AnalyticsModule {}

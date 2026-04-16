@@ -83,7 +83,7 @@ export class UpdateBranchMenuItemDto {
   @IsArray()
   @IsOptional()
   @IsNumber({}, { each: true })
-  dietaryTags?: number[];
+  dietaryTags?: string[];
 
   @ApiPropertyOptional({
     type: [RecipeIngredientDto],

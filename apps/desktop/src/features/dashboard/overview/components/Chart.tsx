@@ -1,4 +1,3 @@
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
   ChartConfig,
   ChartContainer,
@@ -6,14 +5,17 @@ import {
 } from "@repo/ui/components/chart";
 import { CustomTooltip } from "@repo/ui/components/custom-tooltip";
 import { NumberFormatter } from "@repo/utils";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
+// Changed chartData to use days instead of months
 const chartData = [
-  { month: "January", revenue: 1200 },
-  { month: "February", revenue: 2100 },
-  { month: "March", revenue: 1800 },
-  { month: "April", revenue: 2400 },
-  { month: "May", revenue: 3800 },
-  { month: "June", revenue: 4200 },
+  { day: "2024-06-01", revenue: 250 },
+  { day: "2024-06-02", revenue: 320 },
+  { day: "2024-06-03", revenue: 400 },
+  { day: "2024-06-04", revenue: 380 },
+  { day: "2024-06-05", revenue: 470 },
+  { day: "2024-06-06", revenue: 510 },
+  { day: "2024-06-07", revenue: 600 },
 ];
 
 const chartConfig = {
@@ -58,11 +60,17 @@ const Chart = () => {
         />
 
         <XAxis
-          dataKey="month"
+          dataKey="day"
           tickLine={false}
           axisLine={false}
           tickMargin={8}
-          tickFormatter={(value) => value.slice(0, 3)}
+          // Format date as 'Jun 01', 'Jun 02', etc.
+          tickFormatter={(value: string) => {
+            const date = new Date(value);
+            return `${date.toLocaleString("default", {
+              month: "short",
+            })} ${String(date.getDate()).padStart(2, "0")}`;
+          }}
         />
 
         <ChartTooltip

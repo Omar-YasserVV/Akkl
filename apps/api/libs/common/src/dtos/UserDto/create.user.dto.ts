@@ -2,7 +2,6 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsEmail,
   IsEnum,
-  IsInt,
   IsNotEmpty,
   IsOptional,
   IsPhoneNumber,
@@ -12,7 +11,7 @@ import {
 } from 'class-validator';
 import { UserRole } from '../../../../db/generated/client/client';
 
-// Base DTO for user creation, does NOT include branchId
+// Base DTO for user creation (NO role here)
 export class BaseUserDto {
   @ApiProperty({ example: 'omar@email.com' })
   @IsEmail()
@@ -24,12 +23,12 @@ export class BaseUserDto {
   @MinLength(8, { message: 'Password must be at least 8 characters long' })
   password!: string;
 
-  @ApiProperty({ example: 'Omar Hassan' })
+  @ApiProperty({ example: 'Omar Yasser' })
   @IsString()
   @IsNotEmpty()
   fullName!: string;
 
-  @ApiProperty({ example: 'omar_hassan' })
+  @ApiProperty({ example: 'omar_yasser' })
   @IsString()
   @IsNotEmpty()
   username!: string;
@@ -44,22 +43,28 @@ export class BaseUserDto {
   @IsString()
   @IsUrl()
   image?: string;
+}
 
-  @ApiPropertyOptional({ enum: UserRole, default: UserRole.CUSTOMER })
+// Signup DTO (role optional, defaults to CUSTOMER)
+export class SignupUserDto extends BaseUserDto {
+  @ApiPropertyOptional({ enum: UserRole, default: UserRole.BUSINESS_OWNER })
   @IsOptional()
   @IsEnum(UserRole)
   role?: UserRole;
 }
 
-export class SignupUserDto extends BaseUserDto {}
-
-// Used for staff/user creation by admin, INCLUDES branchId
+// Staff creation DTO (admin use)
 export class CreateStaffUserDto extends BaseUserDto {
+  @ApiPropertyOptional({ enum: UserRole, default: UserRole.CASHIER })
+  @IsOptional()
+  @IsEnum(UserRole)
+  role?: UserRole;
+
   @ApiPropertyOptional({
     example: 1,
     description: 'The ID of the branch the user belongs to',
   })
   @IsOptional()
-  @IsInt()
-  branchId?: number;
+  @IsString()
+  branchId?: string;
 }

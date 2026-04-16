@@ -1,6 +1,7 @@
 import { BranchMenuItemDetailDto, UpdateBranchMenuItemDto } from '@app/common';
-import { BadRequestException, Controller } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import { BRANCH_TOPICS } from '@app/common/topics/branch.topics';
+import { Controller } from '@nestjs/common';
+import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
 import { MenuService } from './menu.service';
 
 interface KafkaBuffer {
@@ -12,27 +13,27 @@ interface KafkaBuffer {
 export class MenuController {
   constructor(private readonly menuService: MenuService) {}
 
-  @MessagePattern('get_all_menu_items')
+  @MessagePattern(BRANCH_TOPICS.MENU_GET_ALL)
   async getAllItems() {
     return this.menuService.getMenu();
   }
 
-  @MessagePattern('get_branch_menu')
-  async getBranchMenu(@Payload('branchId') branchId: number) {
+  @MessagePattern(BRANCH_TOPICS.MENU_GET)
+  async getBranchMenu(@Payload('branchId') branchId: string) {
     return this.menuService.getBranchMenu(branchId);
   }
 
-  @MessagePattern('create_menu_item')
+  @MessagePattern(BRANCH_TOPICS.MENU_CREATE)
   async createMenuItem(
-    @Payload('branchId') branchId: number,
+    @Payload('branchId') branchId: string,
     @Payload('data') data: BranchMenuItemDetailDto,
   ) {
     return this.menuService.createMenu(branchId, data);
   }
 
-  @MessagePattern('upload_menu_excel')
+  @MessagePattern(BRANCH_TOPICS.MENU_UPLOAD)
   async uploadExcel(
-    @Payload('branchId') branchId: number,
+    @Payload('branchId') branchId: string,
     @Payload('fileBuffer') fileBuffer: unknown,
   ) {
     let buffer: Buffer;
@@ -48,25 +49,28 @@ export class MenuController {
       const kafkaBuffer = fileBuffer as unknown as KafkaBuffer;
       buffer = Buffer.from(kafkaBuffer.data);
     } else {
-      throw new BadRequestException('Invalid file buffer received from Kafka');
+      throw new RpcException({
+        message: 'Invalid file buffer received from Kafka',
+        statusCode: 400,
+      });
     }
 
     return this.menuService.handleExcelUpload(branchId, buffer);
   }
 
-  @MessagePattern('update_menu_item')
+  @MessagePattern(BRANCH_TOPICS.MENU_UPDATE)
   async updateMenuItem(
-    @Payload('id') id: number,
-    @Payload('branchId') branchId: number,
+    @Payload('id') id: string,
+    @Payload('branchId') branchId: string,
     @Payload('data') data: UpdateBranchMenuItemDto,
   ) {
     return this.menuService.updateMenuItem(id, data, branchId);
   }
 
-  @MessagePattern('delete_menu_item')
+  @MessagePattern(BRANCH_TOPICS.MENU_DELETE)
   async deleteMenuItem(
-    @Payload('id') id: number,
-    @Payload('branchId') branchId: number,
+    @Payload('id') id: string,
+    @Payload('branchId') branchId: string,
   ) {
     return this.menuService.deleteMenuItem(id, branchId);
   }
