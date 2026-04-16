@@ -1,7 +1,7 @@
 import { BranchMenuItemDetailDto, UpdateBranchMenuItemDto } from '@app/common';
 import { BRANCH_TOPICS } from '@app/common/topics/branch.topics';
-import { BadRequestException, Controller } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import { Controller } from '@nestjs/common';
+import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
 import { MenuService } from './menu.service';
 
 interface KafkaBuffer {
@@ -49,7 +49,10 @@ export class MenuController {
       const kafkaBuffer = fileBuffer as unknown as KafkaBuffer;
       buffer = Buffer.from(kafkaBuffer.data);
     } else {
-      throw new BadRequestException('Invalid file buffer received from Kafka');
+      throw new RpcException({
+        message: 'Invalid file buffer received from Kafka',
+        statusCode: 400,
+      });
     }
 
     return this.menuService.handleExcelUpload(branchId, buffer);

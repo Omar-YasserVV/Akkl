@@ -25,12 +25,9 @@ import {
   Post,
   Query,
   Res,
-  UploadedFile,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiQuery } from '@nestjs/swagger';
 import { Response } from 'express';
 import { OrderState, source, UserRole } from 'libs/db/generated/client/enums';
@@ -121,9 +118,7 @@ export class BranchController implements OnModuleInit {
   @Roles(UserRole.BUSINESS_OWNER, UserRole.CASHIER, UserRole.MANAGER)
   @Get(':branchId/menu')
   getBranchMenu(@GetBranchId() branchId: string) {
-    return this.branchClient.send('get_branch_menu', {
-      branchId: branchId,
-    });
+    return this.branchClient.send('get_branch_menu', { branchId });
   }
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
@@ -133,23 +128,8 @@ export class BranchController implements OnModuleInit {
     @Body() data: BranchMenuItemDetailDto,
   ) {
     return this.branchClient.send('create_menu_item', {
-      branchId: branchId,
+      branchId,
       data,
-    });
-  }
-
-  @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
-  @Post(':branchId/menu/upload')
-  @UseInterceptors(FileInterceptor('file'))
-  uploadMenuExcel(
-    @GetBranchId() branchId: string,
-    @Param('restaurantId') restaurantId: string,
-    @UploadedFile() file: Express.Multer.File,
-  ) {
-    return this.branchClient.send('upload_menu_excel', {
-      restaurantId: restaurantId,
-      branchId: branchId,
-      fileBuffer: file.buffer,
     });
   }
 
@@ -157,11 +137,11 @@ export class BranchController implements OnModuleInit {
   @Patch(':branchId/menu/:menuItemId')
   updateMenuItem(
     @GetBranchId() branchId: string,
-    @Param('menuItemId') id: number,
+    @Param('menuItemId') id: string, // FIX: Changed number to string
     @Body() data: UpdateBranchMenuItemDto,
   ) {
     return this.branchClient.send('update_menu_item', {
-      branchId: branchId,
+      branchId,
       id,
       data,
     });
@@ -171,11 +151,11 @@ export class BranchController implements OnModuleInit {
   @Delete(':branchId/menu/:menuItemId')
   deleteMenuItem(
     @GetBranchId() branchId: string,
-    @Param('menuItemId') id: number,
+    @Param('menuItemId') id: string, // FIX: Changed number to string
   ) {
     return this.branchClient.send('delete_menu_item', {
       id,
-      branchId: branchId,
+      branchId,
     });
   }
 
