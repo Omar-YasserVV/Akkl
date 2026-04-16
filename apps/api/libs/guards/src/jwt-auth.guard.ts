@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request, Response } from 'express';
+import { PrismaService } from '@app/db';
 import { BlackListService } from './services/blacklist.service';
 
 /**
@@ -25,6 +26,7 @@ export class JwtAuthGuard implements CanActivate {
   constructor(
     private readonly jwtService: JwtService,
     private readonly blacklistService: BlackListService,
+    private readonly prisma: PrismaService,
   ) {}
 
   /**
@@ -66,7 +68,18 @@ export class JwtAuthGuard implements CanActivate {
       const decoded = await this.jwtService.verifyAsync(accessToken, {
         secret: process.env.JWT_SECRET,
       });
-      request['user'] = decoded;
+      const userId = String(decoded?.sub ?? '');
+      const dbUser = userId
+        ? await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: { id: true, role: true, branchId: true },
+          })
+        : null;
+
+      request['user'] = {
+        ...decoded,
+        ...(dbUser?.branchId ? { branchId: dbUser.branchId } : {}),
+      };
       return true;
     } catch (error: any) {
       // If token expired, try with refresh token
@@ -80,7 +93,7 @@ export class JwtAuthGuard implements CanActivate {
   /**
    * Attempts to validate and use the refresh token to generate new tokens and update cookies.
    * - Verifies the refresh token.
-   * - Rebuilds the JWT payload (sub, role, type, branchId, as available).
+   * - Rebuilds the JWT payload (sub, role, type).
    * - Issues new access and refresh tokens.
    * - Sets the new tokens into cookies.
    * - Attaches the new user info to the request.
@@ -107,9 +120,7 @@ export class JwtAuthGuard implements CanActivate {
       if (decodedRefresh['type'] !== undefined) {
         payload['type'] = decodedRefresh['type'];
       }
-      if (decodedRefresh['branchId'] !== undefined) {
-        payload['branchId'] = decodedRefresh['branchId'];
-      }
+      // branchId must be derived server-side (DB), not trusted from token
 
       // Sign new tokens
       const newAccessToken = await this.jwtService.signAsync(payload, {
@@ -124,7 +135,18 @@ export class JwtAuthGuard implements CanActivate {
       });
       this.setCookies(res, newAccessToken, newRefreshToken);
 
-      req['user'] = payload;
+      const userId = String(payload?.sub ?? '');
+      const dbUser = userId
+        ? await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: { id: true, role: true, branchId: true },
+          })
+        : null;
+
+      req['user'] = {
+        ...payload,
+        ...(dbUser?.branchId ? { branchId: dbUser.branchId } : {}),
+      };
       return true;
     } catch {
       // Clear cookies on refresh/token error

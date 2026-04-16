@@ -23,12 +23,12 @@ export class BaseUserDto {
   @MinLength(8, { message: 'Password must be at least 8 characters long' })
   password!: string;
 
-  @ApiProperty({ example: 'Omar Hassan' })
+  @ApiProperty({ example: 'Omar Yasser' })
   @IsString()
   @IsNotEmpty()
   fullName!: string;
 
-  @ApiProperty({ example: 'omar_hassan' })
+  @ApiProperty({ example: 'omar_yasser' })
   @IsString()
   @IsNotEmpty()
   username!: string;
@@ -47,7 +47,7 @@ export class BaseUserDto {
 
 // Signup DTO (role optional, defaults to CUSTOMER)
 export class SignupUserDto extends BaseUserDto {
-  @ApiPropertyOptional({ enum: UserRole, default: UserRole.CUSTOMER })
+  @ApiPropertyOptional({ enum: UserRole, default: UserRole.BUSINESS_OWNER })
   @IsOptional()
   @IsEnum(UserRole)
   role?: UserRole;

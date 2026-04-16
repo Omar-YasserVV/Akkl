@@ -19,7 +19,7 @@ interface JwtPayload extends Omit<jwt.JwtPayload, 'sub'> {
   sub: string;
   role?: string;
   type?: 'employee' | 'user';
-  branchId?: number;
+  branchId?: string;
   email?: string;
   fullName?: string;
   image?: string;

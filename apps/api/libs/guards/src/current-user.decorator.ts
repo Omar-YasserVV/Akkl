@@ -2,7 +2,7 @@ import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 
 interface RequestWithUser {
   user?: {
-    id: number;
+    id: string;
     [key: string]: unknown;
   };
 }
