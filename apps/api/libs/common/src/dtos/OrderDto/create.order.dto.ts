@@ -12,7 +12,7 @@ import {
 import { OrderState } from '../../../../db/generated/client/client';
 
 export class CreateOrderItemDto {
-  @ApiProperty({ example: 9 })
+  @ApiProperty({ example: 'd1321b65-07c4-403c-baf1-261570a67231' })
   @IsString()
   menuItemId!: string;
 
@@ -25,7 +25,6 @@ export class CreateOrderItemDto {
 }
 
 export class CreateOrderDto {
-  @ApiProperty({ example: 2 })
   @IsString()
   userId!: string;
 
