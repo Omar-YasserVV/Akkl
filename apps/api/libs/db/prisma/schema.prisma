@@ -150,6 +150,7 @@ model InventoryItem {
   id           String     @id @default(uuid())
   ingredientId String
   quantity     Float
+  minimumQuantity Float @default(0)
   warehouseId  String
   ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
   warehouse    Warehouse  @relation(fields: [warehouseId], references: [id])
