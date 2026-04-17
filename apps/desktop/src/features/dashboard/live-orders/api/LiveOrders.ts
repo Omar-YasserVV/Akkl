@@ -1,0 +1,36 @@
+import { apiClient } from "@repo/utils";
+import {
+  CreateOrderBody,
+  Order,
+  OrderFilters,
+  OrdersStats,
+  PaginatedResponse,
+} from "../types/LiveOrders.types";
+
+const BASE_URL = "/branches/{branchId}/orders";
+
+export const ordersApis = {
+  createOrder: async (data: CreateOrderBody) => {
+    return apiClient.post<Order>(BASE_URL, data);
+  },
+
+  getAllOrders: async (params: OrderFilters) => {
+    return apiClient.get<PaginatedResponse<Order>>(BASE_URL, { params });
+  },
+
+  getOrderStats: async () => {
+    return apiClient.get<OrdersStats>(`${BASE_URL}/stats`);
+  },
+
+  getOrderById: async (orderId: string) => {
+    return apiClient.get<Order>(`${BASE_URL}/${orderId}`);
+  },
+
+  updateOrder: async (orderId: string, data: Partial<CreateOrderBody>) => {
+    return apiClient.patch<Order>(`${BASE_URL}/${orderId}`, data);
+  },
+
+  deleteOrder: async (orderId: string) => {
+    return apiClient.delete(`${BASE_URL}/${orderId}`);
+  },
+};
