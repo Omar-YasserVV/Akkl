@@ -7,28 +7,30 @@ import {
   PaginatedResponse,
 } from "../types/LiveOrders.types";
 
+const BASE_URL = "/branches/{branchId}/orders";
+
 export const ordersApis = {
   createOrder: async (data: CreateOrderBody) => {
-    return apiClient.post<Order>(`branches/{branchId}/orders`, data);
+    return apiClient.post<Order>(BASE_URL, data);
   },
 
   getAllOrders: async (params: OrderFilters) => {
-    return apiClient.get<PaginatedResponse<Order>>(`/orders`, { params });
+    return apiClient.get<PaginatedResponse<Order>>(BASE_URL, { params });
   },
 
   getOrderStats: async () => {
-    return apiClient.get<OrdersStats>(`branches/{branchId}/orders/stats`);
+    return apiClient.get<OrdersStats>(`${BASE_URL}/stats`);
   },
 
   getOrderById: async (orderId: string) => {
-    return apiClient.get<Order>(`/orders/${orderId}`);
+    return apiClient.get<Order>(`${BASE_URL}/${orderId}`);
   },
 
   updateOrder: async (orderId: string, data: Partial<CreateOrderBody>) => {
-    return apiClient.patch<Order>(`/orders/${orderId}`, data);
+    return apiClient.patch<Order>(`${BASE_URL}/${orderId}`, data);
   },
 
   deleteOrder: async (orderId: string) => {
-    return apiClient.delete(`/orders/${orderId}`);
+    return apiClient.delete(`${BASE_URL}/${orderId}`);
   },
 };
