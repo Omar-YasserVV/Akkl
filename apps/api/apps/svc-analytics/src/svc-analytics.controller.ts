@@ -10,7 +10,7 @@ export class SvcAnalyticsController {
   @MessagePattern(ANALYTICS_TOPICS.BRANCH_REVENUE)
   async BranchRevenue(
     @Payload() payload: { branchID: string; dto: LineChartAnalyticsRequestDto },
-  ) {
+  ): Promise<unknown> {
     return this.svcAnalyticsService.BranchRevenue(
       payload.branchID,
       payload.dto,
@@ -20,7 +20,7 @@ export class SvcAnalyticsController {
   @MessagePattern(ANALYTICS_TOPICS.BRANCH_ORDERS)
   async BranchOrders(
     @Payload() payload: { branchID: string; dto: LineChartAnalyticsRequestDto },
-  ) {
+  ): Promise<unknown> {
     return this.svcAnalyticsService.BranchOrders(payload.branchID, payload.dto);
   }
 }
