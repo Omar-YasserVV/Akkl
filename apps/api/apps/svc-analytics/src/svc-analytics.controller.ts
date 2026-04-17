@@ -1,4 +1,8 @@
-import { ANALYTICS_TOPICS, LineChartAnalyticsRequestDto } from '@app/common';
+import {
+  ANALYTICS_TOPICS,
+  LineChartAnalyticsRequestDto,
+  LineChartAnalyticsResponseDto,
+} from '@app/common';
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { SvcAnalyticsService } from './svc-analytics.service';
@@ -10,7 +14,7 @@ export class SvcAnalyticsController {
   @MessagePattern(ANALYTICS_TOPICS.BRANCH_REVENUE)
   async BranchRevenue(
     @Payload() payload: { branchID: string; dto: LineChartAnalyticsRequestDto },
-  ): Promise<unknown> {
+  ): Promise<LineChartAnalyticsResponseDto> {
     return this.svcAnalyticsService.BranchRevenue(
       payload.branchID,
       payload.dto,
@@ -20,7 +24,7 @@ export class SvcAnalyticsController {
   @MessagePattern(ANALYTICS_TOPICS.BRANCH_ORDERS)
   async BranchOrders(
     @Payload() payload: { branchID: string; dto: LineChartAnalyticsRequestDto },
-  ): Promise<unknown> {
+  ): Promise<LineChartAnalyticsResponseDto> {
     return this.svcAnalyticsService.BranchOrders(payload.branchID, payload.dto);
   }
 }

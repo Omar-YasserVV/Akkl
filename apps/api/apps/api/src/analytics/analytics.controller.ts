@@ -11,6 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
+import { lastValueFrom } from 'rxjs';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('analytics')
@@ -28,24 +29,28 @@ export class AnalyticsController implements OnModuleInit {
   }
 
   @Get('branch/revenue-analytics')
-  async BranchRevenue(
+  async branchRevenue(
     @Query() dto: LineChartAnalyticsRequestDto,
     @GetBranchId() branchID: string,
   ) {
-    return this.analyticsClient.send(ANALYTICS_TOPICS.BRANCH_REVENUE, {
-      branchID,
-      dto,
-    });
+    return lastValueFrom(
+      this.analyticsClient.send(ANALYTICS_TOPICS.BRANCH_REVENUE, {
+        branchID,
+        dto,
+      }),
+    );
   }
 
   @Get('branch/orders-analytics')
-  async BranchOrders(
+  async branchOrders(
     @Query() dto: LineChartAnalyticsRequestDto,
     @GetBranchId() branchID: string,
   ) {
-    return this.analyticsClient.send(ANALYTICS_TOPICS.BRANCH_ORDERS, {
-      branchID,
-      dto,
-    });
+    return lastValueFrom(
+      this.analyticsClient.send(ANALYTICS_TOPICS.BRANCH_ORDERS, {
+        branchID,
+        dto,
+      }),
+    );
   }
 }
