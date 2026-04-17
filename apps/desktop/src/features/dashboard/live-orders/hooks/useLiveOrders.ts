@@ -5,74 +5,67 @@ import { orderKeys } from "./LiveOrders.keys";
 
 // --- Queries ---
 
-export const useOrders = (branchId: string, filters: OrderFilters) => {
+export const useOrders = (filters: OrderFilters) => {
   return useQuery({
-    queryKey: orderKeys.list(branchId, filters),
-    queryFn: () => ordersApis.getAllOrders(branchId, filters),
+    queryKey: orderKeys.list(filters),
+    queryFn: () => ordersApis.getAllOrders(filters),
     placeholderData: (previousData) => previousData, // Smooth pagination
-    enabled: !!branchId,
   });
 };
 
-export const useOrderDetails = (branchId: string, orderId: string) => {
+export const useOrderDetails = (orderId: string) => {
   return useQuery({
-    queryKey: orderKeys.detail(branchId, orderId),
-    queryFn: () => ordersApis.getOrderById(branchId, orderId),
-    enabled: !!branchId && !!orderId,
+    queryKey: orderKeys.detail(orderId),
+    queryFn: () => ordersApis.getOrderById(orderId),
   });
 };
 
-export const useOrderStats = (branchId: string) => {
+export const useOrderStats = () => {
   return useQuery({
-    queryKey: orderKeys.stats(branchId),
-    queryFn: () => ordersApis.getOrderStats(branchId),
-    enabled: !!branchId,
+    queryKey: orderKeys.stats(),
+    queryFn: () => ordersApis.getOrderStats(),
   });
 };
 
 // --- Mutations ---
 
-export const useCreateOrder = (branchId: string) => {
+export const useCreateOrder = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateOrderBody) =>
-      ordersApis.createOrder(branchId, data),
+    mutationFn: (data: CreateOrderBody) => ordersApis.createOrder(data),
     onSuccess: () => {
       // Invalidate lists and stats to reflect the new order
-      queryClient.invalidateQueries({ queryKey: orderKeys.lists(branchId) });
-      queryClient.invalidateQueries({ queryKey: orderKeys.stats(branchId) });
+      queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: orderKeys.stats() });
     },
   });
 };
 
-export const useUpdateOrder = (branchId: string, orderId: string) => {
+export const useUpdateOrder = (orderId: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (data: Partial<CreateOrderBody>) =>
-      ordersApis.updateOrder(branchId, orderId, data),
+      ordersApis.updateOrder(orderId, data),
     onSuccess: (updatedOrder) => {
       // Update individual cache for the order
-      queryClient.setQueryData(
-        orderKeys.detail(branchId, orderId),
-        updatedOrder,
-      );
+      queryClient.setQueryData(orderKeys.detail(orderId), updatedOrder);
       // Invalidate related lists
-      queryClient.invalidateQueries({ queryKey: orderKeys.lists(branchId) });
-      queryClient.invalidateQueries({ queryKey: orderKeys.stats(branchId) });
+      queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: orderKeys.stats() });
     },
   });
 };
 
-export const useDeleteOrder = (branchId: string) => {
+export const useDeleteOrder = (orderId: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (orderId: string) => ordersApis.deleteOrder(branchId, orderId),
+    mutationFn: () => ordersApis.deleteOrder(orderId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: orderKeys.lists(branchId) });
-      queryClient.invalidateQueries({ queryKey: orderKeys.stats(branchId) });
+      queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: orderKeys.stats() });
     },
   });
 };

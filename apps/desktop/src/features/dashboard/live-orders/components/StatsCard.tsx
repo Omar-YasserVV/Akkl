@@ -1,66 +1,28 @@
-import { useState } from "react";
-import { Card } from "@heroui/react";
-import { LuChefHat, LuClock8, LuCircleCheck } from "react-icons/lu";
-
-type OrderStatus = "pending" | "cooking" | "ready";
-
-type Order = {
-  id: number;
-  status: OrderStatus;
-};
+import { Skeleton } from "@heroui/react";
+import { getStatsConfig } from "../constants/StatsCard.constants";
+import { useOrderStats } from "../hooks/useLiveOrders";
+import { StatCardItemProps } from "../types/StatsCard.types";
+import StatCardItem from "./StatCardItem";
 
 const StatsCard = () => {
-  // 🔥 Prototype mock data
-  const [orders] = useState<Order[]>([
-    { id: 1, status: "pending" },
-    { id: 2, status: "pending" },
-    { id: 3, status: "cooking" },
-    { id: 4, status: "ready" },
-    { id: 5, status: "ready" },
-    { id: 6, status: "ready" },
-  ]);
+  const { data: stats, isLoading } = useOrderStats();
+  const statsConfig = getStatsConfig(stats);
 
-  const pendingCount = orders.filter(
-    (order) => order.status === "pending",
-  ).length;
-
-  const cookingCount = orders.filter(
-    (order) => order.status === "cooking",
-  ).length;
-
-  const readyCount = orders.filter((order) => order.status === "ready").length;
+  if (isLoading) {
+    return (
+      <div className="flex gap-4 items-center w-full">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="rounded-lg w-full h-24" />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="flex gap-4 items-center">
-      <Card className="flex flex-row items-center justify-between border-2 rounded-lg p-4 bg-white border-amber-400 w-full">
-        <div className="flex flex-col gap-2 items-start">
-          <p className="text-gray-500 text-sm font-normal">Pending</p>
-          <p className="text-2xl font-bold text-black">{pendingCount}</p>
-        </div>
-        <div className="bg-amber-100 rounded-md p-3 flex items-center justify-center">
-          <LuClock8 className="w-6 h-6 text-[#746A0C]" />
-        </div>
-      </Card>
-
-      <Card className="flex flex-row items-center justify-between border-2 rounded-lg p-4 bg-white border-orange-500 w-full">
-        <div className="flex flex-col gap-2 items-start">
-          <p className="text-gray-500 text-sm font-normal">Cooking</p>
-          <p className="text-2xl font-bold text-black">{cookingCount}</p>
-        </div>
-        <div className="bg-orange-100 rounded-md p-3 flex items-center justify-center">
-          <LuChefHat className="w-6 h-6 text-orange-900" />
-        </div>
-      </Card>
-
-      <Card className="flex flex-row items-center justify-between border-2 rounded-lg p-4 bg-white border-green-500 w-full">
-        <div className="flex flex-col gap-2 items-start">
-          <p className="text-gray-500 text-sm font-normal">Ready</p>
-          <p className="text-2xl font-bold text-black">{readyCount}</p>
-        </div>
-        <div className="bg-green-100 rounded-md p-3 flex items-center justify-center">
-          <LuCircleCheck className="w-6 h-6 text-green-800" />
-        </div>
-      </Card>
+      {statsConfig.map((config: StatCardItemProps) => (
+        <StatCardItem key={config.label} {...config} />
+      ))}
     </div>
   );
 };
