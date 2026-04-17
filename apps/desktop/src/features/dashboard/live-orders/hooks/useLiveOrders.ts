@@ -27,7 +27,6 @@ export const useOrderStats = (branchId: string) => {
     queryKey: orderKeys.stats(branchId),
     queryFn: () => ordersApis.getOrderStats(branchId),
     enabled: !!branchId,
-    refetchInterval: 30000, // Senior touch: Auto-refresh stats every 30s
   });
 };
 
