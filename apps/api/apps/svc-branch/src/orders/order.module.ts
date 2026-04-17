@@ -1,9 +1,13 @@
-import { DbModule, PrismaService } from '@app/db';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+
+import { DbModule } from '@app/db';
+import { OrderCalculator } from './order.calculator';
 import { OrderController } from './order.controller';
+import { OrderRepository } from './order.repository';
 import { OrderService } from './order.service';
+import { OrderValidator } from './order.validator';
 
 @Module({
   imports: [
@@ -11,6 +15,7 @@ import { OrderService } from './order.service';
       isGlobal: true,
       envFilePath: './.env',
     }),
+
     DbModule,
 
     ClientsModule.register([
@@ -33,7 +38,9 @@ import { OrderService } from './order.service';
       },
     ]),
   ],
+
   controllers: [OrderController],
-  providers: [PrismaService, OrderService],
+
+  providers: [OrderService, OrderRepository, OrderValidator, OrderCalculator],
 })
 export class OrderModule {}
