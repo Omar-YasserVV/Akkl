@@ -1,5 +1,7 @@
 {
+  "extends": "@repo/typescript-config/base.json",
   "compilerOptions": {
+    "ignoreDeprecations": "5.0",
     "module": "CommonJS",
     "types": ["node", "multer"],
     "moduleResolution": "Node",
