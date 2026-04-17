@@ -29,8 +29,12 @@ export class OrderCalculator {
         throw new Error(`No variations for item ${dbItem.id}`);
       }
 
-      // ✅ FIX: convert Decimal → number
-      const unitPrice = dbItem.variations[0].price.toNumber();
+      const variation = dbItem.variations[0];
+      if (!variation) {
+        throw new Error(`Variation is undefined for item ${dbItem.id}`);
+      }
+
+      const unitPrice = variation.price.toNumber();
 
       total += unitPrice * itemInput.quantity;
       itemCount += itemInput.quantity;

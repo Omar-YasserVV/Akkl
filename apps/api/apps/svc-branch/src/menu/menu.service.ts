@@ -190,7 +190,22 @@ export class MenuService {
   async handleExcelUpload(branchId: string, fileBuffer: Buffer) {
     const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
     const sheetName = workbook.SheetNames[0];
+
+    if (!sheetName) {
+      throw new RpcException({
+        message: 'The uploaded Excel file has no sheets.',
+        statusCode: 400,
+      });
+    }
+
     const sheet = workbook.Sheets[sheetName];
+
+    if (!sheet) {
+      throw new RpcException({
+        message: 'The selected sheet could not be read from the Excel file.',
+        statusCode: 400,
+      });
+    }
 
     const rows = XLSX.utils.sheet_to_json<ExcelMenuRow>(sheet);
 

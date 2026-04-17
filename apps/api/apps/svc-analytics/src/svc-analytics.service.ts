@@ -11,7 +11,7 @@ import { SvcAnalyticsBase } from './svc-analytics.base';
 @Injectable()
 export class SvcAnalyticsService extends SvcAnalyticsBase {
   constructor(prisma: PrismaService) {
-    super(prisma); // ← pass prisma to base class
+    super(prisma);
   }
 
   async BranchRevenue(
