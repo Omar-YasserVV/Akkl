@@ -1,14 +1,14 @@
-import OrderList from "./components/OrderList";
-import LiveOrdersHeader from "./components/LiveOrdersHeader";
-import StatsCard from "./components/StatsCard";
 import FiltrationCard from "./components/FiltrationCard";
+import LiveOrdersHeader from "./components/LiveOrdersHeader";
+import OrderList from "./components/OrderList";
+import StatsCards from "./components/StatsCards";
 const LiveOrders = () => {
   // Calculate order counts by status
 
   return (
     <>
       <LiveOrdersHeader />
-      <StatsCard />
+      <StatsCards />
       <FiltrationCard />
       <OrderList />
     </>

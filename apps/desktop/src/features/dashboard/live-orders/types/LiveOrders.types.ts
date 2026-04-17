@@ -1,3 +1,5 @@
+import { OrderState, Source } from "@repo/types";
+
 export interface CreateOrderBody {
   CustomerName: string;
   items: {
@@ -5,22 +7,20 @@ export interface CreateOrderBody {
     quantity: number;
     price: number;
   }[];
-  status: "PENDING" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+  status: OrderState;
   userId: string;
 }
-
 export interface OrdersStats {
   PENDING: number;
   COMPLETED: number;
   IN_PROGRESS: number;
   CANCELLED: number;
 }
-
 export interface OrderFilters {
   page: number;
   limit: number;
-  status?: "PENDING" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
-  source?: "APP" | "STORE";
+  status?: OrderState;
+  source?: Source;
 }
 
 export interface PaginatedResponse<T> {
@@ -41,9 +41,9 @@ export interface Order {
   branchId: string;
   userId: string;
   CustomerName: string;
-  source: "APP" | "STORE";
+  source: Source;
   itemCount: number;
-  status: string;
+  status: OrderState;
   createdAt: string;
   updatedAt: string;
   items: Array<{

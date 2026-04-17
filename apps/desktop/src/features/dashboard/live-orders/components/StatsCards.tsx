@@ -4,7 +4,7 @@ import { useOrderStats } from "../hooks/useLiveOrders";
 import { StatCardItemProps } from "../types/StatsCard.types";
 import StatCardItem from "./StatCardItem";
 
-const StatsCard = () => {
+const StatsCards = () => {
   const { data: stats, isLoading } = useOrderStats();
   const statsConfig = getStatsConfig(stats);
 
@@ -27,4 +27,4 @@ const StatsCard = () => {
   );
 };
 
-export default StatsCard;
+export default StatsCards;

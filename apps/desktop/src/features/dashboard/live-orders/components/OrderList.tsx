@@ -1,5 +1,6 @@
-import React, { useState, useMemo, useCallback } from "react";
 import {
+  Select,
+  SelectItem,
   Table,
   TableBody,
   TableCell,
@@ -7,15 +8,14 @@ import {
   TableHeader,
   TableRow,
   Tooltip,
-  Select,
-  SelectItem,
 } from "@heroui/react";
+import React, { useCallback, useMemo, useState } from "react";
 
-import { LuChefHat, LuClock8, LuCircleCheck } from "react-icons/lu";
-import { CgSmartphone } from "react-icons/cg";
-import { BiStore } from "react-icons/bi";
-import { FiEdit } from "react-icons/fi";
+import Chip from "@repo/ui/components/chip";
+import { BiMobile } from "react-icons/bi";
 import { FaRegTrashAlt } from "react-icons/fa";
+import { FiEdit } from "react-icons/fi";
+import { LuChefHat, LuCircleCheck, LuClock8 } from "react-icons/lu";
 
 // --- Types & Mock Data ---
 export type OrderStatus = "pending" | "cooking" | "ready";
@@ -168,24 +168,6 @@ const StatusSelect = ({
   );
 };
 
-const SourceChip = ({ source }: { source: LiveOrder["source"] }) => {
-  const isApp = source === "App";
-  const Icon = isApp ? CgSmartphone : BiStore;
-  return (
-    <span
-      className={
-        "inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium " +
-        (isApp ? "bg-blue-100 text-blue-700" : "bg-purple-100 text-purple-700")
-      }
-    >
-      <span className="inline-flex h-4 w-4 items-center justify-center rounded-full">
-        <Icon className="h-4 w-4" />
-      </span>
-      {source}
-    </span>
-  );
-};
-
 // --- Main Component ---
 
 const OrderList = () => {
@@ -226,7 +208,7 @@ const OrderList = () => {
       case "customer":
         return <span className="text-black">{order.customer}</span>;
       case "source":
-        return <SourceChip source={order.source} />;
+        return <Chip value="APP" startContent={<BiMobile />} />;
       case "items":
         return (
           <span className="text-black">

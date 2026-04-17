@@ -1,9 +1,9 @@
+import { OrderState } from "@repo/types";
 import { apiClient } from "@repo/utils";
 import {
   CreateOrderBody,
   Order,
   OrderFilters,
-  OrdersStats,
   PaginatedResponse,
 } from "../types/LiveOrders.types";
 
@@ -19,7 +19,9 @@ export const ordersApis = {
   },
 
   getOrderStats: async () => {
-    return apiClient.get<OrdersStats>(`${BASE_URL}/stats`);
+    return apiClient.get<Partial<Record<OrderState, number>>>(
+      `${BASE_URL}/stats`,
+    );
   },
 
   getOrderById: async (orderId: string) => {

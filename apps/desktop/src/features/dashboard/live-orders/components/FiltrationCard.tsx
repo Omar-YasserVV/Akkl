@@ -1,5 +1,5 @@
+import { Button, Card } from "@heroui/react";
 import { useState } from "react";
-import { Card, Button } from "@heroui/react";
 
 const basePillClasses =
   "min-w-[72px] h-9 px-4 rounded-sm text-xs font-medium transition-colors shadow-none";
