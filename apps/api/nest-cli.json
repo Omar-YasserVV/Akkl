@@ -5,20 +5,7 @@
   "compilerOptions": {
     "deleteOutDir": true,
     "webpack": false,
-    "tsConfigPath": "apps/api/tsconfig.app.json",
-    "plugins": [
-      {
-        "name": "@nestjs/swagger",
-        "options": {
-          "classValidatorShim": true,
-          "introspectComments": true,
-          "dtoFileNameSuffix": [
-            ".dto.ts",
-            ".entity.ts"
-          ]
-        }
-      }
-    ]
+    "tsConfigPath": "apps/api/tsconfig.app.json"
   },
   "monorepo": true,
   "root": "apps/api",
@@ -29,7 +16,20 @@
       "entryFile": "main",
       "sourceRoot": "apps/api/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/api/tsconfig.app.json"
+        "tsConfigPath": "apps/api/tsconfig.app.json",
+        "plugins": [
+          {
+            "name": "@nestjs/swagger",
+            "options": {
+              "classValidatorShim": true,
+              "introspectComments": true,
+              "dtoFileNameSuffix": [
+                ".dto.ts",
+                ".entity.ts"
+              ]
+            }
+          }
+        ]
       }
     },
     "common": {
