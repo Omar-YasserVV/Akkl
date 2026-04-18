@@ -9,30 +9,37 @@ import {
 
 const BASE_URL = "/branches/{branchId}/orders";
 
+const getUrl = (branchId: string | number) =>
+  BASE_URL.replace("{branchId}", branchId.toString());
+
 export const ordersApis = {
-  createOrder: async (data: CreateOrderBody) => {
-    return apiClient.post<Order>(BASE_URL, data);
+  createOrder: async (branchId: string | number, data: CreateOrderBody) => {
+    return apiClient.post<Order>(getUrl(branchId), data);
   },
 
-  getAllOrders: async (params: OrderFilters) => {
-    return apiClient.get<PaginatedResponse<Order>>(BASE_URL, { params });
+  getAllOrders: async (branchId: string | number, params: OrderFilters) => {
+    return apiClient.get<PaginatedResponse<Order>>(getUrl(branchId), params);
   },
 
-  getOrderStats: async () => {
+  getOrderStats: async (branchId: string | number) => {
     return apiClient.get<Partial<Record<OrderState, number>>>(
-      `${BASE_URL}/stats`,
+      `${getUrl(branchId)}/stats`,
     );
   },
 
-  getOrderById: async (orderId: string) => {
-    return apiClient.get<Order>(`${BASE_URL}/${orderId}`);
+  getOrderById: async (branchId: string | number, orderId: string) => {
+    return apiClient.get<Order>(`${getUrl(branchId)}/${orderId}`);
   },
 
-  updateOrder: async (orderId: string, data: Partial<CreateOrderBody>) => {
-    return apiClient.patch<Order>(`${BASE_URL}/${orderId}`, data);
+  updateOrder: async (
+    branchId: string | number,
+    orderId: string,
+    data: Partial<CreateOrderBody>,
+  ) => {
+    return apiClient.patch<Order>(`${getUrl(branchId)}/${orderId}`, data);
   },
 
-  deleteOrder: async (orderId: string) => {
-    return apiClient.delete(`${BASE_URL}/${orderId}`);
+  deleteOrder: async (branchId: string | number, orderId: string) => {
+    return apiClient.delete(`${getUrl(branchId)}/${orderId}`);
   },
 };

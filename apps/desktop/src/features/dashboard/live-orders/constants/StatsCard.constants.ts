@@ -1,3 +1,4 @@
+import { OrderState, Source } from "@repo/types";
 import { LuChefHat, LuCircleCheck, LuClock8 } from "react-icons/lu";
 import { OrdersStats } from "../types/LiveOrders.types"; //
 import { StatConfig } from "../types/StatsCard.types";
@@ -28,3 +29,27 @@ export const getStatsConfig = (stats?: OrdersStats): StatConfig[] => [
     iconColor: "text-green-800",
   },
 ];
+
+export const sources = [
+  { label: "All", value: undefined },
+  { label: "App Orders", value: "APP" as Source },
+  { label: "Restaurant", value: "STORE" as Source },
+] as const;
+
+export const statuses = [
+  { label: "All", value: undefined },
+  { label: "Pending", value: "PENDING" as OrderState },
+  { label: "In Progress", value: "IN_PROGRESS" as OrderState },
+  { label: "Completed", value: "COMPLETED" as OrderState },
+  { label: "Cancelled", value: "CANCELLED" as OrderState },
+] as const;
+
+export const columns = [
+  { name: "Order #", uid: "order#", align: "start" },
+  { name: "Customer", uid: "customer", align: "start" },
+  { name: "Source", uid: "source", align: "start" },
+  { name: "Items", uid: "items", align: "start" },
+  { name: "Total", uid: "total", align: "start" },
+  { name: "Status", uid: "status", align: "start" },
+  { name: "Actions", uid: "actions", align: "start" },
+] as const;

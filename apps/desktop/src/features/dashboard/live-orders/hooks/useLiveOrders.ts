@@ -1,29 +1,45 @@
+import { useAuthStore } from "@/store/AuthStore";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ordersApis } from "../api/LiveOrders"; // Adjust path
+import { ordersApis } from "../api/LiveOrders";
 import { CreateOrderBody, OrderFilters } from "../types/LiveOrders.types";
 import { orderKeys } from "./LiveOrders.keys";
 
 // --- Queries ---
 
 export const useOrders = (filters: OrderFilters) => {
+  const branchId = useAuthStore((state) => state.user?.branchId);
+
   return useQuery({
-    queryKey: orderKeys.list(filters),
-    queryFn: () => ordersApis.getAllOrders(filters),
-    placeholderData: (previousData) => previousData, // Smooth pagination
+    queryKey: [
+      ...orderKeys.lists(),
+      filters.status,
+      filters.source,
+      filters.page,
+      filters.limit,
+    ],
+    queryFn: () => ordersApis.getAllOrders(branchId!, filters),
+    placeholderData: (previousData) => previousData,
+    enabled: !!branchId,
   });
 };
 
 export const useOrderDetails = (orderId: string) => {
+  const branchId = useAuthStore((state) => state.user?.branchId);
+
   return useQuery({
     queryKey: orderKeys.detail(orderId),
-    queryFn: () => ordersApis.getOrderById(orderId),
+    queryFn: () => ordersApis.getOrderById(branchId!, orderId),
+    enabled: !!branchId && !!orderId,
   });
 };
 
 export const useOrderStats = () => {
+  const branchId = useAuthStore((state) => state.user?.branchId);
+
   return useQuery({
     queryKey: orderKeys.stats(),
-    queryFn: () => ordersApis.getOrderStats(),
+    queryFn: () => ordersApis.getOrderStats(branchId!),
+    enabled: !!branchId,
   });
 };
 
@@ -31,38 +47,43 @@ export const useOrderStats = () => {
 
 export const useCreateOrder = () => {
   const queryClient = useQueryClient();
+  const branchId = useAuthStore((state) => state.user?.branchId);
 
   return useMutation({
-    mutationFn: (data: CreateOrderBody) => ordersApis.createOrder(data),
+    mutationFn: (data: CreateOrderBody) => ordersApis.createOrder(branchId!, data),
     onSuccess: () => {
-      // Invalidate lists and stats to reflect the new order
       queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
       queryClient.invalidateQueries({ queryKey: orderKeys.stats() });
     },
   });
 };
 
-export const useUpdateOrder = (orderId: string) => {
+export const useUpdateOrder = () => {
   const queryClient = useQueryClient();
+  const branchId = useAuthStore((state) => state.user?.branchId);
 
   return useMutation({
-    mutationFn: (data: Partial<CreateOrderBody>) =>
-      ordersApis.updateOrder(orderId, data),
-    onSuccess: (updatedOrder) => {
-      // Update individual cache for the order
-      queryClient.setQueryData(orderKeys.detail(orderId), updatedOrder);
-      // Invalidate related lists
+    mutationFn: ({
+      orderId,
+      data,
+    }: {
+      orderId: string;
+      data: Partial<CreateOrderBody>;
+    }) => ordersApis.updateOrder(branchId!, orderId, data),
+    onSuccess: (_, { orderId }) => {
       queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: orderKeys.detail(orderId) });
       queryClient.invalidateQueries({ queryKey: orderKeys.stats() });
     },
   });
 };
 
-export const useDeleteOrder = (orderId: string) => {
+export const useDeleteOrder = () => {
   const queryClient = useQueryClient();
+  const branchId = useAuthStore((state) => state.user?.branchId);
 
   return useMutation({
-    mutationFn: () => ordersApis.deleteOrder(orderId),
+    mutationFn: (orderId: string) => ordersApis.deleteOrder(branchId!, orderId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
       queryClient.invalidateQueries({ queryKey: orderKeys.stats() });
