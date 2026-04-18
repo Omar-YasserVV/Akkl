@@ -6,10 +6,10 @@ interface EnumChipProps extends ChipProps {
   value: AllEnums;
 }
 
-const Chip = ({ value, ...props }: EnumChipProps) => {
+const Chip = ({ value, className, ...props }: EnumChipProps) => {
   const meta = ENUM_META[value];
   return (
-    <HeroChip className={meta?.color} {...props}>
+    <HeroChip className={`${meta?.color} ${className}`} {...props}>
       {meta?.label ?? value}
     </HeroChip>
   );

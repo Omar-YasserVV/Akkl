@@ -14,7 +14,10 @@ export class OrderRepository {
   }
 
   delete(id: string) {
-    return this.prisma.order.delete({ where: { id } });
+    return this.prisma.$transaction(async (tx) => {
+      await tx.orderItem.deleteMany({ where: { orderId: id } });
+      return tx.order.delete({ where: { id } });
+    });
   }
 
   create(data: Prisma.OrderCreateArgs['data']) {

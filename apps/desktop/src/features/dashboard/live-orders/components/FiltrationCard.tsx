@@ -1,20 +1,12 @@
+import { useOrderStore } from "@/store/OrderStore";
 import { Button, Card } from "@heroui/react";
-import { useState } from "react";
+import { sources, statuses } from "../constants/StatsCard.constants";
 
 const basePillClasses =
   "min-w-[72px] h-9 px-4 rounded-sm text-xs font-medium transition-colors shadow-none";
 
-type StatusFilter =
-  | "all"
-  | "pending"
-  | "confirmed"
-  | "cooking"
-  | "ready"
-  | "completed";
-
 const FiltrationCard = () => {
-  const [source, setSource] = useState<"all" | "App" | "Restaurant">("all");
-  const [status, setStatus] = useState<StatusFilter>("all");
+  const { filters, setFilters } = useOrderStore();
 
   return (
     <Card className="w-full text-md font-normal rounded-lg bg-white shadow-sm px-6 py-3 flex flex-row items-center justify-between gap-8 border-0">
@@ -23,19 +15,19 @@ const FiltrationCard = () => {
         <span className="text-sm">Source:</span>
 
         <div className="flex items-center gap-2">
-          {["all", "App", "Restaurant"].map((key) => (
+          {sources.map((source) => (
             <Button
-              key={key}
+              key={source.label}
               radius="sm"
               size="sm"
               className={`${basePillClasses} ${
-                source === key ? "bg-primary text-white" : "bg-white text-black"
+                filters.source === source.value
+                  ? "bg-primary text-white"
+                  : "bg-white text-black border border-gray-100"
               }`}
-              onPress={() => setSource(key as typeof source)}
+              onPress={() => setFilters({ source: source.value, page: 1 })}
             >
-              {key === "App"
-                ? "App Orders"
-                : key.charAt(0).toUpperCase() + key.slice(1)}
+              {source.label}
             </Button>
           ))}
         </div>
@@ -46,26 +38,19 @@ const FiltrationCard = () => {
         <span className="text-sm">Status:</span>
 
         <div className="flex items-center gap-2 flex-wrap">
-          {(
-            [
-              "all",
-              "pending",
-              "confirmed",
-              "cooking",
-              "ready",
-              "completed",
-            ] as StatusFilter[]
-          ).map((key) => (
+          {statuses.map((status) => (
             <Button
-              key={key}
+              key={status.label}
               radius="sm"
               size="sm"
               className={`${basePillClasses} ${
-                status === key ? "bg-primary text-white" : "bg-white text-black"
+                filters.status === status.value
+                  ? "bg-primary text-white"
+                  : "bg-white text-black border border-gray-100"
               }`}
-              onPress={() => setStatus(key)}
+              onPress={() => setFilters({ status: status.value, page: 1 })}
             >
-              {key.charAt(0).toUpperCase() + key.slice(1)}
+              {status.label}
             </Button>
           ))}
         </div>

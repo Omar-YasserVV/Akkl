@@ -7,7 +7,7 @@ import {
   PaginatedResponse,
 } from "../types/LiveOrders.types";
 
-const BASE_URL = "/branches/{branchId}/orders";
+const BASE_URL = "/branches/orders";
 
 export const ordersApis = {
   createOrder: async (data: CreateOrderBody) => {
