@@ -1,65 +1,83 @@
 import { Select, SelectItem } from "@heroui/react";
-import Chip from "@repo/ui/components/chip";
-import { Order } from "../types/LiveOrders.types";
+import { OrderState } from "@repo/types";
+import { LuChefHat, LuCircleCheck, LuClock8, LuX } from "react-icons/lu";
 
 export const StatusSelect = ({
   status,
   onChange,
-  isLoading,
 }: {
-  status: Order["status"];
-  onChange: (status: Order["status"]) => void;
-  isLoading?: boolean;
+  status: OrderState;
+  onChange: (status: OrderState) => void;
 }) => {
+  const statusConfig = {
+    [OrderState.PENDING]: {
+      label: "Pending",
+      color: "status-pill-pending",
+      icon: LuClock8,
+      itemClass: "text-amber-700 data-[hover=true]:bg-amber-50",
+    },
+    [OrderState.IN_PROGRESS]: {
+      label: "Cooking",
+      color: "status-pill-cooking",
+      icon: LuChefHat,
+      itemClass: "text-orange-900 data-[hover=true]:bg-orange-50",
+    },
+    [OrderState.COMPLETED]: {
+      label: "Ready",
+      color: "status-pill-ready",
+      icon: LuCircleCheck,
+      itemClass: "text-green-800 data-[hover=true]:bg-green-50",
+    },
+    [OrderState.CANCELLED]: {
+      label: "Cancelled",
+      color: "status-pill-cancelled",
+      icon: LuX,
+      itemClass: "text-red-700 data-[hover=true]:bg-red-50",
+    },
+  } as const;
+
+  const cfg = statusConfig[status];
+  const Icon = cfg.icon;
+  const currentClass = cfg.color;
+
   return (
     <Select
       aria-label="Change status"
       selectedKeys={[status]}
       onSelectionChange={(keys) => {
-        const val = Array.from(keys)[0] as Order["status"];
+        const val = Array.from(keys)[0] as OrderState;
         if (val) onChange(val);
       }}
       variant="flat"
-      className="max-w-[140px]"
-      isDisabled={isLoading}
+      radius="full"
+      size="sm"
+      disallowEmptySelection
       classNames={{
-        trigger:
-          "bg-transparent shadow-none border-none p-0 min-h-fit h-auto w-fit data-[hover=true]:bg-transparent",
+        trigger: `${currentClass} w-fit min-w-[120px] h-7 min-h-7 px-3 shadow-none border-none transition-none overflow-hidden`,
+        value: "text-xs font-medium text-inherit!",
+        selectorIcon: "text-inherit! h-3 w-3",
         popoverContent: "min-w-[130px] p-1",
-        value: "p-0",
-        innerWrapper: "w-fit px-2",
       }}
       renderValue={() => (
-        <Chip
-          className={`min-w-[110px] text-center ${isLoading ? "opacity-50" : ""}`}
-          value={status}
-        />
+        <div className="flex items-center gap-2 text-inherit!">
+          <Icon className="h-4 w-4 text-inherit!" />
+          <span className="text-inherit!">{cfg.label}</span>
+        </div>
       )}
     >
-      <SelectItem key="PENDING" textValue="Pending" className="text-orange-400">
-        Pending
-      </SelectItem>
-      <SelectItem
-        key="IN_PROGRESS"
-        textValue="In Progress"
-        className="text-primary"
-      >
-        In Progress
-      </SelectItem>
-      <SelectItem
-        key="COMPLETED"
-        textValue="Completed"
-        className="text-success"
-      >
-        Completed
-      </SelectItem>
-      <SelectItem
-        key="CANCELLED"
-        textValue="Cancelled"
-        className="text-red-500"
-      >
-        Cancelled
-      </SelectItem>
+      {(Object.values(OrderState) as OrderState[]).map((state) => {
+        const { label, icon: StateIcon, itemClass } = statusConfig[state];
+        return (
+          <SelectItem
+            key={state}
+            textValue={label}
+            startContent={<StateIcon className="h-4 w-4" />}
+            className={itemClass}
+          >
+            {label}
+          </SelectItem>
+        );
+      })}
     </Select>
   );
 };

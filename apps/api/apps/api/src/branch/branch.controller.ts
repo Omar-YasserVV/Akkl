@@ -34,7 +34,7 @@ import { OrderState, source, UserRole } from 'libs/db/generated/client/enums';
 import { lastValueFrom } from 'rxjs';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Controller('branches/:branchId')
+@Controller('branches')
 export class BranchController implements OnModuleInit {
   constructor(
     @Inject('BRANCH_SERVICE') private readonly branchClient: ClientKafka,

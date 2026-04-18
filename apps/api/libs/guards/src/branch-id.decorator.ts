@@ -18,8 +18,7 @@ export const GetBranchId = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest<CustomRequest>();
 
-    const branchId =
-      request.user?.branchId ?? request.branchId ?? request.params?.branchId;
+    const branchId = request.user?.branchId ?? request.branchId;
 
     if (!branchId) {
       throw new BadRequestException('Branch ID is required');

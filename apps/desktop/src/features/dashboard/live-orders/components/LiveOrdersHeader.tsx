@@ -20,7 +20,6 @@ const LiveOrdersHeader = () => {
             New Order
           </Button>
 
-          {/* The Modal is now a self-contained component */}
           <CreateOrderModal
             open={createModalOpen}
             onClose={() => setCreateModalOpen(false)}

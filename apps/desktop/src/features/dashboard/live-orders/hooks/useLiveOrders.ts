@@ -1,4 +1,3 @@
-import { useAuthStore } from "@/store/AuthStore";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ordersApis } from "../api/LiveOrders";
 import { CreateOrderBody, OrderFilters } from "../types/LiveOrders.types";
@@ -7,8 +6,7 @@ import { orderKeys } from "./LiveOrders.keys";
 // --- Queries ---
 
 export const useOrders = (filters: OrderFilters) => {
-  const branchId = useAuthStore((state) => state.user?.branchId);
-
+  console.log(filters);
   return useQuery({
     queryKey: [
       ...orderKeys.lists(),
@@ -17,29 +15,23 @@ export const useOrders = (filters: OrderFilters) => {
       filters.page,
       filters.limit,
     ],
-    queryFn: () => ordersApis.getAllOrders(branchId!, filters),
+    queryFn: () => ordersApis.getAllOrders(filters),
     placeholderData: (previousData) => previousData,
-    enabled: !!branchId,
   });
 };
 
 export const useOrderDetails = (orderId: string) => {
-  const branchId = useAuthStore((state) => state.user?.branchId);
-
   return useQuery({
     queryKey: orderKeys.detail(orderId),
-    queryFn: () => ordersApis.getOrderById(branchId!, orderId),
-    enabled: !!branchId && !!orderId,
+    queryFn: () => ordersApis.getOrderById(orderId),
+    enabled: !!orderId,
   });
 };
 
 export const useOrderStats = () => {
-  const branchId = useAuthStore((state) => state.user?.branchId);
-
   return useQuery({
     queryKey: orderKeys.stats(),
-    queryFn: () => ordersApis.getOrderStats(branchId!),
-    enabled: !!branchId,
+    queryFn: () => ordersApis.getOrderStats(),
   });
 };
 
@@ -47,10 +39,9 @@ export const useOrderStats = () => {
 
 export const useCreateOrder = () => {
   const queryClient = useQueryClient();
-  const branchId = useAuthStore((state) => state.user?.branchId);
 
   return useMutation({
-    mutationFn: (data: CreateOrderBody) => ordersApis.createOrder(branchId!, data),
+    mutationFn: (data: CreateOrderBody) => ordersApis.createOrder(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
       queryClient.invalidateQueries({ queryKey: orderKeys.stats() });
@@ -60,7 +51,6 @@ export const useCreateOrder = () => {
 
 export const useUpdateOrder = () => {
   const queryClient = useQueryClient();
-  const branchId = useAuthStore((state) => state.user?.branchId);
 
   return useMutation({
     mutationFn: ({
@@ -69,7 +59,7 @@ export const useUpdateOrder = () => {
     }: {
       orderId: string;
       data: Partial<CreateOrderBody>;
-    }) => ordersApis.updateOrder(branchId!, orderId, data),
+    }) => ordersApis.updateOrder(orderId, data),
     onSuccess: (_, { orderId }) => {
       queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
       queryClient.invalidateQueries({ queryKey: orderKeys.detail(orderId) });
@@ -80,10 +70,9 @@ export const useUpdateOrder = () => {
 
 export const useDeleteOrder = () => {
   const queryClient = useQueryClient();
-  const branchId = useAuthStore((state) => state.user?.branchId);
 
   return useMutation({
-    mutationFn: (orderId: string) => ordersApis.deleteOrder(branchId!, orderId),
+    mutationFn: (orderId: string) => ordersApis.deleteOrder(orderId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
       queryClient.invalidateQueries({ queryKey: orderKeys.stats() });
