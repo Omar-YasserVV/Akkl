@@ -1,27 +1,22 @@
 import { useAuthStore } from "@/store/AuthStore";
 import {
   Button,
-  Input,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
-  Select,
-  SelectItem,
-  Textarea,
 } from "@heroui/react";
-import { OrderState } from "@repo/types";
 import { useState } from "react";
-import { BiPlus, BiTrash, BiX } from "react-icons/bi";
-import { useCreateOrder } from "../../hooks/useLiveOrders";
-
-type DraftItem = {
-  id: string;
-  menuItemId: string;
-  quantity: number;
-  specialNotes: string;
-};
+import { BiPlus, BiX } from "react-icons/bi";
+import {
+  createDraftItem,
+  createInitialDraft,
+} from "../../constants/createOrderModal.constants";
+import { useBranchMenu, useCreateOrder } from "../../hooks/useLiveOrders";
+import { CreateOrderDraft, DraftItem } from "../../types/OrderList.types";
+import OrderInfoFields from "./OrderInfoFields";
+import OrderItemCard from "./OrderItemCard";
 
 const CreateOrderModal = ({
   open,
@@ -32,44 +27,27 @@ const CreateOrderModal = ({
 }) => {
   const user = useAuthStore((state) => state.user);
   const { mutate: createOrder, isPending: isCreating } = useCreateOrder();
+  const { data: branchMenu = [], isLoading: isLoadingMenu } = useBranchMenu();
 
-  const [draft, setDraft] = useState({
-    CustomerName: "",
-    status: OrderState.PENDING,
-    specialNotes: "",
-    items: [
-      {
-        id: crypto.randomUUID(),
-        menuItemId: "",
-        quantity: 1,
-        specialNotes: "",
-      },
-    ] as DraftItem[],
-  });
+  const [draft, setDraft] = useState<CreateOrderDraft>(createInitialDraft);
 
   const closeModal = () => {
     onClose();
-    // Reset state after closing
-    setDraft({
-      CustomerName: "",
-      status: OrderState.PENDING,
-      specialNotes: "",
-      items: [
-        {
-          id: crypto.randomUUID(),
-          menuItemId: "",
-          quantity: 1,
-          specialNotes: "",
-        },
-      ],
-    });
+    setDraft(createInitialDraft());
   };
 
-  const updateField = (field: string, value: any) => {
+  const updateField = <K extends keyof CreateOrderDraft>(
+    field: K,
+    value: CreateOrderDraft[K],
+  ) => {
     setDraft((prev) => ({ ...prev, [field]: value }));
   };
 
-  const updateItem = (id: string, field: keyof DraftItem, value: any) => {
+  const updateItem = <K extends keyof DraftItem>(
+    id: string,
+    field: K,
+    value: DraftItem[K],
+  ) => {
     setDraft((prev) => ({
       ...prev,
       items: prev.items.map((item) =>
@@ -81,15 +59,7 @@ const CreateOrderModal = ({
   const addItem = () => {
     setDraft((prev) => ({
       ...prev,
-      items: [
-        ...prev.items,
-        {
-          id: crypto.randomUUID(),
-          menuItemId: "",
-          quantity: 1,
-          specialNotes: "",
-        },
-      ],
+      items: [...prev.items, createDraftItem()],
     }));
   };
 
@@ -115,7 +85,6 @@ const CreateOrderModal = ({
       {
         CustomerName: draft.CustomerName,
         status: draft.status,
-        specialNotes: draft.specialNotes,
         userId: user.id.toString(),
         items: draft.items.map(({ menuItemId, quantity }) => ({
           menuItemId,
@@ -156,137 +125,25 @@ const CreateOrderModal = ({
         </ModalHeader>
 
         <ModalBody className="space-y-8">
-          {/* Order Info Section */}
-          <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-            <Input
-              label="Customer Name *"
-              placeholder="John Doe"
-              value={draft.CustomerName}
-              onValueChange={(val) => updateField("CustomerName", val)}
-              labelPlacement="outside"
-              classNames={{
-                label: "font-semibold text-gray-700 mb-1",
-                inputWrapper:
-                  "bg-white border border-gray-200 h-12 shadow-none",
-              }}
-            />
+          <OrderInfoFields draft={draft} onFieldChange={updateField} />
 
-            <Select
-              label="Status *"
-              placeholder="Select Status"
-              selectedKeys={[draft.status]}
-              onSelectionChange={(keys) =>
-                updateField("status", Array.from(keys)[0] as OrderState)
-              }
-              labelPlacement="outside"
-              classNames={{
-                label: "font-semibold text-gray-700 mb-1",
-                trigger: "bg-white border border-gray-200 h-12 shadow-none",
-              }}
-            >
-              <SelectItem key={OrderState.PENDING}>Pending</SelectItem>
-              <SelectItem key={OrderState.IN_PROGRESS}>In Progress</SelectItem>
-              <SelectItem key={OrderState.COMPLETED}>Completed</SelectItem>
-              <SelectItem key={OrderState.CANCELLED}>Cancelled</SelectItem>
-            </Select>
-          </div>
-
-          {/* Items Section */}
           <div className="space-y-6">
             {draft.items.map((item, index) => (
-              <div
+              <OrderItemCard
                 key={item.id}
-                className="border border-gray-200 rounded-2xl overflow-hidden shadow-sm"
-              >
-                <div className="bg-default-100 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
-                  <span className="font-bold text-gray-700">
-                    Item #{index + 1}
-                  </span>
-                  {draft.items.length > 1 && (
-                    <button
-                      onClick={() => removeItem(item.id)}
-                      className="text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition-colors"
-                    >
-                      <BiTrash size={18} />
-                    </button>
-                  )}
-                </div>
-
-                <div className="p-5 space-y-5">
-                  <div className="space-y-3">
-                    <label className="text-sm font-bold text-gray-700">
-                      Order Items
-                    </label>
-                    <div className="grid grid-cols-[1fr_100px_100px] gap-3">
-                      <Select
-                        placeholder="Select Item"
-                        selectedKeys={item.menuItemId ? [item.menuItemId] : []}
-                        onSelectionChange={(keys) =>
-                          updateItem(
-                            item.id,
-                            "menuItemId",
-                            Array.from(keys)[0] as string,
-                          )
-                        }
-                        classNames={{
-                          trigger:
-                            "bg-white border border-gray-200 h-12 shadow-none",
-                        }}
-                      >
-                        {/* Static items for now until API integration is complete */}
-                        <SelectItem key="pizza">Pizza</SelectItem>
-                        <SelectItem key="burger">Burger</SelectItem>
-                        <SelectItem key="pasta">Pasta</SelectItem>
-                      </Select>
-
-                      <Input
-                        type="number"
-                        min={1}
-                        value={item.quantity.toString()}
-                        onValueChange={(val) =>
-                          updateItem(item.id, "quantity", parseInt(val) || 1)
-                        }
-                        classNames={{
-                          inputWrapper:
-                            "bg-white border border-gray-200 h-12 shadow-none",
-                          input: "text-center",
-                        }}
-                      />
-
-                      <Button
-                        color="primary"
-                        className="h-12 font-bold bg-[#1a73e8] "
-                        startContent={<BiPlus size={20} />}
-                        onPress={() =>
-                          updateItem(item.id, "quantity", item.quantity + 1)
-                        }
-                      >
-                        Add
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <label className="text-sm font-bold text-gray-700">
-                      Special Notes
-                    </label>
-                    <Textarea
-                      placeholder="Any special instructions..."
-                      value={item.specialNotes}
-                      onValueChange={(val) =>
-                        updateItem(item.id, "specialNotes", val)
-                      }
-                      classNames={{
-                        inputWrapper:
-                          "bg-white border border-gray-200 shadow-none",
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
+                item={item}
+                index={index}
+                canRemove={draft.items.length > 1}
+                menuItems={branchMenu.filter(
+                  (menuItem) =>
+                    menuItem.isAvailable && menuItem.variations.length > 0,
+                )}
+                isLoadingMenuItems={isLoadingMenu}
+                onRemove={removeItem}
+                onItemChange={updateItem}
+              />
             ))}
 
-            {/* Add another item button (dashed) */}
             <button
               onClick={addItem}
               className="w-full border-2 border-dashed border-gray-300 bg-default-100 rounded-2xl p-6 flex flex-col items-center justify-center space-y-2 text-gray-400 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50/30 transition-all group"
