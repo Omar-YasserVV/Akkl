@@ -150,6 +150,7 @@ model InventoryItem {
   id           String     @id @default(uuid())
   ingredientId String
   quantity     Float
+  stockStatus  stockStatus @default(IN_STOCK)
   minimumQuantity Float @default(0)
   warehouseId  String
   ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
@@ -257,4 +258,10 @@ enum ExpenseType {
   UTILITIES
   LOSSES
   MARKETING
+}
+
+enum stockStatus {
+  IN_STOCK
+  LOW_STOCK
+  OUT_OF_STOCK
 }
