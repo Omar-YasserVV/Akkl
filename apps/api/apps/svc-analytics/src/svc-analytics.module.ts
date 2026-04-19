@@ -1,8 +1,9 @@
-import { DbModule } from '@app/db';
+import { DbModule, PrismaService } from '@app/db';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ClientsModule } from '@nestjs/microservices';
 import { createKafkaClient } from 'utils/kafka-client.factory';
+import { AnalyticsRepository } from './analytics.repository';
 import { SvcAnalyticsController } from './svc-analytics.controller';
 import { SvcAnalyticsService } from './svc-analytics.service';
 
@@ -23,6 +24,6 @@ import { SvcAnalyticsService } from './svc-analytics.service';
   ],
 
   controllers: [SvcAnalyticsController],
-  providers: [SvcAnalyticsService],
+  providers: [SvcAnalyticsService, PrismaService, AnalyticsRepository],
 })
 export class SvcAnalyticsModule {}
