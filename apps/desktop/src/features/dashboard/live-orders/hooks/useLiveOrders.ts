@@ -6,15 +6,8 @@ import { orderKeys } from "./LiveOrders.keys";
 // --- Queries ---
 
 export const useOrders = (filters: OrderFilters) => {
-  console.log(filters);
   return useQuery({
-    queryKey: [
-      ...orderKeys.lists(),
-      filters.status,
-      filters.source,
-      filters.page,
-      filters.limit,
-    ],
+    queryKey: orderKeys.list(filters),
     queryFn: () => ordersApis.getAllOrders(filters),
     placeholderData: (previousData) => previousData,
   });
@@ -24,7 +17,6 @@ export const useOrderDetails = (orderId: string) => {
   return useQuery({
     queryKey: orderKeys.detail(orderId),
     queryFn: () => ordersApis.getOrderById(orderId),
-    enabled: !!orderId,
   });
 };
 

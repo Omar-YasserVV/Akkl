@@ -18,7 +18,7 @@ const PaginationButtons = () => {
       <Pagination
         disableCursorAnimation
         showControls
-        className="gap-2"
+        className="gap-2 cursor-pointer"
         classNames={{
           next: "!text-black bg-default-200 hover:bg-default-300 ",
           prev: "!text-black",

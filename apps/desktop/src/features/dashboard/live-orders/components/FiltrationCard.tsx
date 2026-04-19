@@ -9,9 +9,9 @@ const FiltrationCard = () => {
   const { filters, setFilters } = useOrderStore();
 
   return (
-    <Card className="w-full text-md font-normal rounded-lg bg-white shadow-sm px-6 py-3 flex flex-row items-center justify-between gap-8 border-0">
+    <Card className="w-full text-md font-normal rounded-lg bg-white shadow-sm px-6 py-3 max-xl:gap-1 xl:grid grid-cols-[auto_1fr_auto] items-center border-0">
       {/* Source Section */}
-      <div className="flex items-center gap-3">
+      <div className="grid grid-cols-[auto_1fr] items-center gap-3">
         <span className="text-sm">Source:</span>
 
         <div className="flex items-center gap-2">
@@ -32,12 +32,13 @@ const FiltrationCard = () => {
           ))}
         </div>
       </div>
+      <div />
 
       {/* Status Section */}
-      <div className="flex items-center gap-3">
+      <div className="grid grid-cols-[auto_1fr] items-center gap-3 justify-self-end">
         <span className="text-sm">Status:</span>
 
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
           {statuses.map((status) => (
             <Button
               key={status.label}

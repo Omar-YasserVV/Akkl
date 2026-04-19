@@ -14,10 +14,10 @@ import { OrderCell } from "./RenderCell";
 
 const OrderList = () => {
   const filters = useOrderStore((state) => state.filters);
-  const { data, isLoading } = useOrders(filters);
+  const { data, isLoading, isFetching } = useOrders(filters);
 
   return (
-    <div className="w-full rounded-lg font-normal text-black border border-gray-100 bg-white overflow-hidden shadow-sm">
+    <div className="relative w-full rounded-lg font-normal text-black border border-gray-100 bg-white overflow-hidden shadow-sm">
       <Table
         aria-label="Live orders table"
         removeWrapper
@@ -26,7 +26,7 @@ const OrderList = () => {
           thead: "rounded-b-none",
           th: "bg-neutral-100 !rounded-none text-black text-xs font-semibold py-3 px-6 text-left border-b border-gray-100",
           td: "py-5 px-6",
-          tr: "border-b border-gray-100 last:border-0",
+          tr: `border-b border-gray-100 last:border-0 ${isFetching && !isLoading ? "opacity-40" : ""}`,
         }}
       >
         <TableHeader columns={columns}>
@@ -36,6 +36,7 @@ const OrderList = () => {
             </TableColumn>
           )}
         </TableHeader>
+
         <TableBody
           items={data?.data || []}
           emptyContent={isLoading ? <Spinner /> : "No orders yet."}
@@ -52,6 +53,17 @@ const OrderList = () => {
           )}
         </TableBody>
       </Table>
+      {/* //TODO:Omar maybe move it to be reusable later*/}
+      {isFetching && !isLoading && (
+        <div className="absolute inset-0 top-10.25 flex items-center justify-center bg-white/50 backdrop-blur-[2px] z-10">
+          <div className="flex flex-col items-center gap-2">
+            <Spinner size="lg" />
+            <span className="text-xs text-gray-400 font-medium">
+              Updating...
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
