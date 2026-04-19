@@ -6,7 +6,10 @@ const PaginationButtons = () => {
   const { filters, setFilters } = useOrderStore();
   const { data } = useOrders(filters);
 
-  const total = data?.meta.lastPage || 1;
+  const totalItems = data?.meta.total ?? 0;
+  const pageSize = data?.meta.limit ?? filters.limit ?? 10;
+  const total =
+    data?.meta.lastPage ?? Math.max(1, Math.ceil(totalItems / pageSize));
   const page = data?.meta.currentPage || 1;
 
   const handlePageChange = (newPage: number) => {

@@ -5,8 +5,8 @@ export interface CreateOrderBody {
   items: {
     menuItemId: string;
     quantity: number;
-    price: number;
   }[];
+  specialNotes?: string;
   status: OrderState;
   userId: string;
 }
@@ -27,11 +27,12 @@ export interface PaginatedResponse<T> {
   data: T[];
   meta: {
     total: number;
-    lastPage: number;
     currentPage: number;
-    perPage: number;
-    prev: number | null;
-    next: number | null;
+    limit: number;
+    lastPage?: number;
+    perPage?: number;
+    prev?: number | null;
+    next?: number | null;
   };
 }
 
