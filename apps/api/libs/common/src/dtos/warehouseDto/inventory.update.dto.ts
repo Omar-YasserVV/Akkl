@@ -1,7 +1,7 @@
 // inventory.update.dto.ts
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { stockStatus } from 'libs/db/generated/client/enums';
-import { BaseInventoryItemDto } from './inventory.base.dto';
+import { BaseInventoryItemDto } from './Inventory.base.dto';
 
 export class UpdateInventoryItemReqDto {
   @ApiPropertyOptional({ example: 75 })

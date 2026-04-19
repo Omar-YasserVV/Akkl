@@ -1,6 +1,6 @@
 // inventory.create.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
-import { BaseInventoryItemDto } from './inventory.base.dto';
+import { BaseInventoryItemDto } from './Inventory.base.dto';
 
 export class CreateInventoryItemReqDto {
   @ApiProperty({ example: 'uuid-here', description: 'Ingredient to track' })

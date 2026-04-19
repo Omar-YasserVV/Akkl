@@ -1,7 +1,7 @@
 // inventory.list.dto.ts
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { stockStatus } from 'libs/db/generated/client/enums';
-import { BaseInventoryItemDto } from './inventory.base.dto';
+import { BaseInventoryItemDto } from './Inventory.base.dto';
 
 export class ListInventoryItemsReqDto {
   @ApiProperty({ example: 'uuid-here' })
