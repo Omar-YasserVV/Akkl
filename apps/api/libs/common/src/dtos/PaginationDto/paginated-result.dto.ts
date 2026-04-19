@@ -30,9 +30,7 @@ export class PaginationRequestDto {
 
 class MetaDto {
   @ApiProperty() total!: number;
-  @ApiProperty() lastPage!: number;
   @ApiProperty() currentPage!: number;
-  @ApiProperty() perPage!: number;
   @ApiProperty() limit!: number;
 }
 
