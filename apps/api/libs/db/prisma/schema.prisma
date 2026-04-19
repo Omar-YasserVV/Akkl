@@ -141,7 +141,7 @@ model Recipe {
 model Warehouse {
   id       String          @id @default(uuid())
   name     String
-  branchId String
+  branchId String          @unique
   items    InventoryItem[]
   branch   Branch          @relation(fields: [branchId], references: [id])
 }

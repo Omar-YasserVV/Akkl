@@ -6,8 +6,6 @@ export function createPagination<T>(
   page: number,
   limit: number,
 ): PaginatedResponseDto<T> {
-  const lastPage = Math.ceil(total / limit);
-
   return {
     data,
     meta: {
