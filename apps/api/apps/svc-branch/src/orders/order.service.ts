@@ -68,7 +68,7 @@ export class OrderService {
       if (!existing)
         throw new RpcException({ statusCode: 404, message: 'Order not found' });
 
-      if (existing.status !== OrderState.PENDING) {
+      if (existing.status === data.status) {
         throw new RpcException({
           statusCode: 400,
           message: `Order already ${existing.status}`,
