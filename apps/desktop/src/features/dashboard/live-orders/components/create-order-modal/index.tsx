@@ -1,24 +1,22 @@
+import { useAuthStore } from "@/store/AuthStore";
 import {
   Button,
-  Input,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
-  Select,
-  SelectItem,
-  Textarea,
 } from "@heroui/react";
 import { useState } from "react";
-import { BiPlus, BiTrash, BiX } from "react-icons/bi";
-
-type DraftItem = {
-  id: string;
-  itemId: string;
-  quantity: number;
-  notes: string;
-};
+import { BiPlus, BiX } from "react-icons/bi";
+import {
+  createDraftItem,
+  createInitialDraft,
+} from "../../constants/createOrderModal.constants";
+import { useBranchMenu, useCreateOrder } from "../../hooks/useLiveOrders";
+import { CreateOrderDraft, DraftItem } from "../../types/OrderList.types";
+import OrderInfoFields from "./OrderInfoFields";
+import OrderItemCard from "./OrderItemCard";
 
 const CreateOrderModal = ({
   open,
@@ -27,29 +25,29 @@ const CreateOrderModal = ({
   open: boolean;
   onClose: () => void;
 }) => {
-  const [draft, setDraft] = useState({
-    orderNumber: "",
-    customerName: "",
-    status: "pending",
-    items: [
-      {
-        id: crypto.randomUUID(),
-        itemId: "",
-        quantity: 1,
-        notes: "",
-      },
-    ] as DraftItem[],
-  });
+  const user = useAuthStore((state) => state.user);
+  const { mutate: createOrder, isPending: isCreating } = useCreateOrder();
+  const { data: branchMenu = [], isLoading: isLoadingMenu } = useBranchMenu();
+
+  const [draft, setDraft] = useState<CreateOrderDraft>(createInitialDraft);
 
   const closeModal = () => {
     onClose();
+    setDraft(createInitialDraft());
   };
 
-  const updateField = (field: string, value: any) => {
+  const updateField = <K extends keyof CreateOrderDraft>(
+    field: K,
+    value: CreateOrderDraft[K],
+  ) => {
     setDraft((prev) => ({ ...prev, [field]: value }));
   };
 
-  const updateItem = (id: string, field: keyof DraftItem, value: any) => {
+  const updateItem = <K extends keyof DraftItem>(
+    id: string,
+    field: K,
+    value: DraftItem[K],
+  ) => {
     setDraft((prev) => ({
       ...prev,
       items: prev.items.map((item) =>
@@ -61,15 +59,7 @@ const CreateOrderModal = ({
   const addItem = () => {
     setDraft((prev) => ({
       ...prev,
-      items: [
-        ...prev.items,
-        {
-          id: crypto.randomUUID(),
-          itemId: "",
-          quantity: 1,
-          notes: "",
-        },
-      ],
+      items: [...prev.items, createDraftItem()],
     }));
   };
 
@@ -81,119 +71,105 @@ const CreateOrderModal = ({
   };
 
   const handleCreateOrder = () => {
-    if (!draft.orderNumber || !draft.customerName) {
-      alert("Please fill in required fields");
+    if (!draft.CustomerName || draft.items.some((i) => !i.menuItemId)) {
+      alert("Please fill in all required fields and select items.");
       return;
     }
 
-    console.log("Prototype Order:", draft);
-    closeModal();
+    if (!user?.id) {
+      alert("You must be logged in to create an order.");
+      return;
+    }
+
+    createOrder(
+      {
+        CustomerName: draft.CustomerName,
+        status: draft.status,
+        userId: user.id.toString(),
+        items: draft.items.map(({ menuItemId, quantity }) => ({
+          menuItemId,
+          quantity,
+        })),
+      },
+      {
+        onSuccess: () => {
+          closeModal();
+        },
+      },
+    );
   };
 
   return (
     <Modal
       isOpen={open}
       onOpenChange={(isOpen) => !isOpen && closeModal()}
-      size="lg"
+      size="xl"
       hideCloseButton
       scrollBehavior="inside"
+      classNames={{
+        base: "max-h-[90vh]",
+        header: "border-b border-gray-100 py-4 px-6",
+        body: "py-6 px-6",
+        footer: "border-t border-gray-100 py-4 px-6",
+      }}
     >
       <ModalContent>
-        <ModalHeader className="flex justify-between">
-          <h3 className="text-xl font-bold">Create New Order</h3>
-          <button onClick={closeModal}>
+        <ModalHeader className="flex justify-between items-center">
+          <h3 className="text-xl font-bold text-gray-800">Create New Order</h3>
+          <button
+            onClick={closeModal}
+            className="p-1 hover:bg-gray-100 rounded-full transition-colors text-gray-500"
+          >
             <BiX size={24} />
           </button>
         </ModalHeader>
 
-        <ModalBody className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Order Number *"
-              value={draft.orderNumber}
-              onValueChange={(val) => updateField("orderNumber", val)}
-              labelPlacement="outside"
-            />
-            <Input
-              label="Customer Name *"
-              value={draft.customerName}
-              onValueChange={(val) => updateField("customerName", val)}
-              labelPlacement="outside"
-            />
-          </div>
+        <ModalBody className="space-y-8">
+          <OrderInfoFields draft={draft} onFieldChange={updateField} />
 
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Source"
-              value="Restaurant"
-              isDisabled
-              labelPlacement="outside"
-            />
-            <Select
-              label="Status"
-              selectedKeys={[draft.status]}
-              onSelectionChange={(keys) =>
-                updateField("status", Array.from(keys)[0])
-              }
-              labelPlacement="outside"
-            >
-              <SelectItem key="pending">Pending</SelectItem>
-              <SelectItem key="cooking">Cooking</SelectItem>
-              <SelectItem key="ready">Ready</SelectItem>
-            </Select>
-          </div>
-
-          {draft.items.map((item, index) => (
-            <div key={item.id} className="border p-4 rounded-md space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="font-semibold">Item #{index + 1}</span>
-                {draft.items.length > 1 && (
-                  <button onClick={() => removeItem(item.id)}>
-                    <BiTrash size={18} />
-                  </button>
+          <div className="space-y-6">
+            {draft.items.map((item, index) => (
+              <OrderItemCard
+                key={item.id}
+                item={item}
+                index={index}
+                canRemove={draft.items.length > 1}
+                menuItems={branchMenu.filter(
+                  (menuItem) =>
+                    menuItem.isAvailable && menuItem.variations.length > 0,
                 )}
-              </div>
-
-              <div className="grid grid-cols-[1fr_80px] gap-3">
-                <Select
-                  placeholder="Select Item"
-                  selectedKeys={item.itemId ? [item.itemId] : []}
-                  onSelectionChange={(keys) =>
-                    updateItem(item.id, "itemId", Array.from(keys)[0] as string)
-                  }
-                >
-                  <SelectItem key="pizza">Pizza</SelectItem>
-                  <SelectItem key="burger">Burger</SelectItem>
-                  <SelectItem key="pasta">Pasta</SelectItem>
-                </Select>
-
-                <Input
-                  type="number"
-                  value={item.quantity.toString()}
-                  onValueChange={(val) =>
-                    updateItem(item.id, "quantity", parseInt(val) || 0)
-                  }
-                />
-              </div>
-
-              <Textarea
-                placeholder="Special notes..."
-                value={item.notes}
-                onValueChange={(val) => updateItem(item.id, "notes", val)}
+                isLoadingMenuItems={isLoadingMenu}
+                onRemove={removeItem}
+                onItemChange={updateItem}
               />
-            </div>
-          ))}
+            ))}
 
-          <Button onPress={addItem}>
-            <BiPlus size={18} /> Add another item
-          </Button>
+            <button
+              onClick={addItem}
+              className="w-full border-2 border-dashed border-gray-300 bg-default-100 rounded-2xl p-6 flex flex-col items-center justify-center space-y-2 text-gray-400 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50/30 transition-all group"
+            >
+              <div className="p-3 border-2 bg-white border-gray-300 rounded-full group-hover:border-blue-400 transition-all">
+                <BiPlus size={28} />
+              </div>
+              <span className="font-bold text-lg">Add another Item</span>
+            </button>
+          </div>
         </ModalBody>
 
-        <ModalFooter>
-          <Button variant="bordered" onPress={closeModal}>
+        <ModalFooter className="gap-4">
+          <Button
+            variant="light"
+            onPress={closeModal}
+            className="h-12 px-8 font-bold text-gray-600 bg-gray-50 hover:bg-gray-100"
+          >
             Cancel
           </Button>
-          <Button color="primary" onPress={handleCreateOrder}>
+          <Button
+            color="primary"
+            onPress={handleCreateOrder}
+            isLoading={isCreating}
+            className="h-12 px-8 font-bold bg-[#1a73e8] shadow-lg shadow-blue-200"
+          >
             Create Order
           </Button>
         </ModalFooter>
