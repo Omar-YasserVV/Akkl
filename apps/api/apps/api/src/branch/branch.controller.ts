@@ -6,6 +6,7 @@ import {
   UpdateBranchMenuItemDto,
   UpdateOrderDto,
 } from '@app/common';
+import { PaginationRequestDto } from '@app/common/dtos/PaginationDto/paginated-result.dto';
 import { BRANCH_TOPICS } from '@app/common/topics/branch.topics';
 import { GetBranchId } from '@app/guards/branch-id.decorator';
 import { CurrentUser } from '@app/guards/current-user.decorator';
@@ -58,7 +59,7 @@ export class BranchController implements OnModuleInit {
     @Res() res: Response,
   ) {
     const result = await lastValueFrom<{ message?: string }>(
-      this.branchClient.send('create-branch', {
+      this.branchClient.send(BRANCH_TOPICS.CREATE, {
         restaurantId,
         dto,
       }),
@@ -72,7 +73,7 @@ export class BranchController implements OnModuleInit {
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
   @Get('restaurant/:restaurantId')
   getBranches(@Param('restaurantId') restaurantId: string) {
-    return this.branchClient.send('get-branches', restaurantId);
+    return this.branchClient.send(BRANCH_TOPICS.GET_ALL, restaurantId);
   }
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
@@ -81,7 +82,7 @@ export class BranchController implements OnModuleInit {
     @GetBranchId() branchId: string,
     @Param('restaurantId') restaurantId: string,
   ) {
-    return this.branchClient.send('get-branch-by-id', {
+    return this.branchClient.send(BRANCH_TOPICS.GET_BY_ID, {
       restaurantId,
       branchId,
     });
@@ -94,7 +95,7 @@ export class BranchController implements OnModuleInit {
     @Param('restaurantId') restaurantId: string,
     @Body() dto: UpdateBranchDto,
   ) {
-    return this.branchClient.send('update-branch', {
+    return this.branchClient.send(BRANCH_TOPICS.UPDATE, {
       restaurantId,
       branchId,
       data: dto,
@@ -107,7 +108,7 @@ export class BranchController implements OnModuleInit {
     @GetBranchId() branchId: string,
     @Param('restaurantId') restaurantId: string,
   ) {
-    return this.branchClient.send('delete-branch', {
+    return this.branchClient.send(BRANCH_TOPICS.DELETE, {
       restaurantId,
       branchId,
     });
@@ -118,7 +119,7 @@ export class BranchController implements OnModuleInit {
   @Roles(UserRole.BUSINESS_OWNER, UserRole.CASHIER, UserRole.MANAGER)
   @Get('menu')
   getBranchMenu(@GetBranchId() branchId: string) {
-    return this.branchClient.send('get_branch_menu', { branchId });
+    return this.branchClient.send(BRANCH_TOPICS.GET_MENU, { branchId });
   }
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
@@ -178,7 +179,7 @@ export class BranchController implements OnModuleInit {
   @Roles(UserRole.BUSINESS_OWNER, UserRole.CASHIER, UserRole.MANAGER)
   @Get('orders/stats')
   getOrderStats(@GetBranchId() branchId: string) {
-    return this.branchClient.send(BRANCH_TOPICS.ORDER_GET_STATUSES, {
+    return this.branchClient.send(BRANCH_TOPICS.GET_ORDER_STATUSES, {
       branchId,
     });
   }
@@ -189,30 +190,29 @@ export class BranchController implements OnModuleInit {
   @ApiQuery({ name: 'status', enum: OrderState, required: false })
   getOrdersByBranch(
     @GetBranchId() branchId: string,
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,
-    @Query('status') status?: OrderState,
-    @Query('source') source?: source,
+    @Query() pagination: PaginationRequestDto,
   ) {
-    return this.branchClient.send('get_orders_by_branch', {
+    return this.branchClient.send(BRANCH_TOPICS.GET_ALL_ORDERS, {
       branchId,
-      page: Number(page),
-      limit: Number(limit),
-      status,
-      source,
+      pagination: {
+        page: Number(pagination.page) || 1,
+        limit: Number(pagination.limit) || 10,
+        status: pagination.status,
+        source: pagination.source,
+      },
     });
   }
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.CASHIER, UserRole.MANAGER)
   @Get('orders/:orderId')
   getOrderById(@Param('orderId') orderId: string) {
-    return this.branchClient.send('get_order_by_id', { orderId });
+    return this.branchClient.send(BRANCH_TOPICS.GET_ORDER_BY_ID, { orderId });
   }
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
   @Patch('orders/:orderId')
   updateOrder(@Param('orderId') orderId: string, @Body() data: UpdateOrderDto) {
-    return this.branchClient.send('update_order', {
+    return this.branchClient.send(BRANCH_TOPICS.UPDATE_ORDER, {
       orderId,
       data,
     });
@@ -221,6 +221,6 @@ export class BranchController implements OnModuleInit {
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
   @Delete('orders/:orderId')
   deleteOrder(@Param('orderId') orderId: string) {
-    return this.branchClient.send('delete_order', { orderId });
+    return this.branchClient.send(BRANCH_TOPICS.DELETE_ORDER, { orderId });
   }
 }
