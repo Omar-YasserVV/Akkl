@@ -12,9 +12,8 @@ export function createPagination<T>(
     data,
     meta: {
       total,
-      lastPage,
       currentPage: page,
-      perPage: limit,
+      limit,
     },
   };
 }
