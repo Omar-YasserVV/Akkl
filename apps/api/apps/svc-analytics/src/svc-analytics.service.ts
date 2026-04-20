@@ -1,111 +1,60 @@
-// svc-analytics.service.ts
-import {
-  LineChartAnalyticsRequestDto,
-  LineChartAnalyticsResponseDto,
-} from '@app/common';
+import { LineChartAnalyticsRequestDto } from '@app/common';
 import { PrismaService } from '@app/db';
 import { Injectable } from '@nestjs/common';
-import { OrderState } from 'libs/db/generated/client/enums';
+import { AnalyticsRepository } from './analytics.repository';
 import { SvcAnalyticsBase } from './svc-analytics.base';
 
 @Injectable()
 export class SvcAnalyticsService extends SvcAnalyticsBase {
-  constructor(prisma: PrismaService) {
-    super(prisma); // ← pass prisma to base class
+  constructor(
+    prisma: PrismaService, // Passed to base if needed
+    private readonly repo: AnalyticsRepository,
+  ) {
+    super(prisma);
   }
 
-  async BranchRevenue(
-    branchID: string,
-    dto: LineChartAnalyticsRequestDto,
-  ): Promise<LineChartAnalyticsResponseDto> {
+  async BranchRevenue(branchID: string, dto: LineChartAnalyticsRequestDto) {
     await this.assertBranchExists(branchID);
-
-    const days = dto.daysAgo ?? 7;
-    const { currentStart, previousStart, now } = this.buildPeriods(days);
+    const { currentStart, previousStart, now } = this.buildPeriods(
+      dto.daysAgo ?? 7,
+    );
 
     const [currentAgg, previousAgg, orders] = await Promise.all([
-      this.prisma.order.aggregate({
-        where: {
-          branchId: branchID,
-          status: OrderState.COMPLETED,
-          createdAt: { gte: currentStart, lte: now },
-        },
-        _sum: { totalPrice: true },
-      }),
-
-      this.prisma.order.aggregate({
-        where: {
-          branchId: branchID,
-          status: OrderState.COMPLETED,
-          createdAt: { gte: previousStart, lte: currentStart },
-        },
-        _sum: { totalPrice: true },
-      }),
-
-      this.prisma.order.findMany({
-        where: {
-          branchId: branchID,
-          status: OrderState.COMPLETED,
-          createdAt: { gte: currentStart, lte: now },
-        },
-        select: { createdAt: true, totalPrice: true },
-        orderBy: { createdAt: 'asc' },
-      }),
+      this.repo.getRevenueStats(branchID, currentStart, now),
+      this.repo.getRevenueStats(branchID, previousStart, currentStart),
+      this.repo.getOrderTimeline(branchID, currentStart, now, true),
     ]);
 
-    const currentValue = currentAgg._sum.totalPrice?.toNumber() ?? 0;
-    const previousValue = previousAgg._sum.totalPrice?.toNumber() ?? 0;
+    const currentVal = currentAgg._sum.totalPrice?.toNumber() ?? 0;
+    const previousVal = previousAgg._sum.totalPrice?.toNumber() ?? 0;
 
     return {
-      totalCount: currentValue,
-      percentageChange: this.calcPercentageChange(currentValue, previousValue),
-      records: orders.map((order) => ({
-        timestamp: order.createdAt.toISOString(),
-        value: order.totalPrice.toNumber(),
+      totalCount: currentVal,
+      percentageChange: this.calcPercentageChange(currentVal, previousVal),
+      records: orders.map((o) => ({
+        timestamp: o.createdAt.toISOString(),
+        value: o.totalPrice.toNumber(),
       })),
     };
   }
 
-  async BranchOrders(
-    branchID: string,
-    dto: LineChartAnalyticsRequestDto,
-  ): Promise<LineChartAnalyticsResponseDto> {
+  async BranchOrders(branchID: string, dto: LineChartAnalyticsRequestDto) {
     await this.assertBranchExists(branchID);
-
-    const days = dto.daysAgo ?? 7;
-    const { currentStart, previousStart, now } = this.buildPeriods(days);
+    const { currentStart, previousStart, now } = this.buildPeriods(
+      dto.daysAgo ?? 7,
+    );
 
     const [currentCount, previousCount, orders] = await Promise.all([
-      this.prisma.order.count({
-        where: {
-          branchId: branchID,
-          status: OrderState.COMPLETED,
-          createdAt: { gte: currentStart, lte: now },
-        },
-      }),
-      this.prisma.order.count({
-        where: {
-          branchId: branchID,
-          status: OrderState.COMPLETED,
-          createdAt: { gte: previousStart, lte: currentStart },
-        },
-      }),
-      this.prisma.order.findMany({
-        where: {
-          branchId: branchID,
-          status: OrderState.COMPLETED,
-          createdAt: { gte: currentStart, lte: now },
-        },
-        select: { createdAt: true },
-        orderBy: { createdAt: 'asc' },
-      }),
+      this.repo.getOrderCount(branchID, currentStart, now),
+      this.repo.getOrderCount(branchID, previousStart, currentStart),
+      this.repo.getOrderTimeline(branchID, currentStart, now, false),
     ]);
 
     return {
       totalCount: currentCount,
       percentageChange: this.calcPercentageChange(currentCount, previousCount),
-      records: orders.map((order) => ({
-        timestamp: order.createdAt.toISOString(),
+      records: orders.map((o) => ({
+        timestamp: o.createdAt.toISOString(),
         value: 1,
       })),
     };

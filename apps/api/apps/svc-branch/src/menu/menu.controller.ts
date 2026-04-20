@@ -13,17 +13,17 @@ interface KafkaBuffer {
 export class MenuController {
   constructor(private readonly menuService: MenuService) {}
 
-  @MessagePattern(BRANCH_TOPICS.MENU_GET_ALL)
+  @MessagePattern(BRANCH_TOPICS.GET_ALL_MENU_ITEMS)
   async getAllItems() {
     return this.menuService.getMenu();
   }
 
-  @MessagePattern(BRANCH_TOPICS.MENU_GET)
+  @MessagePattern(BRANCH_TOPICS.GET_MENU)
   async getBranchMenu(@Payload('branchId') branchId: string) {
     return this.menuService.getBranchMenu(branchId);
   }
 
-  @MessagePattern(BRANCH_TOPICS.MENU_CREATE)
+  @MessagePattern(BRANCH_TOPICS.CREATE_MENU)
   async createMenuItem(
     @Payload('branchId') branchId: string,
     @Payload('data') data: BranchMenuItemDetailDto,
@@ -31,7 +31,7 @@ export class MenuController {
     return this.menuService.createMenu(branchId, data);
   }
 
-  @MessagePattern(BRANCH_TOPICS.MENU_UPLOAD)
+  @MessagePattern(BRANCH_TOPICS.UPLOAD_MENU)
   async uploadExcel(
     @Payload('branchId') branchId: string,
     @Payload('fileBuffer') fileBuffer: unknown,
@@ -58,7 +58,7 @@ export class MenuController {
     return this.menuService.handleExcelUpload(branchId, buffer);
   }
 
-  @MessagePattern(BRANCH_TOPICS.MENU_UPDATE)
+  @MessagePattern(BRANCH_TOPICS.UPDATE_MENU)
   async updateMenuItem(
     @Payload('id') id: string,
     @Payload('branchId') branchId: string,
@@ -67,7 +67,7 @@ export class MenuController {
     return this.menuService.updateMenuItem(id, data, branchId);
   }
 
-  @MessagePattern(BRANCH_TOPICS.MENU_DELETE)
+  @MessagePattern(BRANCH_TOPICS.DELETE_MENU)
   async deleteMenuItem(
     @Payload('id') id: string,
     @Payload('branchId') branchId: string,

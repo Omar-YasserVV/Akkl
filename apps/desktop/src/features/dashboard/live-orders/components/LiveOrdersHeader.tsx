@@ -1,8 +1,8 @@
+import Header from "@/features/dashboard/components/shared/header";
 import { Button } from "@heroui/react";
+import { useState } from "react";
 import { BiPlus } from "react-icons/bi";
 import CreateOrderModal from "./create-order-modal";
-import Header from "@/features/dashboard/components/shared/header";
-import { useState } from "react";
 
 const LiveOrdersHeader = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -20,7 +20,6 @@ const LiveOrdersHeader = () => {
             New Order
           </Button>
 
-          {/* The Modal is now a self-contained component */}
           <CreateOrderModal
             open={createModalOpen}
             onClose={() => setCreateModalOpen(false)}

@@ -1,258 +1,136 @@
 import { CreateOrderDto, UpdateOrderDto } from '@app/common';
-import { PrismaService } from '@app/db';
+import { PaginationRequestDto } from '@app/common/dtos/PaginationDto/paginated-result.dto';
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { Prisma } from 'libs/db/generated/client/client';
-import { OrderState, source } from 'libs/db/generated/client/enums';
+import { OrderState } from 'libs/db/generated/client/enums';
 import { createPagination } from 'utils/pagination.util';
+import { OrderCalculator } from './order.calculator';
+import { OrderRepository } from './order.repository';
+import { OrderValidator } from './order.validator';
 
 @Injectable()
 export class OrderService {
   constructor(
-    private readonly prisma: PrismaService,
-    @Inject('BRANCH_SERVICE') private readonly kafkaClient: ClientKafka,
+    private readonly repo: OrderRepository,
+    private readonly validator: OrderValidator,
+    private readonly calculator: OrderCalculator,
+    @Inject('BRANCH_SERVICE') private readonly kafka: ClientKafka,
   ) {}
 
-  /**
-   * Calculates order statistics for a specific branch.
-   */
-  async getOrderStatuses(branchId: string) {
-    try {
-      const stats = await this.prisma.order.groupBy({
-        by: ['status'],
-        where: { branchId: branchId },
-        _count: {
-          status: true,
-        },
-      });
-
-      const formattedStats = stats.reduce(
-        (acc, curr) => {
-          acc[curr.status] = curr._count.status;
-          return acc;
-        },
-        {} as Record<OrderState, number>,
-      );
-
-      // Ensure all enum values are present in the response even if count is 0
-      const allStatuses: OrderState[] = Object.values(OrderState);
-
-      allStatuses.forEach((status) => {
-        if (!formattedStats[status]) {
-          formattedStats[status] = 0;
-        }
-      });
-
-      return formattedStats;
-    } catch (error) {
-      this.handleError(error);
-    }
-  }
-
-  /**
-   * Creates a new order.
-   * Validates branch/user existence and calculates totals based on BranchMenuItem variations.
-   */
   async createOrder(branchId: string, data: CreateOrderDto, userId: string) {
     try {
-      if (!data)
+      if (!data) {
         throw new RpcException({
           statusCode: 400,
           message: 'Invalid request payload',
         });
+      }
 
       const { items = [], status = OrderState.PENDING, CustomerName } = data;
 
-      if (!items?.length)
-        throw new RpcException({
-          statusCode: 400,
-          message: 'Order must contain at least one item.',
-        });
+      this.validator.validateItems(items);
+      const { user } = await this.validator.validateBranchAndUser(
+        branchId,
+        userId,
+      );
 
-      // 1. Validate Branch and User existence
-      const [branch, user] = await Promise.all([
-        this.prisma.branch.findUnique({ where: { id: branchId } }),
-        this.prisma.user.findUnique({ where: { id: userId } }),
-      ]);
+      const menuItems = await this.repo.getMenuItems(
+        branchId,
+        items.map((i) => i.menuItemId),
+      );
 
-      if (!branch)
-        throw new RpcException({
-          statusCode: 404,
-          message: `Branch ${branchId} not found`,
-        });
-      if (!user)
-        throw new RpcException({
-          statusCode: 404,
-          message: `User ${userId} not found`,
-        });
+      const { total, itemCount, orderItemsData } = this.calculator.calculate(
+        items,
+        menuItems,
+      );
 
-      const menuItems = await this.prisma.branchMenuItem.findMany({
-        where: {
-          id: { in: items.map((i) => i.menuItemId) },
-          branchId: branchId,
-        },
-        include: { variations: true },
+      const order = await this.repo.create({
+        totalPrice: total,
+        userId,
+        branchId,
+        itemCount,
+        status,
+        CustomerName: CustomerName || user.fullName,
+        items: { create: orderItemsData },
       });
 
-      let calculatedTotal = 0;
-      let calculatedItemCount = 0;
-
-      const orderItemsData = items.map((itemInput) => {
-        const dbItem = menuItems.find((m) => m.id === itemInput.menuItemId);
-
-        if (!dbItem) {
-          throw new RpcException({
-            statusCode: 400,
-            message: `Item ${itemInput.menuItemId} is not available in this branch menu.`,
-          });
-        }
-
-        // Logic: Use the first variation price.
-        // Note: If your DTO supports specific variation selection (size), update this logic.
-        const unitPrice = Number(dbItem.variations[0]?.price || 0);
-        calculatedTotal += unitPrice * itemInput.quantity;
-        calculatedItemCount += itemInput.quantity;
-
-        return {
-          menuItemId: dbItem.id, // Links to BranchMenuItem.id per schema
-          quantity: itemInput.quantity,
-          price: unitPrice,
-        };
-      });
-
-      // 3. Create the Order and items in a transaction
-      const newOrder = await this.prisma.order.create({
-        data: {
-          totalPrice: calculatedTotal,
-          userId: userId,
-          branchId: branchId,
-          itemCount: calculatedItemCount,
-          status,
-          CustomerName: CustomerName || user.fullName,
-          items: {
-            create: orderItemsData,
-          },
-        },
-        include: { items: true },
-      });
-
-      this.kafkaClient.emit('order.created', newOrder);
-      return newOrder;
+      this.kafka.emit('order.created', order);
+      return order;
     } catch (error) {
       this.handleError(error);
     }
   }
 
-  /**
-   * Updates an existing order. Only allows updates if the order is still PENDING.
-   */
   async updateOrder(orderId: string, data: UpdateOrderDto) {
     try {
-      const existingOrder = await this.prisma.order.findUnique({
-        where: { id: orderId },
-      });
+      const existing = await this.repo.findById(orderId);
 
-      if (!existingOrder)
-        throw new RpcException({
-          statusCode: 404,
-          message: `Order ${orderId} not found`,
-        });
+      if (!existing)
+        throw new RpcException({ statusCode: 404, message: 'Order not found' });
 
-      // Business rule: Cannot update orders that are already processed or cancelled
-      if (existingOrder.status !== OrderState.PENDING) {
+      if (existing.status === data.status) {
         throw new RpcException({
           statusCode: 400,
-          message: `Order cannot be modified because it is already ${existingOrder.status}`,
+          message: `Order already ${existing.status}`,
         });
       }
 
-      const { items, ...updateData } = data;
+      const { items, ...rest } = data;
 
-      const updatedOrder = await this.prisma.order.update({
-        where: { id: orderId },
-        data: {
-          ...updateData,
-          ...(items && {
-            items: {
-              deleteMany: {}, // Clear old items
-              create: items.map((item) => ({
-                menuItemId: item.menuItemId,
-                quantity: item.quantity,
-                price: item.price,
-              })),
-            },
-          }),
-        },
-        include: { items: true },
+      const updated = await this.repo.update(orderId, {
+        ...rest,
+        ...(items && {
+          items: {
+            deleteMany: {},
+            create: items,
+          },
+        }),
       });
 
-      this.kafkaClient.emit('order.updated', updatedOrder);
-      return updatedOrder;
+      this.kafka.emit('order.updated', updated);
+      return updated;
     } catch (error) {
       this.handleError(error);
     }
   }
 
-  /**
-   * Deletes an order from the system.
-   */
   async deleteOrder(orderId: string) {
     try {
-      await this.prisma.order.delete({ where: { id: orderId } });
-      this.kafkaClient.emit('order.deleted', { id: orderId });
-      return { message: `Order ${orderId} deleted successfully` };
+      await this.repo.delete(orderId);
+      this.kafka.emit('order.deleted', { id: orderId });
+      return { message: 'Deleted successfully' };
     } catch (error) {
       this.handleError(error);
     }
   }
 
-  /**
-   * Retrieves paginated orders for a branch with optional status/source filtering.
-   */
-  async getOrdersByBranch(
-    branchId: string,
-    page = 1,
-    limit = 10,
-    status?: OrderState,
-    orderSource?: source,
-  ) {
+  async getOrdersByBranch(branchId: string, dto: PaginationRequestDto) {
+    const { page, limit, status, source } = dto;
     const skip = (page - 1) * limit;
 
-    const where: Prisma.OrderWhereInput = {
+    const where = {
       branchId,
       ...(status && { status }),
-      ...(orderSource && { source: orderSource }),
+      ...(source && { source }),
     };
 
     try {
-      return await this.prisma.$transaction(async (tx) => {
-        const total = await tx.order.count({ where });
-        const orders = await tx.order.findMany({
-          where,
-          skip,
-          take: limit,
-          include: {
-            items: { include: { branchMenuItem: true } },
-            user: { select: { id: true, fullName: true, email: true } },
-          },
-          orderBy: { createdAt: 'desc' },
-        });
-        return createPagination(orders, total, page, limit);
-      });
+      const { total, orders } = await this.repo.getOrdersByBranch(
+        where,
+        skip,
+        limit,
+      );
+
+      return createPagination(orders, total, page, limit);
     } catch (error) {
       this.handleError(error);
     }
   }
 
-  /**
-   * Retrieves a single order by ID with item and user details.
-   */
   async getOrderById(orderId: string) {
     try {
-      const order = await this.prisma.order.findUnique({
-        where: { id: orderId },
-        include: { items: true, user: true },
-      });
+      const order = await this.repo.findById(orderId);
       if (!order)
         throw new RpcException({ statusCode: 404, message: 'Order not found' });
       return order;
@@ -261,30 +139,69 @@ export class OrderService {
     }
   }
 
-  /**
-   * Centralized error handler to map Prisma errors to RpcExceptions.
-   */
-  private handleError(error: unknown) {
+  async getOrderStatuses(branchId: string) {
+    try {
+      const stats = await this.repo.groupByStatus(branchId);
+
+      const result = stats.reduce(
+        (acc, curr) => {
+          acc[curr.status] = curr._count.status;
+          return acc;
+        },
+        {} as Record<OrderState, number>,
+      );
+
+      Object.values(OrderState).forEach((s) => {
+        if (!result[s]) result[s] = 0;
+      });
+
+      return result;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  private handleError(error: unknown): never {
     if (error instanceof RpcException) throw error;
 
-    const err = error as Record<string, unknown>;
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      switch (error.code) {
+        case 'P2025':
+          throw new RpcException({
+            statusCode: 404,
+            message: 'Record not found',
+          });
 
-    // Prisma error for "Record not found"
-    if (err?.code === 'P2025') {
-      throw new RpcException({ statusCode: 404, message: 'Record not found' });
+        case 'P2002': {
+          const target =
+            typeof error.meta === 'object' &&
+            error.meta !== null &&
+            'target' in error.meta
+              ? (error.meta as { target: string | string[] }).target
+              : 'unknown';
+
+          const targetString = Array.isArray(target)
+            ? target.join(', ')
+            : target;
+
+          throw new RpcException({
+            statusCode: 409,
+            message: `Unique constraint failed on ${targetString}`,
+          });
+        }
+      }
     }
 
-    // Prisma error for "Unique constraint failed"
-    if (err?.code === 'P2002') {
+    if (error instanceof Error) {
       throw new RpcException({
-        statusCode: 409,
-        message: 'Unique constraint failed',
+        statusCode: 500,
+        message: error.message,
       });
     }
 
     throw new RpcException({
-      statusCode: err?.status || 500,
-      message: err?.message || 'Internal Server Error',
+      statusCode: 500,
+      message: 'Internal Server Error',
     });
   }
 }

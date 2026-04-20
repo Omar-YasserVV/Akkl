@@ -6,6 +6,7 @@ import {
   UpdateBranchMenuItemDto,
   UpdateOrderDto,
 } from '@app/common';
+import { PaginationRequestDto } from '@app/common/dtos/PaginationDto/paginated-result.dto';
 import { BRANCH_TOPICS } from '@app/common/topics/branch.topics';
 import { GetBranchId } from '@app/guards/branch-id.decorator';
 import { CurrentUser } from '@app/guards/current-user.decorator';
@@ -48,81 +49,81 @@ export class BranchController implements OnModuleInit {
     await this.branchClient.connect();
   }
 
-  // --- Branch Endpoints ---
+  // ---------------- BRANCH ----------------
 
   @Roles(UserRole.BUSINESS_OWNER)
-  @Post(':restaurantId')
+  @Post('restaurant/:restaurantId')
   async createBranch(
     @Body() dto: CreateBranchDto,
     @Param('restaurantId') restaurantId: string,
     @Res() res: Response,
   ) {
     const result = await lastValueFrom<{ message?: string }>(
-      this.branchClient.send('create-branch', {
-        restaurantId: restaurantId,
+      this.branchClient.send(BRANCH_TOPICS.CREATE, {
+        restaurantId,
         dto,
       }),
     );
 
-    if (result instanceof Error) {
-      return res.status(HttpStatus.CONFLICT).json({ message: result.message });
-    }
-    return res.status(HttpStatus.CREATED).json({ message: 'Branch created' });
-  }
-
-  @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
-  @Get(':restaurantId')
-  getBranches(@Param('restaurantId') restaurantId: string) {
-    return this.branchClient.send('get-branches', restaurantId);
-  }
-
-  @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
-  @Get(':restaurantId/:branchId')
-  getBranchById(
-    @GetBranchId() branchId: string,
-    @Param('restaurantId') restaurantId: string,
-  ) {
-    return this.branchClient.send('get-branch-by-id', {
-      restaurantId: restaurantId,
-      branchId: branchId,
+    return res.status(HttpStatus.CREATED).json({
+      message: result?.message || 'Branch created',
     });
   }
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
-  @Patch(':restaurantId/:branchId')
+  @Get('restaurant/:restaurantId')
+  getBranches(@Param('restaurantId') restaurantId: string) {
+    return this.branchClient.send(BRANCH_TOPICS.GET_ALL, restaurantId);
+  }
+
+  @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
+  @Get('details/:restaurantId')
+  getBranchById(
+    @GetBranchId() branchId: string,
+    @Param('restaurantId') restaurantId: string,
+  ) {
+    return this.branchClient.send(BRANCH_TOPICS.GET_BY_ID, {
+      restaurantId,
+      branchId,
+    });
+  }
+
+  @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
+  @Patch('details/:restaurantId')
   updateBranch(
     @GetBranchId() branchId: string,
     @Param('restaurantId') restaurantId: string,
     @Body() dto: UpdateBranchDto,
   ) {
-    return this.branchClient.send('update-branch', {
-      restaurantId: restaurantId,
-      branchId: branchId,
+    return this.branchClient.send(BRANCH_TOPICS.UPDATE, {
+      restaurantId,
+      branchId,
       data: dto,
     });
   }
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
-  @Delete(':restaurantId/:branchId')
+  @Delete('details/:restaurantId')
   deleteBranch(
     @GetBranchId() branchId: string,
     @Param('restaurantId') restaurantId: string,
   ) {
-    return this.branchClient.send('delete-branch', {
-      restaurantId: restaurantId,
-      branchId: branchId,
+    return this.branchClient.send(BRANCH_TOPICS.DELETE, {
+      restaurantId,
+      branchId,
     });
   }
 
-  // --- Menu Endpoints ---
+  // ---------------- MENU ----------------
+
   @Roles(UserRole.BUSINESS_OWNER, UserRole.CASHIER, UserRole.MANAGER)
-  @Get(':branchId/menu')
+  @Get('menu')
   getBranchMenu(@GetBranchId() branchId: string) {
-    return this.branchClient.send('get_branch_menu', { branchId });
+    return this.branchClient.send(BRANCH_TOPICS.GET_MENU, { branchId });
   }
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
-  @Post(':branchId/menu')
+  @Post('menu')
   createMenuItem(
     @GetBranchId() branchId: string,
     @Body() data: BranchMenuItemDetailDto,
@@ -134,10 +135,10 @@ export class BranchController implements OnModuleInit {
   }
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
-  @Patch(':branchId/menu/:menuItemId')
+  @Patch('menu/:menuItemId')
   updateMenuItem(
     @GetBranchId() branchId: string,
-    @Param('menuItemId') id: string, // FIX: Changed number to string
+    @Param('menuItemId') id: string,
     @Body() data: UpdateBranchMenuItemDto,
   ) {
     return this.branchClient.send('update_menu_item', {
@@ -148,10 +149,10 @@ export class BranchController implements OnModuleInit {
   }
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
-  @Delete(':branchId/menu/:menuItemId')
+  @Delete('menu/:menuItemId')
   deleteMenuItem(
     @GetBranchId() branchId: string,
-    @Param('menuItemId') id: string, // FIX: Changed number to string
+    @Param('menuItemId') id: string,
   ) {
     return this.branchClient.send('delete_menu_item', {
       id,
@@ -159,83 +160,67 @@ export class BranchController implements OnModuleInit {
     });
   }
 
-  // --- Order Endpoints ---
+  // ---------------- ORDERS ----------------
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.CASHIER, UserRole.MANAGER)
-  @Post(':branchId/orders')
-  @UseGuards(JwtAuthGuard)
+  @Post('orders')
   createOrder(
     @GetBranchId() branchId: string,
     @Body() data: CreateOrderDto,
     @CurrentUser('sub') userId: string,
   ) {
     return this.branchClient.send('create_order', {
-      branchId: String(branchId),
+      branchId,
       data,
-      userId: String(userId),
-    });
-  }
-
-  @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER, UserRole.CASHIER)
-  @Get('/:branchId/orders/stats')
-  getOrderStats(@GetBranchId() branchId: string) {
-    return this.branchClient.send(BRANCH_TOPICS.ORDER_GET_STATUSES, {
-      branchId: String(branchId),
+      userId,
     });
   }
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.CASHIER, UserRole.MANAGER)
-  @Get('/:branchId/orders')
-  @ApiQuery({
-    name: 'source',
-    enum: source,
-    required: false,
-    description: 'Filter orders by their source',
-  })
-  @ApiQuery({
-    name: 'status',
-    enum: OrderState,
-    required: false,
-    description: 'Filter orders by their status',
-  })
+  @Get('orders/stats')
+  getOrderStats(@GetBranchId() branchId: string) {
+    return this.branchClient.send(BRANCH_TOPICS.GET_ORDER_STATUSES, {
+      branchId,
+    });
+  }
+
+  @Roles(UserRole.BUSINESS_OWNER, UserRole.CASHIER, UserRole.MANAGER)
+  @Get('orders')
+  @ApiQuery({ name: 'source', enum: source, required: false })
+  @ApiQuery({ name: 'status', enum: OrderState, required: false })
   getOrdersByBranch(
     @GetBranchId() branchId: string,
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,
-    @Query('status') status?: OrderState,
-    @Query('source') source?: source,
+    @Query() pagination: PaginationRequestDto,
   ) {
-    return this.branchClient.send('get_orders_by_branch', {
-      branchId: branchId,
-      page: Number(page),
-      limit: Number(limit),
-      status,
-      source,
+    return this.branchClient.send(BRANCH_TOPICS.GET_ALL_ORDERS, {
+      branchId,
+      pagination: {
+        page: Number(pagination.page) || 1,
+        limit: Number(pagination.limit) || 10,
+        status: pagination.status,
+        source: pagination.source,
+      },
     });
   }
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.CASHIER, UserRole.MANAGER)
-  @Get(':branchId/orders/:orderId')
+  @Get('orders/:orderId')
   getOrderById(@Param('orderId') orderId: string) {
-    return this.branchClient.send('get_order_by_id', {
-      orderId,
-    });
+    return this.branchClient.send(BRANCH_TOPICS.GET_ORDER_BY_ID, { orderId });
   }
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
-  @Patch('/:branchId/orders/:orderId')
+  @Patch('orders/:orderId')
   updateOrder(@Param('orderId') orderId: string, @Body() data: UpdateOrderDto) {
-    return this.branchClient.send('update_order', {
+    return this.branchClient.send(BRANCH_TOPICS.UPDATE_ORDER, {
       orderId,
       data,
     });
   }
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
-  @Delete('/:branchId/orders/:orderId')
+  @Delete('orders/:orderId')
   deleteOrder(@Param('orderId') orderId: string) {
-    return this.branchClient.send('delete_order', {
-      orderId,
-    });
+    return this.branchClient.send(BRANCH_TOPICS.DELETE_ORDER, { orderId });
   }
 }

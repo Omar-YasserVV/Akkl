@@ -2,7 +2,7 @@ import api from "./AxiosInstance";
 
 export const apiClient = {
   get: <T>(url: string, params?: object) =>
-    api.get<T>(url, { params }).then((res) => res.data),
+    api.get<T>(url, params).then((res) => res.data),
 
   post: <T>(url: string, data?: any) =>
     api.post<T>(url, data).then((res) => res.data),

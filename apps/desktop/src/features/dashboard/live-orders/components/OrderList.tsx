@@ -1,280 +1,23 @@
-import React, { useState, useMemo, useCallback } from "react";
+import { useOrderStore } from "@/store/OrderStore";
 import {
+  Spinner,
   Table,
   TableBody,
   TableCell,
   TableColumn,
   TableHeader,
   TableRow,
-  Tooltip,
-  Select,
-  SelectItem,
 } from "@heroui/react";
-
-import { LuChefHat, LuClock8, LuCircleCheck } from "react-icons/lu";
-import { CgSmartphone } from "react-icons/cg";
-import { BiStore } from "react-icons/bi";
-import { FiEdit } from "react-icons/fi";
-import { FaRegTrashAlt } from "react-icons/fa";
-
-// --- Types & Mock Data ---
-export type OrderStatus = "pending" | "cooking" | "ready";
-
-export interface LiveOrder {
-  id: string;
-  "order#": string;
-  customer: string;
-  source: "App" | "Store";
-  items: number;
-  total: number;
-  status: OrderStatus;
-}
-
-const MOCK_ORDERS: LiveOrder[] = [
-  {
-    id: "1",
-    "order#": "1001",
-    customer: "John Doe",
-    source: "App",
-    items: 2,
-    total: 25.5,
-    status: "pending",
-  },
-  {
-    id: "2",
-    "order#": "1002",
-    customer: "Jane Smith",
-    source: "Store",
-    items: 1,
-    total: 12.0,
-    status: "cooking",
-  },
-  {
-    id: "3",
-    "order#": "1003",
-    customer: "Bob Wilson",
-    source: "App",
-    items: 4,
-    total: 45.2,
-    status: "ready",
-  },
-];
-
-type ColumnKey =
-  | "order#"
-  | "customer"
-  | "source"
-  | "items"
-  | "total"
-  | "status"
-  | "actions";
-
-const columns: Array<{
-  name: string;
-  uid: ColumnKey;
-  align?: "start" | "center" | "end";
-}> = [
-  { name: "Order #", uid: "order#", align: "start" },
-  { name: "Customer", uid: "customer", align: "start" },
-  { name: "Source", uid: "source", align: "start" },
-  { name: "Items", uid: "items", align: "start" },
-  { name: "Total", uid: "total", align: "start" },
-  { name: "Status", uid: "status", align: "start" },
-  { name: "Actions", uid: "actions", align: "start" },
-];
-
-const statusChipMap: Record<OrderStatus, { label: string; className: string }> =
-  {
-    pending: { label: "Pending", className: "bg-amber-100 text-[#746A0C]" },
-    cooking: { label: "Cooking", className: "bg-orange-100 text-orange-900" },
-    ready: { label: "Ready", className: "bg-green-100 text-green-800" },
-  };
-
-const formatMoney = (value: number) => `$${value.toFixed(2)}`;
-
-// --- Sub-components ---
-
-const StatusSelect = ({
-  status,
-  onChange,
-}: {
-  status: OrderStatus;
-  onChange: (status: OrderStatus) => void;
-}) => {
-  const cfg = statusChipMap[status];
-  const Icon =
-    status === "pending"
-      ? LuClock8
-      : status === "cooking"
-        ? LuChefHat
-        : LuCircleCheck;
-  const colors = {
-    pending: "status-pill-pending",
-    cooking: "status-pill-cooking",
-    ready: "status-pill-ready",
-  };
-  const currentClass = colors[status];
-
-  return (
-    <Select
-      aria-label="Change status"
-      selectedKeys={[status]}
-      onSelectionChange={(keys) => {
-        const val = Array.from(keys)[0] as OrderStatus;
-        if (val) onChange(val);
-      }}
-      variant="flat"
-      radius="full"
-      size="sm"
-      disallowEmptySelection
-      classNames={{
-        trigger: `${currentClass} w-fit min-w-[120px] h-7 min-h-7 px-3 shadow-none border-none transition-none overflow-hidden`,
-        value: "text-xs font-medium text-inherit!",
-        selectorIcon: "text-inherit! h-3 w-3",
-        popoverContent: "min-w-[130px] p-1",
-      }}
-      renderValue={() => (
-        <div className="flex items-center gap-2 text-inherit!">
-          <Icon className="h-4 w-4 text-inherit!" />
-          <span className="text-inherit!">{cfg.label}</span>
-        </div>
-      )}
-    >
-      <SelectItem
-        key="pending"
-        textValue="Pending"
-        startContent={<LuClock8 className="h-4 w-4" />}
-        className="text-amber-700 data-[hover=true]:bg-amber-50"
-      >
-        Pending
-      </SelectItem>
-      <SelectItem
-        key="cooking"
-        textValue="Cooking"
-        startContent={<LuChefHat className="h-4 w-4" />}
-        className="text-orange-900 data-[hover=true]:bg-orange-50"
-      >
-        Cooking
-      </SelectItem>
-      <SelectItem
-        key="ready"
-        textValue="Ready"
-        startContent={<LuCircleCheck className="h-4 w-4" />}
-        className="text-green-800 data-[hover=true]:bg-green-50"
-      >
-        Ready
-      </SelectItem>
-    </Select>
-  );
-};
-
-const SourceChip = ({ source }: { source: LiveOrder["source"] }) => {
-  const isApp = source === "App";
-  const Icon = isApp ? CgSmartphone : BiStore;
-  return (
-    <span
-      className={
-        "inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium " +
-        (isApp ? "bg-blue-100 text-blue-700" : "bg-purple-100 text-purple-700")
-      }
-    >
-      <span className="inline-flex h-4 w-4 items-center justify-center rounded-full">
-        <Icon className="h-4 w-4" />
-      </span>
-      {source}
-    </span>
-  );
-};
-
-// --- Main Component ---
+import { columns } from "../constants/StatsCard.constants";
+import { useOrders } from "../hooks/useLiveOrders";
+import { OrderCell } from "./RenderCell";
 
 const OrderList = () => {
-  // Prototype States
-  const [orders, setOrders] = useState<LiveOrder[]>(MOCK_ORDERS);
-  const [sourceFilter] = useState<string>("all");
-  const [statusFilter] = useState<string>("all");
-
-  const updateOrderStatus = (id: string, newStatus: OrderStatus) => {
-    setOrders((prev) =>
-      prev.map((order) =>
-        order.id === id ? { ...order, status: newStatus } : order,
-      ),
-    );
-  };
-
-  const deleteOrder = (id: string) => {
-    setOrders((prev) => prev.filter((order) => order.id !== id));
-  };
-
-  const filteredOrders = useMemo(() => {
-    return orders.filter((order) => {
-      const matchSource =
-        sourceFilter === "all" || order.source === sourceFilter;
-      const matchStatus =
-        statusFilter === "all" || order.status === statusFilter;
-      return matchSource && matchStatus;
-    });
-  }, [orders, sourceFilter, statusFilter]);
-
-  const renderCell = useCallback((order: LiveOrder, columnKey: React.Key) => {
-    const key = columnKey as ColumnKey;
-    switch (key) {
-      case "order#":
-        return (
-          <span className="font-semibold text-black">#{order["order#"]}</span>
-        );
-      case "customer":
-        return <span className="text-black">{order.customer}</span>;
-      case "source":
-        return <SourceChip source={order.source} />;
-      case "items":
-        return (
-          <span className="text-black">
-            {order.items} {order.items === 1 ? "item" : "items"}
-          </span>
-        );
-      case "total":
-        return (
-          <span className="text-black tabular-nums">
-            {formatMoney(order.total)}
-          </span>
-        );
-      case "status":
-        return (
-          <StatusSelect
-            status={order.status}
-            onChange={(val) => updateOrderStatus(order.id, val)}
-          />
-        );
-      case "actions":
-        return (
-          <div className="flex items-center gap-3">
-            <Tooltip content="Edit">
-              <button
-                type="button"
-                className="h-9 w-9 rounded-sm border border-gray-100 bg-white text-gray-700 inline-flex items-center justify-center hover:bg-gray-50"
-              >
-                <FiEdit className="h-4 w-4" />
-              </button>
-            </Tooltip>
-            <Tooltip color="danger" content="Delete">
-              <button
-                onClick={() => deleteOrder(order.id)}
-                type="button"
-                className="h-9 w-9 rounded-sm border border-gray-100 bg-white text-rose-500 inline-flex items-center justify-center hover:bg-rose-50"
-              >
-                <FaRegTrashAlt className="h-4 w-4" />
-              </button>
-            </Tooltip>
-          </div>
-        );
-      default:
-        return null;
-    }
-  }, []);
+  const filters = useOrderStore((state) => state.filters);
+  const { data, isLoading, isFetching } = useOrders(filters);
 
   return (
-    <div className="w-full rounded-lg font-normal text-black border border-gray-100 bg-white overflow-hidden shadow-sm">
+    <div className="relative w-full rounded-lg font-normal text-black border border-gray-100 bg-white overflow-hidden shadow-sm">
       <Table
         aria-label="Live orders table"
         removeWrapper
@@ -283,7 +26,7 @@ const OrderList = () => {
           thead: "rounded-b-none",
           th: "bg-neutral-100 !rounded-none text-black text-xs font-semibold py-3 px-6 text-left border-b border-gray-100",
           td: "py-5 px-6",
-          tr: "border-b border-gray-100 last:border-0",
+          tr: `border-b border-gray-100 last:border-0 ${isFetching && !isLoading ? "opacity-40" : ""}`,
         }}
       >
         <TableHeader columns={columns}>
@@ -293,16 +36,34 @@ const OrderList = () => {
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody items={filteredOrders} emptyContent="No orders yet.">
+
+        <TableBody
+          items={data?.data || []}
+          emptyContent={isLoading ? <Spinner /> : "No orders yet."}
+          isLoading={isLoading}
+        >
           {(item) => (
             <TableRow key={item.id}>
               {(columnKey) => (
-                <TableCell>{renderCell(item, columnKey)}</TableCell>
+                <TableCell>
+                  <OrderCell order={item} columnKey={columnKey} />
+                </TableCell>
               )}
             </TableRow>
           )}
         </TableBody>
       </Table>
+      {/* //TODO:Omar maybe move it to be reusable later*/}
+      {isFetching && !isLoading && (
+        <div className="absolute inset-0 top-10.25 flex items-center justify-center bg-white/50 backdrop-blur-[2px] z-10">
+          <div className="flex flex-col items-center gap-2">
+            <Spinner size="lg" />
+            <span className="text-xs text-gray-400 font-medium">
+              Updating...
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
