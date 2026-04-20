@@ -5,7 +5,6 @@ export interface CreateOrderBody {
   items: {
     menuItemId: string;
     quantity: number;
-    price: number;
   }[];
   status: OrderState;
   userId: string;
@@ -27,11 +26,8 @@ export interface PaginatedResponse<T> {
   data: T[];
   meta: {
     total: number;
-    lastPage: number;
     currentPage: number;
-    perPage: number;
-    prev: number | null;
-    next: number | null;
+    limit: number;
   };
 }
 
@@ -65,4 +61,21 @@ export interface Order {
     fullName: string;
     email: string;
   };
+}
+
+export interface BranchMenuItemVariation {
+  id: string;
+  size: string;
+  price: string;
+  discountPrice?: string | null;
+}
+
+export interface BranchMenuItem {
+  id: string;
+  menuItemId: string;
+  name: string;
+  description?: string | null;
+  image?: string | null;
+  isAvailable: boolean;
+  variations: BranchMenuItemVariation[];
 }

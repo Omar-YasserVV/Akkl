@@ -1,6 +1,7 @@
 import { OrderState } from "@repo/types";
 import { apiClient } from "@repo/utils";
 import {
+  BranchMenuItem,
   CreateOrderBody,
   Order,
   OrderFilters,
@@ -16,6 +17,10 @@ export const ordersApis = {
 
   getAllOrders: async (params: OrderFilters) => {
     return apiClient.get<PaginatedResponse<Order>>(BASE_URL, { params });
+  },
+
+  getBranchMenu: async () => {
+    return apiClient.get<BranchMenuItem[]>("/branches/menu");
   },
 
   getOrderStats: async () => {
