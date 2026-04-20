@@ -7,15 +7,7 @@ import { HiOutlineEye, HiOutlineEyeOff } from "react-icons/hi";
 import { Navigate, useNavigate, useNavigation } from "react-router-dom";
 import { z } from "zod";
 import AuthStyle from "../components/AuthStyle";
-
-const signInSchema = z.object({
-  email: z
-    .string()
-    .min(1, "Email is required.")
-    .email("Email must be a valid email address."),
-  password: z.string().min(1, "Password is required."),
-  remember: z.boolean().optional(),
-});
+import { signInSchema } from "./schemas/signIn.schema";
 
 type SignInFormData = z.infer<typeof signInSchema>;
 
