@@ -1,8 +1,8 @@
 import { AxiosInstance } from "axios";
 import {
-  errorHandlers,
-  handleNetworkError,
-  handleServerError,
+  ApiError,
+  getErrorMessage,
+  getNetworkErrorMessage,
 } from "./Errorhandlers";
 import { RetryConfig, getRetryDelay, shouldRetry, sleep } from "./Retry";
 
@@ -13,27 +13,28 @@ export const applyInterceptors = (api: AxiosInstance): void => {
     async (error) => {
       // No response — offline or hard CORS block
       if (!error.response) {
-        handleNetworkError(error.code === "ECONNABORTED");
-        return Promise.reject(error);
+        const message = getNetworkErrorMessage(error.code === "ECONNABORTED");
+        return Promise.reject(new ApiError(0, message));
       }
 
-      const { status, data } = error.response;
+      const { status, data, headers } = error.response;
       const config = error.config as RetryConfig;
 
-      // Auto-retry transient failures before showing any error
+      // Auto-retry transient failures before surfacing any error.
+      // Spread config to avoid mutating the original object — mutation can
+      // cause the retry counter to be lost if axios clones the config internally.
       if (shouldRetry(status, config._retryCount ?? 0)) {
-        config._retryCount = (config._retryCount ?? 0) + 1;
-        await sleep(getRetryDelay(config._retryCount));
-        return api(config);
+        const retryCount = (config._retryCount ?? 0) + 1;
+        const retryConfig: RetryConfig = { ...config, _retryCount: retryCount };
+        await sleep(getRetryDelay(retryCount, headers["retry-after"]));
+        return api(retryConfig);
       }
 
-      if (errorHandlers[status]) {
-        errorHandlers[status](data);
-      } else if (status >= 500) {
-        handleServerError();
-      }
-
-      return Promise.reject(error);
+      // Throw a typed ApiError with a human-readable message.
+      // The caller (React Query onError, Zustand, component) decides how to
+      // present it — toast, redirect, inline validation message, etc.
+      const message = getErrorMessage(status, data);
+      return Promise.reject(new ApiError(status, message, data));
     },
   );
 };

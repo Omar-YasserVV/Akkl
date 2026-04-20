@@ -17,5 +17,15 @@ export const shouldRetry = (status: number, retryCount: number): boolean =>
   RETRY_CONFIG.RETRYABLE_STATUSES.has(status) &&
   retryCount < RETRY_CONFIG.MAX_RETRIES;
 
-export const getRetryDelay = (retryCount: number): number =>
-  RETRY_CONFIG.DELAY_MS * retryCount;
+// Respects the Retry-After header (in seconds) when present — important for
+// 429 responses where the server tells you exactly how long to wait.
+export const getRetryDelay = (
+  retryCount: number,
+  retryAfterHeader?: string,
+): number => {
+  if (retryAfterHeader) {
+    const seconds = parseInt(retryAfterHeader, 10);
+    if (!isNaN(seconds)) return seconds * 1000;
+  }
+  return RETRY_CONFIG.DELAY_MS * retryCount;
+};
