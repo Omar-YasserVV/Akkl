@@ -6,7 +6,7 @@ const PaginationButtons = () => {
   const { filters, setFilters } = useOrderStore();
   const { data } = useOrders(filters);
 
-  const total = data?.meta.total || 1;
+  const pages = data?.meta.pages || 1;
   const page = data?.meta.currentPage || 1;
 
   const handlePageChange = (newPage: number) => {
@@ -23,7 +23,7 @@ const PaginationButtons = () => {
           next: "!text-black bg-default-200 hover:bg-default-300 ",
           prev: "!text-black",
         }}
-        total={total}
+        total={pages}
         page={page}
         onChange={handlePageChange}
         variant="light"
