@@ -10,6 +10,7 @@ export function createPagination<T>(
     data,
     meta: {
       total,
+      pages: Math.ceil(total / limit),
       currentPage: page,
       limit,
     },
