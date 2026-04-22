@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { OrderState, source } from 'libs/db/generated/client/enums';
+
 export class PaginationRequestDto {
   @ApiPropertyOptional({
     example: 1,
@@ -14,18 +14,6 @@ export class PaginationRequestDto {
     default: 10,
   })
   limit: number;
-
-  @ApiPropertyOptional({
-    example: 'PENDING',
-    description: 'Status filter',
-  })
-  status?: OrderState;
-
-  @ApiPropertyOptional({
-    example: 'MOBILE_APP',
-    description: 'Order source filter',
-  })
-  source?: source;
 }
 
 class MetaDto {
