@@ -6,7 +6,7 @@ import {
   UpdateBranchMenuItemDto,
   UpdateOrderDto,
 } from '@app/common';
-import { PaginationRequestDto } from '@app/common/dtos/PaginationDto/paginated-result.dto';
+import { OrdersPaginationDto } from '@app/common/dtos/OrderDto/list.order.dto';
 import { BRANCH_TOPICS } from '@app/common/topics/branch.topics';
 import { GetBranchId } from '@app/guards/branch-id.decorator';
 import { CurrentUser } from '@app/guards/current-user.decorator';
@@ -186,11 +186,13 @@ export class BranchController implements OnModuleInit {
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.CASHIER, UserRole.MANAGER)
   @Get('orders')
+  @ApiQuery({ name: 'page', type: Number, required: true })
+  @ApiQuery({ name: 'limit', type: Number, required: true })
   @ApiQuery({ name: 'source', enum: source, required: false })
   @ApiQuery({ name: 'status', enum: OrderState, required: false })
   getOrdersByBranch(
     @GetBranchId() branchId: string,
-    @Query() pagination: PaginationRequestDto,
+    @Query() pagination: OrdersPaginationDto,
   ) {
     return this.branchClient.send(BRANCH_TOPICS.GET_ALL_ORDERS, {
       branchId,
