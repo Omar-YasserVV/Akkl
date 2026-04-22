@@ -47,3 +47,6 @@ yarn-error.*
 .DS_Store
 *.pem
 app-example/
+
+
+/generated/prisma
