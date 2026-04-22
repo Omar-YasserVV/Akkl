@@ -1,4 +1,3 @@
-// svc-analytics.base.ts
 import { PrismaService } from '@app/db';
 import { RpcException } from '@nestjs/microservices';
 
@@ -29,6 +28,7 @@ export abstract class SvcAnalyticsBase {
   }
 
   protected calcPercentageChange(current: number, previous: number): number {
+    if (previous === 0 && current === 0) return 0;
     if (previous === 0) return 100;
     return ((current - previous) / previous) * 100;
   }

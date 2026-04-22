@@ -1,4 +1,4 @@
-import { DbModule, PrismaService } from '@app/db';
+import { DbModule } from '@app/db';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ClientsModule } from '@nestjs/microservices';
@@ -24,6 +24,6 @@ import { SvcAnalyticsService } from './svc-analytics.service';
   ],
 
   controllers: [SvcAnalyticsController],
-  providers: [SvcAnalyticsService, PrismaService, AnalyticsRepository],
+  providers: [SvcAnalyticsService, AnalyticsRepository],
 })
 export class SvcAnalyticsModule {}

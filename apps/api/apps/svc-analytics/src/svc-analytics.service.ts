@@ -1,7 +1,10 @@
-import { LineChartAnalyticsRequestDto } from '@app/common';
 import { PrismaService } from '@app/db';
 import { Injectable } from '@nestjs/common';
 import { AnalyticsRepository } from './analytics.repository';
+import {
+  LineChartAnalyticsRequestDto,
+  LineChartAnalyticsResponseDto,
+} from './AnalyticsDto/line.chart.analytics.dto';
 import { SvcAnalyticsBase } from './svc-analytics.base';
 
 @Injectable()
@@ -13,7 +16,10 @@ export class SvcAnalyticsService extends SvcAnalyticsBase {
     super(prisma);
   }
 
-  async BranchRevenue(branchID: string, dto: LineChartAnalyticsRequestDto) {
+  async branchRevenue(
+    branchID: string,
+    dto: LineChartAnalyticsRequestDto,
+  ): Promise<LineChartAnalyticsResponseDto> {
     await this.assertBranchExists(branchID);
     const { currentStart, previousStart, now } = this.buildPeriods(
       dto.daysAgo ?? 7,
@@ -38,7 +44,10 @@ export class SvcAnalyticsService extends SvcAnalyticsBase {
     };
   }
 
-  async BranchOrders(branchID: string, dto: LineChartAnalyticsRequestDto) {
+  async branchOrders(
+    branchID: string,
+    dto: LineChartAnalyticsRequestDto,
+  ): Promise<LineChartAnalyticsResponseDto> {
     await this.assertBranchExists(branchID);
     const { currentStart, previousStart, now } = this.buildPeriods(
       dto.daysAgo ?? 7,

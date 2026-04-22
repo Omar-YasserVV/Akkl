@@ -1,4 +1,4 @@
-import { ANALYTICS_TOPICS, LineChartAnalyticsRequestDto } from '@app/common';
+import { ANALYTICS_TOPICS } from '@app/common';
 import { GetBranchId } from '@app/guards/branch-id.decorator';
 import { JwtAuthGuard } from '@app/guards/jwt-auth.guard';
 import { RolesGuard } from '@app/guards/role.guard';
@@ -11,6 +11,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
+import {
+  LineChartAnalyticsRequestDto,
+  LineChartAnalyticsResponseDto,
+} from 'apps/svc-analytics/src/AnalyticsDto/line.chart.analytics.dto';
 import { lastValueFrom } from 'rxjs';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -32,7 +36,7 @@ export class AnalyticsController implements OnModuleInit {
   async branchRevenue(
     @Query() dto: LineChartAnalyticsRequestDto,
     @GetBranchId() branchID: string,
-  ) {
+  ): Promise<LineChartAnalyticsResponseDto> {
     return lastValueFrom(
       this.analyticsClient.send(ANALYTICS_TOPICS.BRANCH_REVENUE, {
         branchID,
@@ -45,7 +49,7 @@ export class AnalyticsController implements OnModuleInit {
   async branchOrders(
     @Query() dto: LineChartAnalyticsRequestDto,
     @GetBranchId() branchID: string,
-  ) {
+  ): Promise<LineChartAnalyticsResponseDto> {
     return lastValueFrom(
       this.analyticsClient.send(ANALYTICS_TOPICS.BRANCH_ORDERS, {
         branchID,
