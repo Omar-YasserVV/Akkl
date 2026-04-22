@@ -1,4 +1,4 @@
-import { DbModule, PrismaService } from '@app/db';
+import { DbModule } from '@app/db';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ClientsModule } from '@nestjs/microservices';
@@ -23,6 +23,6 @@ import { SvcRestaurantService } from './svc-restaurant.service';
     DbModule,
   ],
   controllers: [SvcRestaurantController],
-  providers: [SvcRestaurantService, PrismaService],
+  providers: [SvcRestaurantService],
 })
 export class SvcRestaurantModule {}
