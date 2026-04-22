@@ -128,7 +128,7 @@ export class BranchController implements OnModuleInit {
     @GetBranchId() branchId: string,
     @Body() data: BranchMenuItemDetailDto,
   ) {
-    return this.branchClient.send('create_menu_item', {
+    return this.branchClient.send(BRANCH_TOPICS.CREATE_MENU, {
       branchId,
       data,
     });
@@ -141,7 +141,7 @@ export class BranchController implements OnModuleInit {
     @Param('menuItemId') id: string,
     @Body() data: UpdateBranchMenuItemDto,
   ) {
-    return this.branchClient.send('update_menu_item', {
+    return this.branchClient.send(BRANCH_TOPICS.UPDATE_MENU, {
       branchId,
       id,
       data,
@@ -154,7 +154,7 @@ export class BranchController implements OnModuleInit {
     @GetBranchId() branchId: string,
     @Param('menuItemId') id: string,
   ) {
-    return this.branchClient.send('delete_menu_item', {
+    return this.branchClient.send(BRANCH_TOPICS.DELETE_MENU, {
       id,
       branchId,
     });
@@ -169,7 +169,7 @@ export class BranchController implements OnModuleInit {
     @Body() data: CreateOrderDto,
     @CurrentUser('sub') userId: string,
   ) {
-    return this.branchClient.send('create_order', {
+    return this.branchClient.send(BRANCH_TOPICS.CREATE_ORDER, {
       branchId,
       data,
       userId,

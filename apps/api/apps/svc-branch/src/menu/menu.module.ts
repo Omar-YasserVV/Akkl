@@ -1,7 +1,7 @@
-import { DbModule, PrismaService } from '@app/db';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ClientsModule } from '@nestjs/microservices';
+import { createKafkaClient } from 'utils/kafka-client.factory';
 import { MenuController } from './menu.controller';
 import { MenuService } from './menu.service';
 
@@ -10,28 +10,15 @@ import { MenuService } from './menu.service';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    DbModule,
-    ClientsModule.register([
-      {
-        name: 'BRANCH_SERVICE',
-        transport: Transport.KAFKA,
-        options: {
-          client: {
-            brokers: ['localhost:9094'],
-          },
-          consumer: {
-            groupId:
-              'branch-event-producer-client' +
-              Math.random().toString(36).substring(7),
-            allowAutoTopicCreation: true,
-            sessionTimeout: 6000,
-            heartbeatInterval: 2000,
-          },
-        },
-      },
+    ClientsModule.registerAsync([
+      createKafkaClient(
+        'BRANCH_SERVICE',
+        'svc-branch-server-group',
+        'svc-branch',
+      ),
     ]),
   ],
   controllers: [MenuController],
-  providers: [MenuService, PrismaService],
+  providers: [MenuService],
 })
 export class MenuModule {}

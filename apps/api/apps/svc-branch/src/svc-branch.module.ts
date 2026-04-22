@@ -1,4 +1,4 @@
-import { DbModule, PrismaService } from '@app/db';
+import { DbModule } from '@app/db';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ClientsModule } from '@nestjs/microservices';
@@ -26,6 +26,6 @@ import { SvcBranchService } from './svc-branch.service';
     ]),
   ],
   controllers: [SvcBranchController],
-  providers: [SvcBranchService, PrismaService],
+  providers: [SvcBranchService],
 })
 export class SvcBranchModule {}
