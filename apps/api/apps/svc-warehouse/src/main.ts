@@ -1,8 +1,23 @@
 import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { SvcWarehouseModule } from './svc-warehouse.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(SvcWarehouseModule);
-  await app.listen(process.env.port ?? 3000);
+  const app = await NestFactory.createMicroservice<MicroserviceOptions>(
+    SvcWarehouseModule,
+    {
+      transport: Transport.KAFKA,
+      options: {
+        client: {
+          brokers: ['localhost:9094'],
+        },
+        consumer: {
+          groupId: 'svc-warehouse-server-group',
+        },
+      },
+    },
+  );
+  await app.listen();
+  console.log('svc-warehouse Microservice is listening...');
 }
 bootstrap();
