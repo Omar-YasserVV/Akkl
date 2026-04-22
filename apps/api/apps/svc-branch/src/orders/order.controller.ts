@@ -1,5 +1,5 @@
 import { CreateOrderDto, UpdateOrderDto } from '@app/common';
-import { PaginationRequestDto } from '@app/common/dtos/PaginationDto/paginated-result.dto';
+import { OrdersPaginationDto } from '@app/common/dtos/OrderDto/list.order.dto';
 import { BRANCH_TOPICS } from '@app/common/topics/branch.topics';
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
@@ -39,13 +39,16 @@ export class OrderController {
   @MessagePattern(BRANCH_TOPICS.GET_ALL_ORDERS)
   async getOrdersByBranch(
     @Payload('branchId') branchId: string,
-    @Payload('pagination') pagination: PaginationRequestDto,
+    @Payload('pagination') pagination: OrdersPaginationDto,
   ) {
-    return this.orderService.getOrdersByBranch(branchId, {
-      page: Number(pagination.page) || 1,
-      limit: Number(pagination.limit) || 10,
-      status: pagination.status,
-      source: pagination.source,
+    return this.orderService.getOrdersByBranch({
+      branchId,
+      pagination: {
+        page: Number(pagination.page) || 1,
+        limit: Number(pagination.limit) || 10,
+        status: pagination.status,
+        source: pagination.source,
+      },
     });
   }
 

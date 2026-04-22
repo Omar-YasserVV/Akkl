@@ -1,5 +1,5 @@
 import { CreateOrderDto, UpdateOrderDto } from '@app/common';
-import { PaginationRequestDto } from '@app/common/dtos/PaginationDto/paginated-result.dto';
+import { ListOrdersReqDto } from '@app/common/dtos/OrderDto/list.order.dto';
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { Prisma } from 'libs/db/generated/client/client';
@@ -105,11 +105,14 @@ export class OrderService {
     }
   }
 
-  async getOrdersByBranch(branchId: string, dto: PaginationRequestDto) {
-    const { page, limit, status, source } = dto;
+  async getOrdersByBranch(dto: ListOrdersReqDto) {
+    const {
+      pagination: { limit, page, source, status },
+      branchId,
+    } = dto;
     const skip = (page - 1) * limit;
 
-    const where = {
+    const where: any = {
       branchId,
       ...(status && { status }),
       ...(source && { source }),
