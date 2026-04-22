@@ -3,10 +3,13 @@ import * as dotenv from 'dotenv';
 import {
   DietaryType,
   ExpenseType,
+  IngredientCategory,
+  MeasurementUnit,
   OrderState,
   PrismaClient,
   ShiftStatus,
   source,
+  stockStatus,
   UserRole,
 } from '../generated/client/client';
 
@@ -23,8 +26,9 @@ const prisma = new PrismaClient({
 async function main() {
   console.log('🚀 Starting Seeding process...');
 
-  // --- 1. Cleanup existing data ---
-  // Order matters due to Foreign Key constraints (Child tables first)
+  // --- 1. Cleanup existing data (order matters — children before parents) ---
+  await prisma.inventoryUsageLog.deleteMany({});
+  await prisma.stockBatch.deleteMany({});
   await prisma.expense.deleteMany({});
   await prisma.orderItem.deleteMany({});
   await prisma.order.deleteMany({});
@@ -36,6 +40,8 @@ async function main() {
   await prisma.table.deleteMany({});
   await prisma.shift.deleteMany({});
   await prisma.warehouse.deleteMany({});
+  await prisma.ingredient.deleteMany({});
+  await prisma.dietaryTag.deleteMany({});
   await prisma.branch.deleteMany({});
   await prisma.restaurant.deleteMany({});
   await prisma.user.deleteMany({});
@@ -49,7 +55,7 @@ async function main() {
     },
   });
 
-  // --- 3. Users (Owners, Staff, and Customers) ---
+  // --- 3. Users ---
   const owner = await prisma.user.create({
     data: {
       email: 'omar@owner.com',
@@ -84,7 +90,7 @@ async function main() {
     },
   });
 
-  // --- 4. Restaurants ---
+  // --- 4. Restaurant ---
   const restaurant = await prisma.restaurant.create({
     data: {
       name: 'The Elite Burger',
@@ -93,7 +99,7 @@ async function main() {
     },
   });
 
-  // --- 5. Branches ---
+  // --- 5. Branch ---
   const branch = await prisma.branch.create({
     data: {
       name: 'Downtown Branch',
@@ -106,7 +112,6 @@ async function main() {
     },
   });
 
-  // Update manager to belong to this branch
   await prisma.user.update({
     where: { id: manager.id },
     data: { branchId: branch.id },
@@ -123,7 +128,7 @@ async function main() {
 
   await prisma.reservation.create({
     data: {
-      reservationTime: new Date(Date.now() + 86400000), // Tomorrow
+      reservationTime: new Date(Date.now() + 86400000),
       depositAmount: 50.0,
       isPaid: true,
       tableId: table.id,
@@ -132,7 +137,7 @@ async function main() {
     },
   });
 
-  // --- 7. Inventory & Warehouses ---
+  // --- 7. Warehouse & Ingredients ---
   const warehouse = await prisma.warehouse.create({
     data: {
       name: 'Main Cold Storage',
@@ -140,24 +145,124 @@ async function main() {
     },
   });
 
-  const ingredient = await prisma.ingredient.upsert({
+  const beefPatty = await prisma.ingredient.upsert({
     where: { name: 'Premium Beef Patty' },
     update: {},
     create: {
       name: 'Premium Beef Patty',
-      unit: 'kg',
+      unit: MeasurementUnit.KG,
+      category: IngredientCategory.MEAT,
     },
   });
 
-  await prisma.inventoryItem.create({
+  const cheeseSlab = await prisma.ingredient.upsert({
+    where: { name: 'Cheddar Cheese Slab' },
+    update: {},
+    create: {
+      name: 'Cheddar Cheese Slab',
+      unit: MeasurementUnit.KG,
+      category: IngredientCategory.DAIRY,
+    },
+  });
+
+  const briocheBun = await prisma.ingredient.upsert({
+    where: { name: 'Brioche Bun' },
+    update: {},
+    create: {
+      name: 'Brioche Bun',
+      unit: MeasurementUnit.PCS,
+      category: IngredientCategory.BAKERY,
+    },
+  });
+
+  // --- 8. Inventory Items + Stock Batches ---
+  // InventoryItem registers the ingredient+warehouse slot (quantity starts at 0)
+  // StockBatch represents the actual physical delivery
+  // After creating batches, we sync the item quantity to match
+
+  const beefItem = await prisma.inventoryItem.create({
     data: {
-      ingredientId: ingredient.id,
-      quantity: 150.5,
+      ingredientId: beefPatty.id,
       warehouseId: warehouse.id,
+      quantity: 0,
+      minimumQuantity: 20,
+      stockStatus: stockStatus.OUT_OF_STOCK,
     },
   });
 
-  // --- 8. Menu & Recipes ---
+  const cheeseItem = await prisma.inventoryItem.create({
+    data: {
+      ingredientId: cheeseSlab.id,
+      warehouseId: warehouse.id,
+      quantity: 0,
+      minimumQuantity: 10,
+      stockStatus: stockStatus.OUT_OF_STOCK,
+    },
+  });
+
+  const bunItem = await prisma.inventoryItem.create({
+    data: {
+      ingredientId: briocheBun.id,
+      warehouseId: warehouse.id,
+      quantity: 0,
+      minimumQuantity: 30,
+      stockStatus: stockStatus.OUT_OF_STOCK,
+    },
+  });
+
+  // Create stock batches (one opening delivery per item)
+  await prisma.stockBatch.createMany({
+    data: [
+      {
+        inventoryItemId: beefItem.id,
+        initialQuantity: 150.5,
+        remainingQuantity: 150.5,
+        numberOfUnits: 15, // 15 bags
+        unitSize: 10, // 10kg each
+        costPerUnit: 9.0, // $9 per kg
+        receivedAt: new Date(),
+        expiresAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days
+      },
+      {
+        inventoryItemId: cheeseItem.id,
+        initialQuantity: 60.0,
+        remainingQuantity: 60.0,
+        numberOfUnits: 12, // 12 blocks
+        unitSize: 5, // 5kg each
+        costPerUnit: 13.0, // $13 per kg
+        receivedAt: new Date(),
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+      },
+      {
+        inventoryItemId: bunItem.id,
+        initialQuantity: 200,
+        remainingQuantity: 200,
+        numberOfUnits: 10, // 10 packs
+        unitSize: 20, // 20 buns each
+        costPerUnit: 0.3, // $0.30 per bun
+        receivedAt: new Date(),
+        expiresAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days
+      },
+    ],
+  });
+
+  // Sync InventoryItem.quantity and stockStatus from batch totals
+  await Promise.all([
+    prisma.inventoryItem.update({
+      where: { id: beefItem.id },
+      data: { quantity: 150.5, stockStatus: stockStatus.IN_STOCK },
+    }),
+    prisma.inventoryItem.update({
+      where: { id: cheeseItem.id },
+      data: { quantity: 60.0, stockStatus: stockStatus.IN_STOCK },
+    }),
+    prisma.inventoryItem.update({
+      where: { id: bunItem.id },
+      data: { quantity: 200, stockStatus: stockStatus.IN_STOCK },
+    }),
+  ]);
+
+  // --- 9. Menu & Recipes ---
   const menuItem = await prisma.branchMenuItem.create({
     data: {
       branchId: branch.id,
@@ -180,15 +285,27 @@ async function main() {
     },
   });
 
-  await prisma.recipe.create({
-    data: {
-      menuItemId: menuItem.id,
-      ingredientId: ingredient.id,
-      quantityRequired: 0.25,
-    },
+  await prisma.recipe.createMany({
+    data: [
+      {
+        menuItemId: menuItem.id,
+        ingredientId: beefPatty.id,
+        quantityRequired: 0.25,
+      },
+      {
+        menuItemId: menuItem.id,
+        ingredientId: cheeseSlab.id,
+        quantityRequired: 0.05,
+      },
+      {
+        menuItemId: menuItem.id,
+        ingredientId: briocheBun.id,
+        quantityRequired: 1,
+      },
+    ],
   });
 
-  // --- 9. Orders ---
+  // --- 10. Orders ---
   await prisma.order.create({
     data: {
       totalPrice: 21.98,
@@ -199,18 +316,12 @@ async function main() {
       source: source.APP,
       status: OrderState.PENDING,
       items: {
-        create: [
-          {
-            menuItemId: menuItem.id,
-            quantity: 2,
-            price: 10.99,
-          },
-        ],
+        create: [{ menuItemId: menuItem.id, quantity: 2, price: 10.99 }],
       },
     },
   });
 
-  // --- 10. Shifts & Expenses ---
+  // --- 11. Shifts & Expenses ---
   await prisma.shift.create({
     data: {
       userId: manager.id,

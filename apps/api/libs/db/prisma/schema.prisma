@@ -1,3 +1,7 @@
+// ===========================================
+// Prisma Schema for Restaurant Management App
+// ===========================================
+
 generator client {
   provider     = "prisma-client"
   output       = "../generated/client"
@@ -8,12 +12,14 @@ datasource db {
   provider = "postgresql"
 }
 
+// ---------- User & Admin Models ------------
+
 model SystemAdmin {
-  id        String    @id @default(uuid())
-  email     String    @unique
+  id        String   @id @default(uuid())
+  email     String   @unique
   password  String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   lastLogin DateTime?
 }
 
@@ -44,6 +50,8 @@ model TokenBlacklist {
   token     String   @unique
   createdAt DateTime @default(now())
 }
+
+// ---------- Restaurant & Branch Structure ------------
 
 model Restaurant {
   id        String   @id @default(uuid())
@@ -78,6 +86,8 @@ model Branch {
   warehouses       Warehouse[]
 }
 
+// ---------- Shift Management ------------
+
 model Shift {
   id        String      @id @default(uuid())
   userId    String
@@ -88,6 +98,8 @@ model Shift {
   branch    Branch      @relation(fields: [branchId], references: [id])
   employee  User        @relation(fields: [userId], references: [id])
 }
+
+// ---------- Menu & Item Models ------------
 
 model BranchMenuItem {
   id          String              @id @default(uuid())
@@ -121,10 +133,13 @@ model DietaryTag {
   branchMenuItems BranchMenuItem[] @relation("BranchMenuItemToDietaryTag")
 }
 
+// ---------- Inventory & Ingredient Models ------------
+
 model Ingredient {
-  id             String          @id @default(uuid())
-  name           String          @unique
-  unit           String
+  id             String           @id @default(uuid())
+  name           String           @unique
+  unit           MeasurementUnit
+  category       IngredientCategory
   inventoryItems InventoryItem[]
   recipes        Recipe[]
 }
@@ -136,6 +151,8 @@ model Recipe {
   quantityRequired Float
   ingredient       Ingredient     @relation(fields: [ingredientId], references: [id])
   menuItem         BranchMenuItem @relation(fields: [menuItemId], references: [id])
+
+  @@unique([menuItemId, ingredientId])
 }
 
 model Warehouse {
@@ -146,32 +163,68 @@ model Warehouse {
   branch   Branch          @relation(fields: [branchId], references: [id])
 }
 
+// ---------- Revised InventoryItem & StockBatch Models ------------
+
 model InventoryItem {
-  id           String     @id @default(uuid())
-  ingredientId String
-  quantity     Float
-  stockStatus  stockStatus @default(IN_STOCK)
-  minimumQuantity Float @default(0)
-  warehouseId  String
-  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
-  warehouse    Warehouse  @relation(fields: [warehouseId], references: [id])
+  id              String              @id @default(uuid())
+  ingredientId    String
+  quantity        Float           
+  stockStatus     stockStatus         @default(OUT_OF_STOCK)
+  minimumQuantity Float               @default(0)
+  warehouseId     String
+  ingredient      Ingredient          @relation(fields: [ingredientId], references: [id])
+  warehouse       Warehouse           @relation(fields: [warehouseId], references: [id])
+  batches         StockBatch[]    
+  usageLogs       InventoryUsageLog[]
+
+  @@unique([ingredientId, warehouseId])
 }
 
+// Revised StockBatch model — one row per physical delivery
+
+model StockBatch {
+  id                String        @id @default(uuid())
+  inventoryItemId   String
+  initialQuantity   Float
+  remainingQuantity Float
+  numberOfUnits     Int?
+  unitSize          Float?
+  costPerUnit       Decimal?      @db.Decimal(10, 2)  
+  receivedAt        DateTime      @default(now())
+  expiresAt         DateTime?
+  status            BatchStatus   @default(ACTIVE)
+  inventoryItem     InventoryItem @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
+}
+
+// ---------- Inventory Usage Log ------------
+
+model InventoryUsageLog {
+  id               String        @id @default(uuid())
+  inventoryItemId  String
+  consumedQuantity Float
+  reason           UsageReason   @default(KITCHEN_PREP)
+  notes            String?
+  consumedAt       DateTime      @default(now())
+  inventoryItem    InventoryItem @relation(fields: [inventoryItemId], references: [id])
+}
+
+// ---------- Ordering & Reservation Models ------------
+
 model Order {
-  id           String      @id @default(uuid())
-  totalPrice   Decimal     @db.Decimal(10, 2)
-  branchId     String
-  userId       String
-  CustomerName String
-  source       source      @default(STORE)
-  itemCount    Int
-  status       OrderState  @default(PENDING)
-  specialInstructions String? 
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  branch       Branch      @relation(fields: [branchId], references: [id])
-  user         User        @relation(fields: [userId], references: [id])
-  items        OrderItem[]
+  id                  String      @id @default(uuid())
+  totalPrice          Decimal     @db.Decimal(10, 2)
+  branchId            String
+  userId              String
+  CustomerName        String
+  source              source      @default(STORE)
+  itemCount           Int
+  status              OrderState  @default(PENDING)
+  specialInstructions String?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  branch              Branch      @relation(fields: [branchId], references: [id])
+  user                User        @relation(fields: [userId], references: [id])
+  items               OrderItem[]
 }
 
 model OrderItem {
@@ -209,6 +262,8 @@ model Reservation {
   user            User     @relation(fields: [userId], references: [id])
 }
 
+// ---------- Expense Tracking ------------
+
 model Expense {
   id          String      @id @default(uuid())
   amount      Decimal     @db.Decimal(10, 2)
@@ -218,6 +273,8 @@ model Expense {
   createdAt   DateTime    @default(now())
   branch      Branch      @relation(fields: [branchId], references: [id])
 }
+
+// ---------- Enums ------------
 
 enum UserRole {
   CUSTOMER
@@ -265,4 +322,48 @@ enum stockStatus {
   IN_STOCK
   LOW_STOCK
   OUT_OF_STOCK
+}
+
+// Revised BatchStatus enum
+
+enum BatchStatus {
+  ACTIVE    // still has remaining quantity
+  DEPLETED  // fully consumed
+  EXPIRED   // past expiresAt
+  DAMAGED   // written off manually
+}
+
+enum MeasurementUnit {
+  KG
+  G
+  L
+  ML
+  PCS
+  TSP
+  TBSP
+  CUP
+}
+
+enum IngredientCategory {
+  MEAT        // Animal flesh
+  SEAFOOD     // Fish, shrimp, etc.
+  DAIRY       // Milk, cheese, yogurt
+  PRODUCE     // Fruits & vegetables
+  GRAINS      // Rice, flour, pasta
+  SPICES      // Spices, dried herbs
+  OILS        // Cooking oils, fats
+  SAUCES      // Wet sauces, condiments
+  BAKERY      // Bread, pastries
+  BEVERAGES   // Drinks, water, juice
+  NUTS        // All nuts & seeds
+  OTHER       // Everything else
+}
+
+enum UsageReason {
+  KITCHEN_PREP
+  SPOILAGE
+  DAMAGED
+  EXPIRED
+  TESTING
+  OTHER
 }
