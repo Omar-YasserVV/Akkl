@@ -86,37 +86,16 @@ export class SvcBranchService {
       },
     });
   }
+
   async getBranchById(restaurantId: string, branchId: string) {
     return this.prisma.branch.findFirst({
       where: {
         restaurantId: restaurantId,
         id: branchId,
       },
-      include: {
-        restaurant: true,
-
-        employees: true,
-        shifts: true,
-        expenses: true,
-
-        tables: true,
-        warehouses: true,
-        reservations: true,
-
-        branchMenu: {
-          include: {
-            recipe: {
-              include: {
-                ingredient: true,
-              },
-            },
-          },
-        },
-
-        orders: true,
-      },
     });
   }
+
   async updateBranch(
     restaurantId: string,
     branchId: string,

@@ -26,10 +26,13 @@ import {
   Post,
   Query,
   Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
-import { ApiQuery } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiConsumes, ApiQuery } from '@nestjs/swagger';
 import { Response } from 'express';
 import { OrderState, source, UserRole } from 'libs/db/generated/client/enums';
 import { lastValueFrom } from 'rxjs';
@@ -116,6 +119,14 @@ export class BranchController implements OnModuleInit {
 
   // ---------------- MENU ----------------
 
+  @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
+  @Get('menu/all')
+  getAllMenuItems(@GetBranchId() branchId: string) {
+    return this.branchClient.send(BRANCH_TOPICS.GET_ALL_MENU_ITEMS, {
+      branchId,
+    });
+  }
+
   @Roles(UserRole.BUSINESS_OWNER, UserRole.CASHIER, UserRole.MANAGER)
   @Get('menu')
   getBranchMenu(@GetBranchId() branchId: string) {
@@ -132,6 +143,25 @@ export class BranchController implements OnModuleInit {
       branchId,
       data,
     });
+  }
+
+  @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
+  @Post('menu/upload')
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadMenuExcel(
+    @GetBranchId() branchId: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Res() res: Response,
+  ) {
+    const result = await lastValueFrom<{ message: string; items: unknown[] }>(
+      this.branchClient.send(BRANCH_TOPICS.UPLOAD_MENU, {
+        branchId,
+        fileBuffer: file.buffer,
+      }),
+    );
+
+    return res.status(HttpStatus.CREATED).json(result);
   }
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
