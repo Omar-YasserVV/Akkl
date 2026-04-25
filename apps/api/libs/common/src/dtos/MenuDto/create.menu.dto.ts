@@ -49,7 +49,7 @@ export class BranchMenuItemDetailDto {
     description: 'Menu item ID',
   })
   @IsString()
-  menuItemId!: string;
+  id!: string;
 
   @ApiProperty({
     example: '1',
