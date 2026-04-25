@@ -1,22 +1,31 @@
-import { CreateOrderDto, UpdateOrderDto } from '@app/common';
+import { CreateOrderDto, UpdateOrderDto, WAREHOUSE_TOPICS } from '@app/common';
 import { ListOrdersReqDto } from '@app/common/dtos/OrderDto/list.order.dto';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common'; // 👈 added OnModuleInit
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { Prisma } from 'libs/db/generated/client/client';
 import { OrderState } from 'libs/db/generated/client/enums';
+import { firstValueFrom } from 'rxjs';
 import { createPagination } from 'utils/pagination.util';
 import { OrderCalculator } from './order.calculator';
 import { OrderRepository } from './order.repository';
 import { OrderValidator } from './order.validator';
 
 @Injectable()
-export class OrderService {
+export class OrderService implements OnModuleInit {
   constructor(
     private readonly repo: OrderRepository,
     private readonly validator: OrderValidator,
     private readonly calculator: OrderCalculator,
     @Inject('BRANCH_SERVICE') private readonly kafka: ClientKafka,
+    @Inject('WAREHOUSE_SERVICE') private readonly warehouseKafka: ClientKafka,
   ) {}
+
+  async onModuleInit() {
+    this.warehouseKafka.subscribeToResponseOf(
+      WAREHOUSE_TOPICS.DEDUCT_FOR_ORDER,
+    );
+    await this.warehouseKafka.connect();
+  }
 
   async createOrder(branchId: string, data: CreateOrderDto, userId: string) {
     try {
@@ -27,7 +36,7 @@ export class OrderService {
         });
       }
 
-      const { items = [], status = OrderState.PENDING, CustomerName } = data;
+      const { items = [], CustomerName } = data;
 
       this.validator.validateItems(items);
       const { user } = await this.validator.validateBranchAndUser(
@@ -45,12 +54,29 @@ export class OrderService {
         menuItems,
       );
 
+      const deductionResult = await firstValueFrom(
+        this.warehouseKafka.send(WAREHOUSE_TOPICS.DEDUCT_FOR_ORDER, {
+          branchId,
+          items: items.map((i) => ({
+            menuItemId: i.menuItemId,
+            quantity: i.quantity,
+          })),
+        }),
+      );
+
+      if (!deductionResult.success) {
+        throw new RpcException({
+          statusCode: 422,
+          message: deductionResult.message ?? 'Inventory deduction failed',
+        });
+      }
+
       const order = await this.repo.create({
         totalPrice: total,
         userId,
         branchId,
         itemCount,
-        status,
+        status: OrderState.IN_PROGRESS,
         CustomerName: CustomerName || user.fullName,
         items: { create: orderItemsData },
       });

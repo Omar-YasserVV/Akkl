@@ -10,7 +10,7 @@ interface ExcelMenuRow {
   Description?: string;
   Image?: string;
   Available?: string | boolean;
-  MenuItemID?: string;
+  id?: string;
   Variations?: string;
   DietaryTags?: string;
   Recipe?: string;
@@ -63,7 +63,7 @@ export class MenuService {
           description: data.description,
           image: data.image,
           isAvailable: data.isAvailable,
-          menuItemId: data.menuItemId,
+          id: data.id,
           branchId: branchId,
           variations: {
             create: data.variations?.map((v) => ({
@@ -233,7 +233,7 @@ export class MenuService {
           image: row.Image ? String(row.Image) : undefined,
           isAvailable:
             row.Available === 'false' || row.Available === false ? false : true,
-          menuItemId: String(row.MenuItemID || ''),
+          id: String(row.id || ''),
           variations: row.Variations
             ? (JSON.parse(
                 row.Variations,
@@ -279,7 +279,7 @@ export class MenuService {
               description: item.description,
               image: item.image,
               isAvailable: item.isAvailable,
-              menuItemId: item.menuItemId,
+              id: item.id,
               branchId: branchId,
               variations: {
                 create: item.variations?.map((v) => ({

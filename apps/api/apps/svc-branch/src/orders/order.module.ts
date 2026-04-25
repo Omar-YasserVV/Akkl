@@ -21,6 +21,11 @@ import { OrderValidator } from './order.validator';
         'svc-branch-server-group',
         'svc-branch',
       ),
+      createKafkaClient(
+        'WAREHOUSE_SERVICE',
+        'svc-warehouse-server-group',
+        'svc-warehouse',
+      ),
     ]),
   ],
 
