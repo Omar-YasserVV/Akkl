@@ -7,6 +7,10 @@ import {
   CreateInventoryItemResDto,
 } from './dto/inventory/inventory.create.dto';
 import {
+  DeductForOrderReqDto,
+  DeductForOrderResDto,
+} from './dto/inventory/inventory.deduct.dto';
+import {
   DeleteInventoryItemReqDto,
   DeleteInventoryItemResDto,
 } from './dto/inventory/inventory.delete.dto';
@@ -197,5 +201,53 @@ export class SvcWarehouseService {
 
     const updated = await this.repo.updateInventoryItem(dto);
     return toInventoryResDto(updated);
+  }
+
+  // svc-warehouse.service.ts
+
+  async deductForOrder(
+    dto: DeductForOrderReqDto,
+  ): Promise<DeductForOrderResDto> {
+    try {
+      const warehouse = await this.repo.getWarehouseByBranch(dto.branchId);
+      if (!warehouse) throw new Error('No warehouse found for this branch');
+
+      const menuItemIds = dto.items.map((i) => i.menuItemId);
+      const recipes = await this.repo.getRecipesForMenuItems(menuItemIds);
+
+      // Aggregate total consumption per ingredient across all ordered items
+      const consumptionMap = new Map<string, number>();
+      for (const recipe of recipes) {
+        const ordered = dto.items.find(
+          (i) => i.menuItemId === recipe.menuItemId,
+        );
+        if (!ordered) continue;
+        const needed = recipe.quantityRequired * ordered.quantity;
+        consumptionMap.set(
+          recipe.ingredientId,
+          (consumptionMap.get(recipe.ingredientId) ?? 0) + needed,
+        );
+      }
+
+      const inventoryItems = await this.repo.getInventoryItemsByIngredients(
+        warehouse.id,
+        [...consumptionMap.keys()],
+      );
+
+      const inventoryMap = new Map(
+        inventoryItems.map((i) => [i.ingredientId, i]),
+      );
+
+      // All deductions in one local DB transaction
+      await this.repo.deductBatch(consumptionMap, inventoryMap);
+
+      return { success: true };
+    } catch (error) {
+      // Return structured failure — Order service decides what to do
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Deduction failed',
+      };
+    }
   }
 }

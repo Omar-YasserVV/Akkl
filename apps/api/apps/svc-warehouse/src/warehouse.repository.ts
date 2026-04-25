@@ -1,7 +1,12 @@
 // warehouse.repository.ts
 import { PrismaService } from '@app/db';
 import { Injectable } from '@nestjs/common';
-import { BatchStatus, stockStatus } from 'libs/db/generated/client/enums';
+import { Prisma } from 'libs/db/generated/client/client';
+import {
+  BatchStatus,
+  InventoryLogAction,
+  stockStatus,
+} from 'libs/db/generated/client/enums';
 import { CreateInventoryItemReqDto } from './dto/inventory/inventory.create.dto';
 import { ListInventoryItemsReqDto } from './dto/inventory/inventory.list.dto';
 import {
@@ -10,66 +15,34 @@ import {
   UpdateInventoryItemReqDto,
 } from './dto/inventory/inventory.update.dto';
 
-/**
- * Handles all data access and persistence logic for warehouse operations,
- * using Prisma ORM to interact with the database.
- */
 @Injectable()
 export class WarehouseRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   // ── Lookups ────────────────────────────────────────────────────────────────
 
-  /**
-   * Retrieves a warehouse by its ID.
-   * @param warehouseId The ID of the warehouse.
-   * @returns The warehouse entity or null if not found.
-   */
   async getWarehouse(warehouseId: string) {
     return this.prisma.warehouse.findUnique({ where: { id: warehouseId } });
   }
 
-  /**
-   * Retrieves an ingredient by its ID.
-   * @param ingredientId The ID of the ingredient.
-   * @returns The ingredient entity or null if not found.
-   */
   async getIngredient(ingredientId: string) {
     return this.prisma.ingredient.findUnique({ where: { id: ingredientId } });
   }
 
-  /**
-   * Retrieves a single inventory item by its ID, including its ingredient and all related stock batches,
-   * ordered FEFO (First-Expire, First-Out): batches are sorted by their expiry date, then received date.
-   * Batches without an expiry date appear last.
-   * @param inventoryItemId The inventory item ID.
-   * @returns The inventory item with associated ingredient and ordered batches, or null if not found.
-   */
   async getInventoryItem(inventoryItemId: string) {
     return this.prisma.inventoryItem.findUnique({
       where: { id: inventoryItemId },
       include: {
         ingredient: true,
         batches: {
-          orderBy: [
-            // Batches with no expiry go last (treat as never-expiring)
-            { expiresAt: 'asc' },
-            { receivedAt: 'asc' },
-          ],
+          orderBy: [{ expiresAt: 'asc' }, { receivedAt: 'asc' }],
         },
       },
     });
   }
 
-  /**
-   * Lists inventory items belonging to a warehouse, with support for an optional stock status filter
-   * and pagination.
-   * @param dto Query parameters including warehouseId, optional stockStatus, page, and limit.
-   * @returns An object containing items (array), total (item count), current page, and page size (limit).
-   */
   async getAllInventoryItems(dto: ListInventoryItemsReqDto) {
     const { warehouseId, stockStatus: status, page = 1, limit = 10 } = dto;
-
     const where = {
       warehouseId,
       ...(status && { stockStatus: status }),
@@ -95,46 +68,44 @@ export class WarehouseRepository {
 
   // ── CRUD ───────────────────────────────────────────────────────────────────
 
-  /**
-   * Deletes an inventory item by its ID.
-   * @param id The inventory item ID.
-   */
   async deleteInventoryItem(id: string) {
     await this.prisma.inventoryItem.delete({ where: { id } });
   }
 
-  /**
-   * Creates a new inventory item (slot for an ingredient at a warehouse).
-   * The initial quantity is set to zero; inventory is added through restocking operations.
-   * @param data Inventory item creation payload.
-   * @returns The created inventory item including its ingredient and batch relations.
-   */
   async createInventoryItem(data: CreateInventoryItemReqDto) {
-    return this.prisma.inventoryItem.create({
-      data: {
-        quantity: 0,
-        minimumQuantity: data.minimumQuantity,
-        warehouseId: data.warehouseId,
-        ingredientId: data.ingredientId,
-        stockStatus: stockStatus.OUT_OF_STOCK,
-      },
-      include: {
-        ingredient: true,
-        batches: true,
-      },
+    // Used an interactive transaction to get the ID of the newly created item for the log
+    return this.prisma.$transaction(async (tx) => {
+      const item = await tx.inventoryItem.create({
+        data: {
+          quantity: 0,
+          minimumQuantity: data.minimumQuantity,
+          warehouseId: data.warehouseId,
+          ingredientId: data.ingredientId,
+          stockStatus: stockStatus.OUT_OF_STOCK,
+        },
+        include: {
+          ingredient: true,
+          batches: true,
+        },
+      });
+
+      await tx.inventoryUsageLog.create({
+        data: {
+          inventoryItemId: item.id,
+          action: InventoryLogAction.CREATE,
+          quantityChange: 0,
+          previousQuantity: 0,
+          newQuantity: 0,
+          notes: 'Initial creation',
+        },
+      });
+
+      return item;
     });
   }
 
   // ── Restock ────────────────────────────────────────────────────────────────
 
-  /**
-   * Adds new stock to an inventory item.
-   * - Creates a new StockBatch to represent a specific delivery.
-   * - Updates the item's total quantity and computes new stock status.
-   * @param dto Restock operation request containing inventory item ID and batch details.
-   * @returns The updated inventory item, including relations.
-   * @throws Error if the inventory item does not exist.
-   */
   async restockInventoryItem(dto: RestockInventoryItemReqDto) {
     const item = await this.prisma.inventoryItem.findUnique({
       where: { id: dto.id },
@@ -144,7 +115,7 @@ export class WarehouseRepository {
     const newQuantity = item.quantity + dto.addedQuantity;
 
     const [, updated] = await this.prisma.$transaction([
-      // 1. Create the new batch for this delivery
+      // 1. Create the new batch
       this.prisma.stockBatch.create({
         data: {
           inventoryItemId: dto.id,
@@ -156,7 +127,7 @@ export class WarehouseRepository {
           status: BatchStatus.ACTIVE,
         },
       }),
-      // 2. Sync the item's total quantity and stock status
+      // 2. Sync the item's total quantity
       this.prisma.inventoryItem.update({
         where: { id: dto.id },
         data: {
@@ -173,6 +144,16 @@ export class WarehouseRepository {
           },
         },
       }),
+      // 3. Log the restock action
+      this.prisma.inventoryUsageLog.create({
+        data: {
+          inventoryItemId: item.id,
+          action: InventoryLogAction.RESTOCK,
+          quantityChange: dto.addedQuantity,
+          previousQuantity: item.quantity,
+          newQuantity: newQuantity,
+        },
+      }),
     ]);
 
     return updated;
@@ -180,24 +161,12 @@ export class WarehouseRepository {
 
   // ── Consume (FEFO) ─────────────────────────────────────────────────────────
 
-  /**
-   * Consumes (reduces) stock from an inventory item using the FEFO (First-Expire, First-Out) strategy.
-   * - Deducts consumed quantity from active stock batches, starting with the batch that expires soonest.
-   * - Updates each batch's remaining quantity and marks depleted batches accordingly.
-   * - Recomputes and syncs item's total quantity and stock status.
-   * - All operations happen in a single transaction.
-   * @param dto Consume operation request including item ID and amount to consume.
-   * @returns The updated inventory item (fully hydrated) including ingredient and batches.
-   * @throws Error if the inventory item does not exist, or if stock is insufficient.
-   */
   async consumeInventoryItem(dto: ConsumeInventoryItemReqDto) {
-    // Get the inventory item including all related ingredient and batches
     const item = await this.prisma.inventoryItem.findUnique({
       where: { id: dto.id },
       include: {
         ingredient: true,
         batches: {
-          // All batches are loaded for full update visibility and accurate state after transaction
           orderBy: [{ expiresAt: 'asc' }, { receivedAt: 'asc' }],
         },
       },
@@ -205,23 +174,20 @@ export class WarehouseRepository {
 
     if (!item) throw new Error('Inventory item not found');
 
-    // Only ACTIVE batches are considered for stock deduction (FEFO)
     const activeBatches = item.batches.filter(
       (b) => b.status === BatchStatus.ACTIVE,
     );
-
-    // Guard: Verify that enough stock is available for the request
     const totalAvailable = activeBatches.reduce(
       (sum, b) => sum + b.remainingQuantity,
       0,
     );
+
     if (totalAvailable < dto.consumedQuantity) {
       throw new Error(
         `Insufficient stock: need ${dto.consumedQuantity}, have ${totalAvailable}`,
       );
     }
 
-    // Prepare batch update operations (deduct from FEFO batches until satisfied)
     let remaining = dto.consumedQuantity;
     const batchUpdates: ReturnType<typeof this.prisma.stockBatch.update>[] = [];
 
@@ -246,9 +212,9 @@ export class WarehouseRepository {
 
     const newItemQuantity = item.quantity - dto.consumedQuantity;
 
-    // Execute all updates as a transaction
     await this.prisma.$transaction([
       ...batchUpdates,
+      // Update main item
       this.prisma.inventoryItem.update({
         where: { id: dto.id },
         data: {
@@ -259,16 +225,23 @@ export class WarehouseRepository {
           ),
         },
       }),
+      // Log consumption
+      this.prisma.inventoryUsageLog.create({
+        data: {
+          inventoryItemId: item.id,
+          action: InventoryLogAction.CONSUME,
+          quantityChange: -dto.consumedQuantity,
+          previousQuantity: item.quantity,
+          newQuantity: newItemQuantity,
+        },
+      }),
     ]);
 
-    // Fetch and return the updated item with all relations after consumption
     const updated = await this.prisma.inventoryItem.findUnique({
       where: { id: dto.id },
       include: {
         ingredient: true,
-        batches: {
-          orderBy: [{ expiresAt: 'asc' }, { receivedAt: 'asc' }],
-        },
+        batches: { orderBy: [{ expiresAt: 'asc' }, { receivedAt: 'asc' }] },
       },
     });
 
@@ -278,52 +251,159 @@ export class WarehouseRepository {
 
   // ── Update ─────────────────────────────────────────────────────────────────
 
-  /**
-   * Updates inventory item metadata (such as minimumQuantity and/or ingredientId).
-   * Does not change quantity: stock is only adjusted through consume/restock.
-   * If minimumQuantity is changed, stock status is re-evaluated using the current quantity.
-   * @param dto Update request data (may include minimumQuantity and/or ingredientId).
-   * @returns The updated inventory item, including ingredient and batches.
-   * @throws Error if the inventory item does not exist.
-   */
   async updateInventoryItem(dto: UpdateInventoryItemReqDto) {
-    const item = await this.prisma.inventoryItem.findUnique({
-      where: { id: dto.id },
+    // Interactive transaction used so we can get the previous state, update it, and log it atomically.
+    return this.prisma.$transaction(async (tx) => {
+      const item = await tx.inventoryItem.findUnique({
+        where: { id: dto.id },
+      });
+      if (!item) throw new Error('Inventory item not found');
+
+      const newMinimum = dto.minimumQuantity ?? item.minimumQuantity;
+
+      const updatedItem = await tx.inventoryItem.update({
+        where: { id: dto.id },
+        data: {
+          ...(dto.minimumQuantity !== undefined && {
+            minimumQuantity: dto.minimumQuantity,
+            stockStatus: this.resolveStockStatus(item.quantity, newMinimum),
+          }),
+          ...(dto.ingredientId !== undefined && {
+            ingredientId: dto.ingredientId,
+          }),
+        },
+        include: {
+          ingredient: true,
+          batches: {
+            orderBy: [{ expiresAt: 'asc' }, { receivedAt: 'asc' }],
+          },
+        },
+      });
+
+      // Log metadata update
+      await tx.inventoryUsageLog.create({
+        data: {
+          inventoryItemId: item.id,
+          action: InventoryLogAction.UPDATE,
+          quantityChange: 0,
+          previousQuantity: item.quantity,
+          newQuantity: item.quantity, // Quantity didn't change
+          notes: `Updated metadata. Min Qty: ${newMinimum}`,
+        },
+      });
+
+      return updatedItem;
     });
-    if (!item) throw new Error('Inventory item not found');
+  }
 
-    // If minimumQuantity is being updated, stock status must be re-evaluated
-    const newMinimum = dto.minimumQuantity ?? item.minimumQuantity;
+  // ── Transactions ───────────────────────────────────────────────────────────
 
-    return this.prisma.inventoryItem.update({
-      where: { id: dto.id },
-      data: {
-        ...(dto.minimumQuantity !== undefined && {
-          minimumQuantity: dto.minimumQuantity,
-          stockStatus: this.resolveStockStatus(item.quantity, newMinimum),
-        }),
-        ...(dto.ingredientId !== undefined && {
-          ingredientId: dto.ingredientId,
-        }),
-      },
+  async consumeInventoryItemWithTx(
+    tx: Prisma.TransactionClient,
+    inventoryItemId: string,
+    consumedQuantity: number,
+  ) {
+    const item = await tx.inventoryItem.findUnique({
+      where: { id: inventoryItemId },
       include: {
-        ingredient: true,
         batches: {
+          where: { status: BatchStatus.ACTIVE },
           orderBy: [{ expiresAt: 'asc' }, { receivedAt: 'asc' }],
         },
       },
+    });
+
+    if (!item) throw new Error(`InventoryItem ${inventoryItemId} not found`);
+
+    const totalAvailable = item.batches.reduce(
+      (sum, b) => sum + b.remainingQuantity,
+      0,
+    );
+    if (totalAvailable < consumedQuantity) {
+      throw new Error(
+        `Insufficient stock for item ${inventoryItemId}: need ${consumedQuantity}, have ${totalAvailable}`,
+      );
+    }
+
+    let remaining = consumedQuantity;
+    for (const batch of item.batches) {
+      if (remaining <= 0) break;
+      const deduct = Math.min(batch.remainingQuantity, remaining);
+      const newRemaining = batch.remainingQuantity - deduct;
+      remaining -= deduct;
+
+      await tx.stockBatch.update({
+        where: { id: batch.id },
+        data: {
+          remainingQuantity: newRemaining,
+          status:
+            newRemaining === 0 ? BatchStatus.DEPLETED : BatchStatus.ACTIVE,
+        },
+      });
+    }
+
+    const newQuantity = item.quantity - consumedQuantity;
+
+    // Update main item inside the external transaction
+    await tx.inventoryItem.update({
+      where: { id: item.id },
+      data: {
+        quantity: newQuantity,
+        stockStatus: this.resolveStockStatus(newQuantity, item.minimumQuantity),
+      },
+    });
+
+    // Add log creation inside the external transaction
+    await tx.inventoryUsageLog.create({
+      data: {
+        inventoryItemId: item.id,
+        action: InventoryLogAction.CONSUME,
+        quantityChange: -consumedQuantity,
+        previousQuantity: item.quantity,
+        newQuantity: newQuantity,
+        notes: 'Consumed via batch transaction',
+      },
+    });
+  }
+
+  // ── Lookups (Misc) ─────────────────────────────────────────────────────────
+
+  getWarehouseByBranch(branchId: string) {
+    return this.prisma.warehouse.findUnique({ where: { branchId } });
+  }
+
+  getRecipesForMenuItems(menuItemIds: string[]) {
+    return this.prisma.recipe.findMany({
+      where: { menuItemId: { in: menuItemIds } },
+    });
+  }
+
+  getInventoryItemsByIngredients(warehouseId: string, ingredientIds: string[]) {
+    return this.prisma.inventoryItem.findMany({
+      where: {
+        warehouseId,
+        ingredientId: { in: ingredientIds },
+      },
+    });
+  }
+
+  async deductBatch(
+    consumptionMap: Map<string, number>,
+    inventoryMap: Map<string, { id: string }>,
+  ) {
+    await this.prisma.$transaction(async (tx) => {
+      for (const [ingredientId, totalConsumed] of consumptionMap) {
+        const invItem = inventoryMap.get(ingredientId);
+        if (!invItem) {
+          throw new Error(`No inventory item for ingredient ${ingredientId}`);
+        }
+        await this.consumeInventoryItemWithTx(tx, invItem.id, totalConsumed);
+      }
     });
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
-  /**
-   * Computes the appropriate stockStatus for an item,
-   * based on its current quantity and minimum required quantity.
-   * @param quantity The current quantity of the item.
-   * @param minimumQuantity The minimum quantity before low/out-of-stock status applies.
-   * @returns The computed stockStatus (OUT_OF_STOCK, LOW_STOCK, or IN_STOCK).
-   */
   private resolveStockStatus(
     quantity: number,
     minimumQuantity: number,
