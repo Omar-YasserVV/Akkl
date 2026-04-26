@@ -621,7 +621,7 @@ async function main() {
   const burgerItem = await prisma.branchMenuItem.create({
     data: {
       branchId: branch.id,
-      menuItemId: crypto.randomUUID(),
+      menuItemId: 'menu001',
       name: 'Double Cheeseburger',
       description: 'Signature beef burger with double cheddar cheese',
       category: category.MAIN_COURSE,
@@ -642,7 +642,7 @@ async function main() {
   const chickenSandwich = await prisma.branchMenuItem.create({
     data: {
       branchId: branch.id,
-      menuItemId: crypto.randomUUID(),
+      menuItemId: 'menu002',
       name: 'Crispy Chicken Sandwich',
       description: 'Crispy fried chicken breast with fresh lettuce',
       category: category.MAIN_COURSE,
@@ -663,7 +663,7 @@ async function main() {
   const friesMenuItem = await prisma.branchMenuItem.create({
     data: {
       branchId: branch.id,
-      menuItemId: crypto.randomUUID(),
+      menuItemId: 'menu003',
       name: 'Seasoned Fries',
       description: 'Crispy golden fries with house seasoning',
       category: category.SIDE_DISH,
@@ -684,7 +684,7 @@ async function main() {
   const truffleBurger = await prisma.branchMenuItem.create({
     data: {
       branchId: branch.id,
-      menuItemId: crypto.randomUUID(),
+      menuItemId: 'menu004',
       name: 'Truffle Burger',
       description: 'Premium wagyu beef with black truffle sauce',
       category: category.MAIN_COURSE,
@@ -700,7 +700,7 @@ async function main() {
   const chocLava = await prisma.branchMenuItem.create({
     data: {
       branchId: branch.id,
-      menuItemId: crypto.randomUUID(),
+      menuItemId: 'menu005',
       name: 'Chocolate Lava Cake',
       description: 'Warm chocolate cake with a molten centre',
       category: category.DESSERT,
@@ -713,7 +713,7 @@ async function main() {
   const softDrink = await prisma.branchMenuItem.create({
     data: {
       branchId: branch.id,
-      menuItemId: crypto.randomUUID(),
+      menuItemId: 'menu006',
       name: 'Soft Drink',
       description: 'Chilled can of your choice',
       category: category.BEVERAGE,
@@ -727,7 +727,7 @@ async function main() {
   const onionRings = await prisma.branchMenuItem.create({
     data: {
       branchId: branch.id,
-      menuItemId: crypto.randomUUID(),
+      menuItemId: 'menu007',
       name: 'Onion Rings',
       description: 'Golden battered onion rings',
       category: category.APPETIZER,

@@ -46,7 +46,7 @@ export class IngredientDetailDto {
 export class BranchMenuItemDetailDto {
   @ApiProperty({ example: '101', description: 'Menu item ID' })
   @IsString()
-  id!: string;
+  menuItemId!: string;
 
   @ApiProperty({ example: '1', description: 'Branch ID' })
   @IsString()
