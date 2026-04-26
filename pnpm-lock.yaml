@@ -241,6 +241,9 @@ importers:
       '@react-stately/data':
         specifier: ^3.15.1
         version: 3.16.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@repo/hooks':
+        specifier: workspace:*
+        version: link:../../packages/hooks
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -559,6 +562,21 @@ importers:
       typescript-eslint:
         specifier: ^8.50.0
         version: 8.58.2(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.2)
+
+  packages/hooks:
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      eslint:
+        specifier: 9.39.1
+        version: 9.39.1(jiti@2.6.1)
+      typescript:
+        specifier: 5.9.2
+        version: 5.9.2
 
   packages/tailwind-config:
     dependencies:

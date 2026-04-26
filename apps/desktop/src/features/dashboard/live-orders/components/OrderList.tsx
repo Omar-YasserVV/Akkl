@@ -1,3 +1,4 @@
+import { useOrders } from "@/hooks/Orders/FetchOrders";
 import { useOrderStore } from "@/store/OrderStore";
 import {
   Spinner,
@@ -9,7 +10,6 @@ import {
   TableRow,
 } from "@heroui/react";
 import { columns } from "../constants/StatsCard.constants";
-import { useOrders } from "../hooks/useLiveOrders";
 import { OrderCell } from "./RenderCell";
 
 const OrderList = () => {
@@ -36,7 +36,6 @@ const OrderList = () => {
             </TableColumn>
           )}
         </TableHeader>
-
         <TableBody
           items={data?.data || []}
           emptyContent={isLoading ? <Spinner /> : "No orders yet."}

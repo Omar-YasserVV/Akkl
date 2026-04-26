@@ -1,4 +1,10 @@
-import { QueryKey, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchOrders } from "@/api/Orders/FetchOrder";
+import {
+  QueryKey,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { ordersApis } from "../api/LiveOrders";
 import {
   CreateOrderBody,
@@ -8,7 +14,10 @@ import {
 } from "../types/LiveOrders.types";
 import { orderKeys } from "./LiveOrders.keys";
 
-type OrdersListCacheEntry = readonly [unknown, PaginatedResponse<Order> | undefined];
+type OrdersListCacheEntry = readonly [
+  unknown,
+  PaginatedResponse<Order> | undefined,
+];
 
 const updateOrderInList = (
   list: PaginatedResponse<Order> | undefined,
@@ -52,7 +61,7 @@ const removeOrderFromList = (
 export const useOrders = (filters: OrderFilters) => {
   return useQuery({
     queryKey: orderKeys.list(filters),
-    queryFn: () => ordersApis.getAllOrders(filters),
+    queryFn: () => fetchOrders.getAllOrders(filters),
     placeholderData: (previousData) => previousData,
   });
 };
@@ -107,7 +116,9 @@ export const useUpdateOrder = () => {
       await queryClient.cancelQueries({ queryKey: orderKeys.lists() });
       await queryClient.cancelQueries({ queryKey: orderKeys.detail(orderId) });
 
-      const previousLists = queryClient.getQueriesData<PaginatedResponse<Order>>({
+      const previousLists = queryClient.getQueriesData<
+        PaginatedResponse<Order>
+      >({
         queryKey: orderKeys.lists(),
       }) as OrdersListCacheEntry[];
       const previousDetail = queryClient.getQueryData<Order>(
@@ -121,10 +132,15 @@ export const useUpdateOrder = () => {
       queryClient.setQueriesData<PaginatedResponse<Order>>(
         { queryKey: orderKeys.lists() },
         (current) =>
-          updateOrderInList(current, orderId, (order) => ({
-            ...order,
-            ...safeData,
-          } as Order)),
+          updateOrderInList(
+            current,
+            orderId,
+            (order) =>
+              ({
+                ...order,
+                ...safeData,
+              }) as Order,
+          ),
       );
 
       if (previousDetail) {
@@ -142,14 +158,16 @@ export const useUpdateOrder = () => {
       });
 
       if (context?.previousDetail) {
-        queryClient.setQueryData(orderKeys.detail(orderId), context.previousDetail);
+        queryClient.setQueryData(
+          orderKeys.detail(orderId),
+          context.previousDetail,
+        );
       }
     },
     onSuccess: (updatedOrder, { orderId }) => {
       queryClient.setQueriesData<PaginatedResponse<Order>>(
         { queryKey: orderKeys.lists() },
-        (current) =>
-          updateOrderInList(current, orderId, () => updatedOrder),
+        (current) => updateOrderInList(current, orderId, () => updatedOrder),
       );
       queryClient.setQueryData(orderKeys.detail(orderId), updatedOrder);
     },
@@ -169,7 +187,9 @@ export const useDeleteOrder = () => {
       await queryClient.cancelQueries({ queryKey: orderKeys.lists() });
       await queryClient.cancelQueries({ queryKey: orderKeys.detail(orderId) });
 
-      const previousLists = queryClient.getQueriesData<PaginatedResponse<Order>>({
+      const previousLists = queryClient.getQueriesData<
+        PaginatedResponse<Order>
+      >({
         queryKey: orderKeys.lists(),
       }) as OrdersListCacheEntry[];
       const previousDetail = queryClient.getQueryData<Order>(
@@ -190,7 +210,10 @@ export const useDeleteOrder = () => {
       });
 
       if (context?.previousDetail) {
-        queryClient.setQueryData(orderKeys.detail(orderId), context.previousDetail);
+        queryClient.setQueryData(
+          orderKeys.detail(orderId),
+          context.previousDetail,
+        );
       }
     },
     onSettled: async (_, __, orderId) => {

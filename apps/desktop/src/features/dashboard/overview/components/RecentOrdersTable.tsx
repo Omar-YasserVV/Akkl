@@ -1,74 +1,43 @@
+import { useOrders } from "@/hooks/Orders/FetchOrders";
 import {
   Card,
   CardBody,
   CardHeader,
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
   Chip,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
 } from "@heroui/react";
 
-// Mock data for the table
-const orders = [
-  {
-    id: "ORD-7281",
-    customer: "Alex Rivera",
-    amount: "$125.50",
-    status: "Completed",
-    time: "2 mins ago",
-  },
-  {
-    id: "ORD-7282",
-    customer: "Sarah Chen",
-    amount: "$45.00",
-    status: "Processing",
-    time: "15 mins ago",
-  },
-  {
-    id: "ORD-7283",
-    customer: "Marcus Wright",
-    amount: "$89.20",
-    status: "Cancelled",
-    time: "1 hour ago",
-  },
-  {
-    id: "ORD-7284",
-    customer: "Elena G.",
-    amount: "$210.00",
-    status: "Completed",
-    time: "3 hours ago",
-  },
-  {
-    id: "ORD-7222",
-    customer: "Sarah Chen",
-    amount: "$45.00",
-    status: "Processing",
-    time: "15 mins ago",
-  },
-  {
-    id: "ORD-7289",
-    customer: "Marcus Wright",
-    amount: "$89.20",
-    status: "Cancelled",
-    time: "1 hour ago",
-  },
-];
+import { useTimeAgo } from "@repo/hooks";
 
 const statusColorMap: Record<
   string,
   "success" | "warning" | "danger" | "default"
 > = {
-  Completed: "success",
-  Processing: "warning",
-  Cancelled: "danger",
+  COMPLETED: "success",
+  PENDING: "warning",
+  CANCELLED: "danger",
+};
+
+const TimeDisplay = ({ date }: { date: string }) => {
+  const timeAgo = useTimeAgo(date); // Hook is top-level here
+  return <>{timeAgo}</>;
 };
 
 // TODO: implement a general status chips component
 
 const RecentOrdersTable = () => {
+  const { data } = useOrders({
+    page: 1,
+    limit: 5,
+  });
+
+  console.log(data);
+
   return (
     <Card className="border border-default-200 col-span-3" shadow="none">
       <CardHeader className="flex flex-col items-start px-6 pt-5 space-y-1">
@@ -97,13 +66,13 @@ const RecentOrdersTable = () => {
             <TableColumn>TIME</TableColumn>
           </TableHeader>
           <TableBody>
-            {orders.map((order) => (
+            {data?.data?.map((order) => (
               <TableRow key={order.id}>
                 <TableCell className="font-medium text-default-700">
-                  {order.id}
+                  {order.id.slice(0, 8)}
                 </TableCell>
-                <TableCell>{order.customer}</TableCell>
-                <TableCell>{order.amount}</TableCell>
+                <TableCell>{order.CustomerName}</TableCell>
+                <TableCell>{order.totalPrice}</TableCell>
                 <TableCell>
                   <Chip
                     variant="flat"
@@ -113,9 +82,11 @@ const RecentOrdersTable = () => {
                     {order.status}
                   </Chip>
                 </TableCell>
-                <TableCell className="text-default-400">{order.time}</TableCell>
+                <TableCell className="text-default-400">
+                  <TimeDisplay date={order.createdAt} />
+                </TableCell>
               </TableRow>
-            ))}
+            )) || []}
           </TableBody>
         </Table>
       </CardBody>

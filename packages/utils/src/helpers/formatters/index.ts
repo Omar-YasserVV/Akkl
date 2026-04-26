@@ -1,2 +1,3 @@
+import { formatTimeAgo } from "./date-utils";
 import { NumberFormatter } from "./formatNumber";
-export { NumberFormatter };
+export { formatTimeAgo, NumberFormatter };
