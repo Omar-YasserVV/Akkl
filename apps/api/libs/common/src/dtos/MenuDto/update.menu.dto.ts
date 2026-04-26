@@ -3,23 +3,24 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
+  IsEnum,
+  IsInt,
   IsNumber,
   IsOptional,
   IsString,
+  Min,
   ValidateNested,
 } from 'class-validator';
 import {
   MenuItemVariationDto,
   RecipeIngredientDto,
 } from './VariationsAndTags.menu.dto';
+import { MenuItemCategory } from './create.menu.dto';
 
 export class UpdateRecipeIngredientDto {
-  @ApiPropertyOptional({
-    example: 1,
-    description: 'Ingredient ID',
-  })
-  @IsNumber()
-  ingredientId!: number;
+  @ApiPropertyOptional({ example: '1', description: 'Ingredient ID' })
+  @IsString()
+  ingredientId!: string;
 
   @ApiPropertyOptional({
     example: 0.3,
@@ -54,13 +55,43 @@ export class UpdateBranchMenuItemDto {
   @IsOptional()
   image?: string;
 
-  @ApiPropertyOptional({
-    example: false,
-    description: 'Availability status',
-  })
+  @ApiPropertyOptional({ example: false, description: 'Availability status' })
   @IsBoolean()
   @IsOptional()
   isAvailable?: boolean;
+
+  @ApiPropertyOptional({
+    enum: MenuItemCategory,
+    example: MenuItemCategory.MAIN_COURSE,
+    description: 'Updated menu item category',
+  })
+  @IsEnum(MenuItemCategory)
+  @IsOptional()
+  category?: MenuItemCategory;
+
+  @ApiPropertyOptional({ example: 14.99, description: 'Updated base price' })
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  price?: number;
+
+  @ApiPropertyOptional({
+    example: 11.99,
+    description: 'Updated discounted price',
+  })
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  discountPrice?: number;
+
+  @ApiPropertyOptional({
+    example: 12,
+    description: 'Updated preparation time in minutes',
+  })
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  preparationTime?: number;
 
   @ApiPropertyOptional({
     type: [MenuItemVariationDto],
@@ -77,21 +108,18 @@ export class UpdateBranchMenuItemDto {
   variations?: MenuItemVariationDto[];
 
   @ApiPropertyOptional({
-    example: [1, 3],
+    example: ['1', '3'],
     description: 'Updated dietary tag IDs',
   })
   @IsArray()
   @IsOptional()
-  @IsNumber({}, { each: true })
+  @IsString({ each: true })
   dietaryTags?: string[];
 
   @ApiPropertyOptional({
     type: [RecipeIngredientDto],
     description: 'Updated recipe ingredients',
-    example: [
-      { ingredientId: 1, quantityRequired: 0.25 },
-      { ingredientId: 2, quantityRequired: 0.15 },
-    ],
+    example: [{ ingredientId: '1', quantityRequired: 0.25 }],
   })
   @IsArray()
   @IsOptional()

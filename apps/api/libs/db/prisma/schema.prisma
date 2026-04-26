@@ -105,6 +105,10 @@ model BranchMenuItem {
   id          String              @id @default(uuid())
   branchId    String
   menuItemId  String
+  category    category            @default(MAIN_COURSE)
+  price       Decimal             @db.Decimal(10, 2)
+  discountPrice Decimal?          @db.Decimal(10, 2)
+  preparationTime Int
   isAvailable Boolean             @default(true)
   name        String
   description String?
@@ -212,6 +216,7 @@ model InventoryUsageLog {
 
 model Order {
   id                  String      @id @default(uuid())
+  orderNumber         Int         @unique @default(autoincrement())
   totalPrice          Decimal     @db.Decimal(10, 2)
   branchId            String
   userId              String
@@ -275,6 +280,15 @@ model Expense {
 }
 
 // ---------- Enums ------------
+
+enum category {
+  APPETIZER
+  MAIN_COURSE
+  DESSERT
+  BEVERAGE
+  SIDE_DISH
+  OTHER
+}
 
 enum UserRole {
   CUSTOMER

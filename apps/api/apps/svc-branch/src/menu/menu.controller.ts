@@ -19,8 +19,11 @@ export class MenuController {
   }
 
   @MessagePattern(BRANCH_TOPICS.GET_MENU)
-  async getBranchMenu(@Payload('branchId') branchId: string) {
-    return this.menuService.getBranchMenu(branchId);
+  async getBranchMenu(
+    @Payload('branchId') branchId: string,
+    @Payload('pagination') pagination: { page?: number; limit?: number },
+  ) {
+    return this.menuService.getBranchMenu(branchId, pagination);
   }
 
   @MessagePattern(BRANCH_TOPICS.CREATE_MENU)

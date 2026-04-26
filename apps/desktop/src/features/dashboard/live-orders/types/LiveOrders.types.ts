@@ -22,16 +22,6 @@ export interface OrderFilters {
   source?: Source;
 }
 
-export interface PaginatedResponse<T> {
-  data: T[];
-  meta: {
-    total: number;
-    pages: number;
-    currentPage: number;
-    limit: number;
-  };
-}
-
 export interface Order {
   id: string;
   totalPrice: string;

@@ -2,6 +2,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import * as dotenv from 'dotenv';
 import {
   BatchStatus,
+  category,
   DietaryType,
   ExpenseType,
   IngredientCategory,
@@ -581,6 +582,7 @@ async function main() {
 
   // -------------------------------------------------------
   // 12. MENU ITEMS
+  // New required fields: category, price, discountPrice, preparationTime
   // -------------------------------------------------------
   const burgerItem = await prisma.branchMenuItem.create({
     data: {
@@ -588,6 +590,10 @@ async function main() {
       menuItemId: crypto.randomUUID(),
       name: 'Double Cheeseburger',
       description: 'Signature beef burger with double cheddar cheese',
+      category: category.MAIN_COURSE,
+      price: 12.99,
+      discountPrice: 10.99,
+      preparationTime: 12,
       isAvailable: true,
       dietaryTags: { connect: [{ id: dairyFreeTag.id }] },
       variations: {
@@ -605,6 +611,10 @@ async function main() {
       menuItemId: crypto.randomUUID(),
       name: 'Crispy Chicken Sandwich',
       description: 'Crispy fried chicken breast with fresh lettuce',
+      category: category.MAIN_COURSE,
+      price: 11.49,
+      discountPrice: 9.99,
+      preparationTime: 10,
       isAvailable: true,
       dietaryTags: { connect: [{ id: glutenFreeTag.id }] },
       variations: {
@@ -622,6 +632,9 @@ async function main() {
       menuItemId: crypto.randomUUID(),
       name: 'Seasoned Fries',
       description: 'Crispy golden fries with house seasoning',
+      category: category.SIDE_DISH,
+      price: 4.99,
+      preparationTime: 6,
       isAvailable: true,
       dietaryTags: { connect: [{ id: veganTag.id }, { id: glutenFreeTag.id }] },
       variations: {
@@ -640,10 +653,54 @@ async function main() {
       menuItemId: crypto.randomUUID(),
       name: 'Truffle Burger',
       description: 'Premium wagyu beef with black truffle sauce',
+      category: category.MAIN_COURSE,
+      price: 24.99,
+      preparationTime: 18,
       isAvailable: false,
       variations: {
         create: [{ size: 'One Size', price: 24.99 }],
       },
+    },
+  });
+
+  const chocLava = await prisma.branchMenuItem.create({
+    data: {
+      branchId: branch.id,
+      menuItemId: crypto.randomUUID(),
+      name: 'Chocolate Lava Cake',
+      description: 'Warm chocolate cake with a molten centre',
+      category: category.DESSERT,
+      price: 6.99,
+      preparationTime: 15,
+      isAvailable: true,
+    },
+  });
+
+  const softDrink = await prisma.branchMenuItem.create({
+    data: {
+      branchId: branch.id,
+      menuItemId: crypto.randomUUID(),
+      name: 'Soft Drink',
+      description: 'Chilled can of your choice',
+      category: category.BEVERAGE,
+      price: 2.49,
+      preparationTime: 1,
+      isAvailable: true,
+      dietaryTags: { connect: [{ id: veganTag.id }] },
+    },
+  });
+
+  const onionRings = await prisma.branchMenuItem.create({
+    data: {
+      branchId: branch.id,
+      menuItemId: crypto.randomUUID(),
+      name: 'Onion Rings',
+      description: 'Golden battered onion rings',
+      category: category.APPETIZER,
+      price: 4.49,
+      preparationTime: 8,
+      isAvailable: true,
+      dietaryTags: { connect: [{ id: veganTag.id }] },
     },
   });
 
@@ -713,13 +770,25 @@ async function main() {
         ingredientId: briocheBun.id,
         quantityRequired: 1,
       },
+      // Onion Rings
+      {
+        menuItemId: onionRings.id,
+        ingredientId: oliveOil.id,
+        quantityRequired: 0.03,
+      },
+      // Chocolate Lava Cake & Soft Drink have no tracked ingredients
     ],
   });
+
+  // Silence unused-variable lint for items with no recipe entries
+  void chocLava;
+  void softDrink;
 
   console.log('✅ Recipes created');
 
   // -------------------------------------------------------
   // 14. ORDERS
+  // orderNumber is auto-incremented — do NOT pass it manually
   // -------------------------------------------------------
   await prisma.order.create({
     data: {
@@ -929,8 +998,8 @@ async function main() {
 ├── 2  Warehouses
 ├── 8  Ingredients
 ├── 8  Inventory Items  +  8 Stock Batches
-├── 4  Menu Items  (3 available · 1 unavailable)
-├── 11 Recipe entries
+├── 7  Menu Items  (appetizer · mains · side · dessert · beverage · 1 unavailable)
+├── 13 Recipe entries
 ├── 4  Orders  (pending · in-progress · completed · cancelled)
 ├── 5  Inventory Usage Logs
 ├── 4  Shifts

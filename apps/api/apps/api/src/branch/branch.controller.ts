@@ -129,8 +129,20 @@ export class BranchController implements OnModuleInit {
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.CASHIER, UserRole.MANAGER)
   @Get('menu')
-  getBranchMenu(@GetBranchId() branchId: string) {
-    return this.branchClient.send(BRANCH_TOPICS.GET_MENU, { branchId });
+  @ApiQuery({ name: 'page', type: Number, required: false })
+  @ApiQuery({ name: 'limit', type: Number, required: false })
+  getBranchMenu(
+    @GetBranchId() branchId: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    return this.branchClient.send(BRANCH_TOPICS.GET_MENU, {
+      branchId,
+      pagination: {
+        page: Number(page) || 1,
+        limit: Number(limit) || 10,
+      },
+    });
   }
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)

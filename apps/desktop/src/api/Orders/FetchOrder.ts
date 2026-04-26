@@ -1,8 +1,8 @@
 import {
   Order,
   OrderFilters,
-  PaginatedResponse,
 } from "@/features/dashboard/live-orders/types/LiveOrders.types";
+import { PaginatedResponse } from "@/types/PaginatedRespons";
 import { apiClient } from "@repo/utils";
 
 export const fetchOrders = {

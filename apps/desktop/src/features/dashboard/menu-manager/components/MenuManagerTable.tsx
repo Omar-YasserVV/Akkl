@@ -1,18 +1,21 @@
+import { useBranchMenu } from "@/hooks/Menu/FetchMenu";
 import {
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-  Chip,
   Button,
+  Chip,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
 } from "@heroui/react";
-import { MENU_ITEMS } from "../constants/dummy_constants";
-import { FiEdit } from "react-icons/fi";
 import { FaRegTrashAlt } from "react-icons/fa";
+import { FiEdit } from "react-icons/fi";
 
 export default function MenuManagerTable() {
+  const { data: branchMenu, isLoading: isLoadingMenu } = useBranchMenu();
+  console.log(branchMenu, "dddd");
+
   return (
     <div>
       <Table
@@ -34,12 +37,12 @@ export default function MenuManagerTable() {
           <TableColumn align="start">Actions</TableColumn>
         </TableHeader>
         <TableBody>
-          {MENU_ITEMS.map((item) => (
+          {branchMenu?.data?.map((item) => (
             <TableRow key={item.id}>
               <TableCell>
                 <div className="flex items-center gap-3">
                   <img
-                    src={item.image}
+                    src={item.image || ""}
                     alt={item.name}
                     className="w-11 h-11 rounded-lg object-cover"
                   />
@@ -56,11 +59,11 @@ export default function MenuManagerTable() {
               </TableCell>
 
               <TableCell className="text-zinc-900 font-medium text-center">
-                ${item.price.toFixed(2)}
+                ${item.price}
               </TableCell>
 
               <TableCell className="text-zinc-900 text-center">
-                {item.prepTime}
+                {item.preparationTime || "-"}
               </TableCell>
 
               <TableCell>
@@ -70,7 +73,7 @@ export default function MenuManagerTable() {
                     className="bg-green-100 text-green-800 font-semibold"
                     size="sm"
                   >
-                    {item.status}
+                    {item.isAvailable ? "Active" : "Inactive"}
                   </Chip>
                 </div>
               </TableCell>
@@ -100,7 +103,7 @@ export default function MenuManagerTable() {
                 </div>
               </TableCell>
             </TableRow>
-          ))}
+          )) || []}
         </TableBody>
       </Table>
     </div>

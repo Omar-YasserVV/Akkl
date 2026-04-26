@@ -1,8 +1,9 @@
 import { BranchMenuItemDetailDto, UpdateBranchMenuItemDto } from '@app/common';
 import { PrismaService } from '@app/db';
 import { Inject, Injectable } from '@nestjs/common';
-import { ClientKafka, RpcException } from '@nestjs/microservices'; // Added RpcException
+import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { Prisma } from 'libs/db/generated/client/client';
+import { createPagination } from 'utils/pagination.util';
 import * as XLSX from 'xlsx';
 
 interface ExcelMenuRow {
@@ -11,6 +12,10 @@ interface ExcelMenuRow {
   Image?: string;
   Available?: string | boolean;
   MenuItemID?: string;
+  Category?: string;
+  Price?: string | number;
+  DiscountPrice?: string | number;
+  PreparationTime?: string | number;
   Variations?: string;
   DietaryTags?: string;
   Recipe?: string;
@@ -37,11 +42,27 @@ export class MenuService {
     });
   }
 
-  async getBranchMenu(branchId: string) {
-    return this.prisma.branchMenuItem.findMany({
-      where: { branchId: branchId },
-      include: this.commonInclude,
-    });
+  async getBranchMenu(
+    branchId: string,
+    pagination: { page?: number; limit?: number },
+  ) {
+    const page = Number(pagination?.page) || 1;
+    const limit = Number(pagination?.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await Promise.all([
+      this.prisma.branchMenuItem.findMany({
+        where: { branchId },
+        include: this.commonInclude,
+        skip,
+        take: limit,
+      }),
+      this.prisma.branchMenuItem.count({
+        where: { branchId },
+      }),
+    ]);
+
+    return createPagination(items, total, page, limit);
   }
 
   async createMenu(branchId: string, data: BranchMenuItemDetailDto) {
@@ -64,7 +85,11 @@ export class MenuService {
           image: data.image,
           isAvailable: data.isAvailable,
           menuItemId: data.menuItemId,
-          branchId: branchId,
+          category: data.category, // ✅ Added
+          price: data.price, // ✅ Added
+          discountPrice: data.discountPrice, // ✅ Added
+          preparationTime: data.preparationTime, // ✅ Added
+          branchId,
           variations: {
             create: data.variations?.map((v) => ({
               size: v.size,
@@ -138,6 +163,10 @@ export class MenuService {
         description: data.description,
         image: data.image,
         isAvailable: data.isAvailable,
+        category: data.category, // ✅ Added
+        price: data.price, // ✅ Added
+        discountPrice: data.discountPrice, // ✅ Added
+        preparationTime: data.preparationTime, // ✅ Added
         variations: data.variations
           ? {
               deleteMany: {},
@@ -161,13 +190,14 @@ export class MenuService {
       },
       include: this.commonInclude,
     });
+
     this.kafkaClient.emit('menu-item.updated', updatedMenuItem);
     return updatedMenuItem;
   }
 
   async deleteMenuItem(id: string, branchId: string) {
     const menuItem = await this.prisma.branchMenuItem.findFirst({
-      where: { id: id, branchId: branchId },
+      where: { id, branchId },
     });
 
     if (!menuItem) {
@@ -177,9 +207,7 @@ export class MenuService {
       });
     }
 
-    await this.prisma.branchMenuItem.delete({
-      where: { id: id },
-    });
+    await this.prisma.branchMenuItem.delete({ where: { id } });
 
     this.kafkaClient.emit('menu-item.deleted', { id });
     return { message: `Menu item with ID ${id} deleted successfully` };
@@ -227,13 +255,21 @@ export class MenuService {
     return rows.map((row) => {
       try {
         return {
-          branchId: branchId,
+          branchId,
           name: String(row.Name || ''),
           description: row.Description ? String(row.Description) : undefined,
           image: row.Image ? String(row.Image) : undefined,
           isAvailable:
             row.Available === 'false' || row.Available === false ? false : true,
           menuItemId: String(row.MenuItemID || ''),
+          category: row.Category as BranchMenuItemDetailDto['category'], // ✅ Added
+          price: row.Price ? Number(row.Price) : 0, // ✅ Added
+          discountPrice: row.DiscountPrice // ✅ Added
+            ? Number(row.DiscountPrice)
+            : undefined,
+          preparationTime: row.PreparationTime // ✅ Added
+            ? Number(row.PreparationTime)
+            : 0,
           variations: row.Variations
             ? (JSON.parse(
                 row.Variations,
@@ -280,7 +316,11 @@ export class MenuService {
               image: item.image,
               isAvailable: item.isAvailable,
               menuItemId: item.menuItemId,
-              branchId: branchId,
+              category: item.category, // ✅ Added
+              price: item.price, // ✅ Added
+              discountPrice: item.discountPrice, // ✅ Added
+              preparationTime: item.preparationTime, // ✅ Added
+              branchId,
               variations: {
                 create: item.variations?.map((v) => ({
                   size: v.size,
@@ -301,6 +341,7 @@ export class MenuService {
           }),
         ),
       );
+
       this.kafkaClient.emit('menu-items.bulk-created', bulkItems);
       return {
         message: `${bulkItems.length} menu items created successfully`,

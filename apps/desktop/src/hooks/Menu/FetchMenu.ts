@@ -1,4 +1,4 @@
-import { FetchMenu } from "@/api/Menu/FetchMeny";
+import { FetchMenu } from "@/api/Menu/FetchMenu";
 import { useQuery } from "@tanstack/react-query";
 
 export const useBranchMenu = () => {
