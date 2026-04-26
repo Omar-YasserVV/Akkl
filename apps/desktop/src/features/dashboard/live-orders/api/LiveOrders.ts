@@ -1,20 +1,12 @@
 import { OrderState } from "@repo/types";
 import { apiClient } from "@repo/utils";
-import {
-  BranchMenuItem,
-  CreateOrderBody,
-  Order,
-} from "../types/LiveOrders.types";
+import { CreateOrderBody, Order } from "../types/LiveOrders.types";
 
 const BASE_URL = "/branches/orders";
 
 export const ordersApis = {
   createOrder: async (data: CreateOrderBody) => {
     return apiClient.post<Order>(BASE_URL, data);
-  },
-
-  getBranchMenu: async () => {
-    return apiClient.get<BranchMenuItem[]>("/branches/menu");
   },
 
   getOrderStats: async () => {

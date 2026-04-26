@@ -70,13 +70,6 @@ export const useOrderStats = () => {
   });
 };
 
-export const useBranchMenu = () => {
-  return useQuery({
-    queryKey: orderKeys.menu(),
-    queryFn: () => ordersApis.getBranchMenu(),
-  });
-};
-
 // --- Mutations ---
 
 export const useCreateOrder = () => {
