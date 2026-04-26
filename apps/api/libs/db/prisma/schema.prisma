@@ -202,14 +202,17 @@ model StockBatch {
 
 // ---------- Inventory Usage Log ------------
 
+
 model InventoryUsageLog {
-  id               String        @id @default(uuid())
+  id               String             @id @default(uuid())
   inventoryItemId  String
-  consumedQuantity Float
-  reason           UsageReason   @default(KITCHEN_PREP)
-  notes            String?
-  consumedAt       DateTime      @default(now())
-  inventoryItem    InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  inventoryItem    InventoryItem      @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
+  action           InventoryLogAction
+  quantityChange   Float              @default(0)
+  previousQuantity Float
+  newQuantity      Float
+  notes            String?            // Optional: to track metadata changes or reasons
+  createdAt        DateTime           @default(now())
 }
 
 // ---------- Ordering & Reservation Models ------------
@@ -373,11 +376,9 @@ enum IngredientCategory {
   OTHER       // Everything else
 }
 
-enum UsageReason {
-  KITCHEN_PREP
-  SPOILAGE
-  DAMAGED
-  EXPIRED
-  TESTING
-  OTHER
+enum InventoryLogAction {
+  CREATE
+  RESTOCK
+  CONSUME
+  UPDATE
 }

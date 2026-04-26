@@ -7,6 +7,10 @@ import {
   CreateInventoryItemResDto,
 } from './dto/inventory/inventory.create.dto';
 import {
+  DeductForOrderReqDto,
+  DeductForOrderResDto,
+} from './dto/inventory/inventory.deduct.dto';
+import {
   DeleteInventoryItemReqDto,
   DeleteInventoryItemResDto,
 } from './dto/inventory/inventory.delete.dto';
@@ -79,5 +83,12 @@ export class SvcWarehouseController {
     @Payload() data: UpdateInventoryItemReqDto,
   ): Promise<UpdateInventoryItemResDto> {
     return this.svcWarehouseService.updateInventoryItem(data);
+  }
+
+  @MessagePattern(WAREHOUSE_TOPICS.DEDUCT_FOR_ORDER)
+  async deductForOrder(
+    @Payload() data: DeductForOrderReqDto,
+  ): Promise<DeductForOrderResDto> {
+    return this.svcWarehouseService.deductForOrder(data);
   }
 }
