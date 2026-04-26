@@ -3,7 +3,6 @@ import {
   Card,
   CardBody,
   CardHeader,
-  Chip,
   Table,
   TableBody,
   TableCell,
@@ -11,24 +10,13 @@ import {
   TableHeader,
   TableRow,
 } from "@heroui/react";
-
 import { useTimeAgo } from "@repo/hooks";
-
-const statusColorMap: Record<
-  string,
-  "success" | "warning" | "danger" | "default"
-> = {
-  COMPLETED: "success",
-  PENDING: "warning",
-  CANCELLED: "danger",
-};
+import Chip from "@repo/ui/components/chip";
 
 const TimeDisplay = ({ date }: { date: string }) => {
   const timeAgo = useTimeAgo(date); // Hook is top-level here
   return <>{timeAgo}</>;
 };
-
-// TODO: implement a general status chips component
 
 const RecentOrdersTable = () => {
   const { data } = useOrders({
@@ -74,13 +62,7 @@ const RecentOrdersTable = () => {
                 <TableCell>{order.CustomerName}</TableCell>
                 <TableCell>{order.totalPrice}</TableCell>
                 <TableCell>
-                  <Chip
-                    variant="flat"
-                    size="sm"
-                    color={statusColorMap[order.status] || "default"}
-                  >
-                    {order.status}
-                  </Chip>
+                  <Chip variant="flat" size="sm" value={order.status} />
                 </TableCell>
                 <TableCell className="text-default-400">
                   <TimeDisplay date={order.createdAt} />
