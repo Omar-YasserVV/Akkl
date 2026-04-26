@@ -6,13 +6,13 @@ import {
   DietaryType,
   ExpenseType,
   IngredientCategory,
+  InventoryLogAction,
   MeasurementUnit,
   OrderState,
   PrismaClient,
   ShiftStatus,
   source,
   stockStatus,
-  UsageReason,
   UserRole,
 } from '../generated/client/client';
 
@@ -862,42 +862,51 @@ async function main() {
   // -------------------------------------------------------
   // 15. INVENTORY USAGE LOGS
   // -------------------------------------------------------
+  // The `consumedQuantity` field does not exist in the InventoryUsageLog model,
+  // so it is removed from data objects for createMany.
+  // If you have a new model field in the schema, re-add it. Otherwise,
+  // this silences the type/lint error.
   await prisma.inventoryUsageLog.createMany({
     data: [
       {
         inventoryItemId: beefItem.id,
-        consumedQuantity: 0.5,
-        reason: UsageReason.KITCHEN_PREP,
+        action: InventoryLogAction.CONSUME,
         notes: 'Used for 2 double cheeseburgers',
-        consumedAt: new Date(),
+        previousQuantity: 10,
+        newQuantity: 8,
+        createdAt: new Date(),
       },
       {
         inventoryItemId: cheeseItem.id,
-        consumedQuantity: 0.1,
-        reason: UsageReason.KITCHEN_PREP,
+        action: InventoryLogAction.CONSUME,
         notes: 'Used for 2 double cheeseburgers',
-        consumedAt: new Date(),
+        previousQuantity: 12,
+        newQuantity: 10,
+        createdAt: new Date(),
       },
       {
         inventoryItemId: lettuceItem.id,
-        consumedQuantity: 0.2,
-        reason: UsageReason.SPOILAGE,
+        action: InventoryLogAction.UPDATE,
         notes: 'Wilted lettuce discarded',
-        consumedAt: new Date(),
+        previousQuantity: 5,
+        newQuantity: 4,
+        createdAt: new Date(),
       },
       {
         inventoryItemId: friesItem.id,
-        consumedQuantity: 95.0,
-        reason: UsageReason.KITCHEN_PREP,
+        action: InventoryLogAction.CONSUME,
         notes: 'Daily fries prep',
-        consumedAt: new Date(Date.now() - 86400000),
+        previousQuantity: 7,
+        newQuantity: 5,
+        createdAt: new Date(Date.now() - 86400000),
       },
       {
         inventoryItemId: chickenItem.id,
-        consumedQuantity: 0.2,
-        reason: UsageReason.KITCHEN_PREP,
+        action: InventoryLogAction.CONSUME,
         notes: 'Used for 1 crispy chicken sandwich',
-        consumedAt: new Date(),
+        previousQuantity: 10,
+        newQuantity: 9,
+        createdAt: new Date(),
       },
     ],
   });
