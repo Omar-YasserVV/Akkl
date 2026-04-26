@@ -1,7 +1,6 @@
+import { useOrders } from "@/hooks/Orders/FetchOrders";
 import { useOrderStore } from "@/store/OrderStore";
 import { Pagination } from "@heroui/react";
-import { useOrders } from "../hooks/useLiveOrders";
-
 const PaginationButtons = () => {
   const { filters, setFilters } = useOrderStore();
   const { data } = useOrders(filters);

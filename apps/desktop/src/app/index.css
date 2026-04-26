@@ -71,3 +71,8 @@ body {
   background-color: #dcfce7 !important;
   color: #166534 !important;
 }
+
+.status-pill-cancelled {
+  background-color: #fee2e2 !important;
+  color: #991b1b !important;
+}
