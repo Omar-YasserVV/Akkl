@@ -1,5 +1,7 @@
 import { PrismaPg } from '@prisma/adapter-pg';
 import * as dotenv from 'dotenv';
+
+import { hashPassword } from 'utils/argon2';
 import {
   BatchStatus,
   category,
@@ -71,11 +73,43 @@ async function main() {
   // -------------------------------------------------------
   // 3. USERS
   // -------------------------------------------------------
+  // Utility: hash passwords using bcrypt
+
+  // Default plaintext passwords for seed users (also written in comment for each user below)
+  const passwords = {
+    owner: 'owner123', // password: owner123
+    manager: 'manager123', // password: manager123
+    cashier: 'cashier123', // password: cashier123
+    chief: 'chief123', // password: chief123
+    waiter: 'waiter123', // password: waiter123
+    customer: 'customer123', // password: customer123
+    customer2: 'customer2123', // password: customer2123
+  };
+
+  // Hash all passwords in parallel and assign to variables
+  const [
+    ownerHashed,
+    managerHashed,
+    cashierHashed,
+    chiefHashed,
+    waiterHashed,
+    customerHashed,
+    customer2Hashed,
+  ] = await Promise.all([
+    hashPassword(passwords.owner),
+    hashPassword(passwords.manager),
+    hashPassword(passwords.cashier),
+    hashPassword(passwords.chief),
+    hashPassword(passwords.waiter),
+    hashPassword(passwords.customer),
+    hashPassword(passwords.customer2),
+  ]);
+
   const owner = await prisma.user.create({
     data: {
       email: 'omar@owner.com',
       username: 'omar_yasser',
-      password: 'hashed_password',
+      password: ownerHashed, // password: owner123
       fullName: 'Omar Yasser Shawky',
       phone: '01000000001',
       role: UserRole.BUSINESS_OWNER,
@@ -86,7 +120,7 @@ async function main() {
     data: {
       email: 'manager@branch.com',
       username: 'branch_mgr',
-      password: 'hashed_password',
+      password: managerHashed, // password: manager123
       fullName: 'Ahmed Manager',
       phone: '01000000002',
       role: UserRole.MANAGER,
@@ -98,7 +132,7 @@ async function main() {
     data: {
       email: 'cashier@branch.com',
       username: 'branch_cashier',
-      password: 'hashed_password',
+      password: cashierHashed, // password: cashier123
       fullName: 'Sara Cashier',
       phone: '01000000004',
       role: UserRole.CASHIER,
@@ -110,7 +144,7 @@ async function main() {
     data: {
       email: 'chief@branch.com',
       username: 'branch_chief',
-      password: 'hashed_password',
+      password: chiefHashed, // password: chief123
       fullName: 'Hassan Chief',
       phone: '01000000005',
       role: UserRole.CHIEF,
@@ -122,7 +156,7 @@ async function main() {
     data: {
       email: 'waiter@branch.com',
       username: 'branch_waiter',
-      password: 'hashed_password',
+      password: waiterHashed, // password: waiter123
       fullName: 'Mostafa Waiter',
       phone: '01000000006',
       role: UserRole.WAITER,
@@ -134,7 +168,7 @@ async function main() {
     data: {
       email: 'customer@gmail.com',
       username: 'foodie_jane',
-      password: 'hashed_password',
+      password: customerHashed, // password: customer123
       fullName: 'Jane Doe',
       phone: '01000000003',
       role: UserRole.CUSTOMER,
@@ -145,7 +179,7 @@ async function main() {
     data: {
       email: 'customer2@gmail.com',
       username: 'hungry_john',
-      password: 'hashed_password',
+      password: customer2Hashed, // password: customer2123
       fullName: 'John Smith',
       phone: '01000000007',
       role: UserRole.CUSTOMER,
