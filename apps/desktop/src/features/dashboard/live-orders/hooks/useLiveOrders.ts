@@ -1,4 +1,3 @@
-import { fetchOrders } from "@/api/Orders/FetchOrder";
 import {
   QueryKey,
   useMutation,
@@ -9,7 +8,6 @@ import { ordersApis } from "../api/LiveOrders";
 import {
   CreateOrderBody,
   Order,
-  OrderFilters,
   PaginatedResponse,
 } from "../types/LiveOrders.types";
 import { orderKeys } from "./LiveOrders.keys";
@@ -57,14 +55,6 @@ const removeOrderFromList = (
 };
 
 // --- Queries ---
-
-export const useOrders = (filters: OrderFilters) => {
-  return useQuery({
-    queryKey: orderKeys.list(filters),
-    queryFn: () => fetchOrders.getAllOrders(filters),
-    placeholderData: (previousData) => previousData,
-  });
-};
 
 export const useOrderDetails = (orderId: string) => {
   return useQuery({
