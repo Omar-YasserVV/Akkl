@@ -1,5 +1,4 @@
 import { useOrders } from "@/hooks/Orders/FetchOrders";
-import { useOrderStore } from "@/store/OrderStore";
 import {
   Spinner,
   Table,
@@ -10,6 +9,7 @@ import {
   TableRow,
 } from "@heroui/react";
 import { columns } from "../constants/StatsCard.constants";
+import { useOrderStore } from "../store/OrderStore";
 import { OrderCell } from "./RenderCell";
 
 const OrderList = () => {

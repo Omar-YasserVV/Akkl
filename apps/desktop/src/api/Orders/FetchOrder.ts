@@ -1,7 +1,4 @@
-import {
-  Order,
-  OrderFilters,
-} from "@/features/dashboard/live-orders/types/LiveOrders.types";
+import { Order, OrderFilters } from "@/types/Order";
 import { PaginatedResponse } from "@/types/PaginatedRespons";
 import { apiClient } from "@repo/utils";
 

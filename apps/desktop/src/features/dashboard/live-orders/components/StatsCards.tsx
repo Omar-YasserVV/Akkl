@@ -1,12 +1,13 @@
 import { Skeleton } from "@heroui/react";
 import { getStatsConfig } from "../constants/StatsCard.constants";
 import { useOrderStats } from "../hooks/useLiveOrders";
+import { OrdersStats } from "../types/LiveOrders.types";
 import { StatCardItemProps } from "../types/StatsCard.types";
 import StatCardItem from "./StatCardItem";
 
 const StatsCards = () => {
   const { data: stats, isLoading } = useOrderStats();
-  const statsConfig = getStatsConfig(stats);
+  const statsConfig = getStatsConfig(stats as OrdersStats);
 
   if (isLoading) {
     return (

@@ -1,6 +1,6 @@
-import { useOrderStore } from "@/store/OrderStore";
 import { Button, Card } from "@heroui/react";
 import { sources, statuses } from "../constants/StatsCard.constants";
+import { useOrderStore } from "../store/OrderStore";
 
 const basePillClasses =
   "min-w-[72px] h-9 px-4 rounded-sm text-xs font-medium transition-colors shadow-none";

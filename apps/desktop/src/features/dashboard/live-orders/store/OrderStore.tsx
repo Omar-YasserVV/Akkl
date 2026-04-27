@@ -1,5 +1,5 @@
+import { OrderFilters } from "@/types/Order";
 import { create } from "zustand";
-import { OrderFilters } from "../features/dashboard/live-orders/types/LiveOrders.types";
 
 interface OrderStore {
   filters: OrderFilters;

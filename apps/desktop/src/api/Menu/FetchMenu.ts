@@ -1,4 +1,4 @@
-import { BranchMenuItem } from "@/features/dashboard/menu-manager/types/Menu";
+import { BranchMenuItem } from "@/types/Menu";
 import { PaginatedResponse } from "@/types/PaginatedRespons";
 import { apiClient } from "@repo/utils";
 

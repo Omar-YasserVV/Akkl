@@ -1,6 +1,6 @@
+import { Order } from "@/types/Order";
 import { OrderState } from "@repo/types";
 import { columns } from "../constants/StatsCard.constants";
-import { Order } from "../types/LiveOrders.types";
 
 export type ColumnKey = (typeof columns)[number]["uid"];
 

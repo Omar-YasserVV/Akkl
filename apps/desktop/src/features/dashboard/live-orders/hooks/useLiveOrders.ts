@@ -1,3 +1,4 @@
+import { Order } from "@/types/Order";
 import { PaginatedResponse } from "@/types/PaginatedRespons";
 import {
   QueryKey,
@@ -6,7 +7,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { ordersApis } from "../api/LiveOrders";
-import { CreateOrderBody, Order } from "../types/LiveOrders.types";
+import { CreateOrderBody } from "../types/LiveOrders.types";
 import { orderKeys } from "./LiveOrders.keys";
 
 type OrdersListCacheEntry = readonly [

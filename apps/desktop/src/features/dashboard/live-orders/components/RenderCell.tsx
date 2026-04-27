@@ -1,3 +1,4 @@
+import { Order } from "@/types/Order";
 import { Spinner, Tooltip } from "@heroui/react";
 import Chip from "@repo/ui/components/chip";
 import { NumberFormatter } from "@repo/utils";
@@ -6,7 +7,6 @@ import { BiMobile } from "react-icons/bi";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { FiEdit } from "react-icons/fi";
 import { useDeleteOrder, useUpdateOrder } from "../hooks/useLiveOrders";
-import { Order } from "../types/LiveOrders.types";
 import { ColumnKey, OrderCellProps } from "../types/OrderList.types";
 import { StatusSelect } from "./StatusSelect";
 
