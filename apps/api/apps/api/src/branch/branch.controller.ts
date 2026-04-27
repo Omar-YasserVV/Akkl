@@ -6,6 +6,7 @@ import {
   UpdateBranchMenuItemDto,
   UpdateOrderDto,
 } from '@app/common';
+import { MenuPaginationDto } from '@app/common/dtos/MenuDto/list.menu.dto';
 import { OrdersPaginationDto } from '@app/common/dtos/OrderDto/list.order.dto';
 import { BRANCH_TOPICS } from '@app/common/topics/branch.topics';
 import { GetBranchId } from '@app/guards/branch-id.decorator';
@@ -29,6 +30,8 @@ import {
   UploadedFile,
   UseGuards,
   UseInterceptors,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -119,7 +122,7 @@ export class BranchController implements OnModuleInit {
 
   // ---------------- MENU ----------------
 
-  @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
+  @Roles(UserRole.BUSINESS_OWNER, UserRole.CASHIER, UserRole.MANAGER)
   @Get('menu/all')
   getAllMenuItems(@GetBranchId() branchId: string) {
     return this.branchClient.send(BRANCH_TOPICS.GET_ALL_MENU_ITEMS, {
@@ -128,19 +131,19 @@ export class BranchController implements OnModuleInit {
   }
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.CASHIER, UserRole.MANAGER)
+  @UsePipes(new ValidationPipe({ transform: true }))
   @Get('menu')
-  @ApiQuery({ name: 'page', type: Number, required: false })
-  @ApiQuery({ name: 'limit', type: Number, required: false })
   getBranchMenu(
     @GetBranchId() branchId: string,
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
+    @Query() pagination: MenuPaginationDto,
   ) {
     return this.branchClient.send(BRANCH_TOPICS.GET_MENU, {
       branchId,
       pagination: {
-        page: Number(page) || 1,
-        limit: Number(limit) || 10,
+        page: Number(pagination.page) || 1,
+        limit: Number(pagination.limit) || 10,
+        category: pagination.category,
+        isAvailable: pagination.isAvailable,
       },
     });
   }

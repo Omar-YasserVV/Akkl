@@ -14,14 +14,20 @@ export class MenuController {
   constructor(private readonly menuService: MenuService) {}
 
   @MessagePattern(BRANCH_TOPICS.GET_ALL_MENU_ITEMS)
-  async getAllItems() {
-    return this.menuService.getMenu();
+  async getAllItems(@Payload('branchId') branchId: string) {
+    return this.menuService.getMenu(branchId);
   }
 
   @MessagePattern(BRANCH_TOPICS.GET_MENU)
   async getBranchMenu(
     @Payload('branchId') branchId: string,
-    @Payload('pagination') pagination: { page?: number; limit?: number },
+    @Payload('pagination')
+    pagination: {
+      page?: number;
+      limit?: number;
+      category?: any;
+      isAvailable?: boolean;
+    },
   ) {
     return this.menuService.getBranchMenu(branchId, pagination);
   }

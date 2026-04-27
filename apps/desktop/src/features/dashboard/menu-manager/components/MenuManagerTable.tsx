@@ -4,7 +4,8 @@ import {
   createDashboardTableLoadingRows,
 } from "@/features/dashboard/components/shared/DashboardTableLoading";
 import PaginationButtons from "@/features/dashboard/components/shared/PaginationButtons";
-import { useBranchMenu } from "@/hooks/Menu/FetchMenu";
+import { usePaginatedBranchMenu } from "@/hooks/Menu/FetchMenu";
+import { MenuFilters } from "@/types/Menu";
 import {
   Button,
   Chip,
@@ -16,25 +17,30 @@ import {
   TableHeader,
   TableRow,
 } from "@heroui/react";
-import { useState } from "react";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { FiEdit } from "react-icons/fi";
 import { MENU_COLUMNS } from "../constants/MenuColumns";
 
-const PAGE_SIZE = 10;
 const loadingRows = createDashboardTableLoadingRows();
 
-export default function MenuManagerTable() {
-  const [page, setPage] = useState(1);
+type MenuManagerTableProps = {
+  filters: MenuFilters;
+  onChange: (filters: Partial<MenuFilters>) => void;
+};
+
+export default function MenuManagerTable({
+  filters,
+  onChange,
+}: MenuManagerTableProps) {
   const {
     data: branchMenu,
     isLoading: isLoadingMenu,
     isFetching: isFetchingMenu,
-  } = useBranchMenu({ page, limit: PAGE_SIZE });
+  } = usePaginatedBranchMenu(filters);
 
   const menuItems = branchMenu?.data ?? [];
   const totalPages = branchMenu?.meta.pages ?? 1;
-  const currentPage = branchMenu?.meta.currentPage ?? page;
+  const currentPage = branchMenu?.meta.currentPage ?? filters.page;
 
   return (
     <div>
@@ -76,11 +82,13 @@ export default function MenuManagerTable() {
                 <TableRow key={item.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <img
-                        src={item.image || ""}
-                        alt={item.name}
-                        className="w-11 h-11 rounded-lg object-cover"
-                      />
+                      {item.image && (
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-11 h-11 rounded-lg object-cover"
+                        />
+                      )}
                       <span className="font-medium text-zinc-900">
                         {item.name}
                       </span>
@@ -107,7 +115,11 @@ export default function MenuManagerTable() {
                     <div className="flex">
                       <Chip
                         variant="flat"
-                        className="bg-green-100 text-green-800 font-semibold"
+                        className={
+                          item.isAvailable
+                            ? "bg-green-100 text-green-800 font-semibold"
+                            : "bg-red-100 text-red-800 font-semibold"
+                        }
                         size="sm"
                       >
                         {item.isAvailable ? "Active" : "Inactive"}
@@ -116,7 +128,7 @@ export default function MenuManagerTable() {
                   </TableCell>
 
                   <TableCell className="text-slate-500 text-center">
-                    <span className="block truncate max-w-50 mx-auto">
+                    <span className="block truncate max-w-48 mx-auto">
                       {item.description}
                     </span>
                   </TableCell>
@@ -149,7 +161,7 @@ export default function MenuManagerTable() {
       <PaginationButtons
         page={currentPage}
         total={totalPages}
-        onChange={setPage}
+        onChange={(page) => onChange({ page })}
       />
     </div>
   );

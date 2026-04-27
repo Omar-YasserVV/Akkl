@@ -126,10 +126,11 @@ const Sidebar = () => {
                 as={NavLink}
                 to={route.path}
                 variant={isActive ? "solid" : "light"}
+                isDisabled={isActive}
                 className={cn(
                   "w-full h-12 transition-all duration-200",
                   isActive
-                    ? "font-semibold bg-primary text-white"
+                    ? "font-semibold bg-primary text-white opacity-100 cursor-default pointer-events-none"
                     : "font-medium text-black",
                   isCollapsed
                     ? "min-w-0 px-0 justify-center"

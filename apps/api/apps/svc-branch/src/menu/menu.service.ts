@@ -2,7 +2,7 @@ import { BranchMenuItemDetailDto, UpdateBranchMenuItemDto } from '@app/common';
 import { PrismaService } from '@app/db';
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
-import { Prisma } from 'libs/db/generated/client/client';
+import { Prisma, category } from 'libs/db/generated/client/client';
 import { createPagination } from 'utils/pagination.util';
 import * as XLSX from 'xlsx';
 
@@ -36,29 +36,95 @@ export class MenuService {
     },
   };
 
-  async getMenu() {
+  async getMenu(branchId: string) {
     return this.prisma.branchMenuItem.findMany({
+      where: { branchId },
       include: this.commonInclude,
     });
   }
 
   async getBranchMenu(
     branchId: string,
-    pagination: { page?: number; limit?: number },
+    pagination: {
+      page?: number;
+      limit?: number;
+      category?: category;
+      isAvailable?: boolean;
+    },
   ) {
     const page = Number(pagination?.page) || 1;
     const limit = Number(pagination?.limit) || 10;
     const skip = (page - 1) * limit;
+    const where: Prisma.BranchMenuItemWhereInput = {
+      branchId,
+      ...(pagination?.category ? { category: pagination.category } : {}),
+    };
+
+    if (pagination?.isAvailable === true) {
+      where.isAvailable = true;
+      where.recipe = {
+        none: {
+          OR: [
+            {
+              ingredient: {
+                inventoryItems: {
+                  none: { warehouse: { branchId } },
+                },
+              },
+            },
+            {
+              ingredient: {
+                inventoryItems: {
+                  some: {
+                    warehouse: { branchId },
+                    stockStatus: 'OUT_OF_STOCK',
+                  },
+                },
+              },
+            },
+          ],
+        },
+      };
+    } else if (pagination?.isAvailable === false) {
+      where.OR = [
+        { isAvailable: false },
+        {
+          recipe: {
+            some: {
+              OR: [
+                {
+                  ingredient: {
+                    inventoryItems: {
+                      none: { warehouse: { branchId } },
+                    },
+                  },
+                },
+                {
+                  ingredient: {
+                    inventoryItems: {
+                      some: {
+                        warehouse: { branchId },
+                        stockStatus: 'OUT_OF_STOCK',
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      ];
+    }
 
     const [items, total] = await Promise.all([
       this.prisma.branchMenuItem.findMany({
-        where: { branchId },
+        where,
         include: this.commonInclude,
         skip,
         take: limit,
       }),
       this.prisma.branchMenuItem.count({
-        where: { branchId },
+        where,
       }),
     ]);
 

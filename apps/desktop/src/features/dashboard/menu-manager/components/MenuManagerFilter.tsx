@@ -1,58 +1,47 @@
-import { useState } from "react";
-import { Button } from "@heroui/react";
+import FilterPillGroup from "@/features/dashboard/components/shared/FilterPillGroup";
+import { FilterOption } from "@/types/Filteration";
+import { MenuFilters } from "@/types/Menu";
+import { Card } from "@heroui/react";
 
-const MenuManagerFilter = () => {
-  const [activeCategory, setActiveCategory] = useState("All");
-  const [activeAvailability, setActiveAvailability] = useState("All");
+const categoryOptions: FilterOption<MenuFilters["category"]>[] = [
+  { label: "All", value: undefined },
+  { label: "Appetizer", value: "APPETIZER" },
+  { label: "Main", value: "MAIN_COURSE" },
+  { label: "Sides", value: "SIDE_DISH" },
+  { label: "Drinks", value: "BEVERAGE" },
+  { label: "Desserts", value: "DESSERT" },
+  { label: "Other", value: "OTHER" },
+];
 
-  const categories = ["All", "Main", "Sides", "Drinks", "Desserts"];
-  const availabilityOptions = ["All", "Available", "Unavailable"];
+const availabilityOptions: FilterOption<MenuFilters["isAvailable"]>[] = [
+  { label: "All", value: undefined },
+  { label: "Available", value: true },
+  { label: "Unavailable", value: false },
+];
 
-  const getBtnClasses = (isActive: boolean) =>
-    `min-w-[20px] h-9 px-4 text-[13.7px] rounded-sm font-medium transition-all ${
-      isActive
-        ? "bg-primary text-white shadow-md"
-        : "bg-zinc-100 text-zinc-900 hover:bg-zinc-200"
-    }`;
+type MenuManagerFilterProps = {
+  filters: MenuFilters;
+  onChange: (filters: Partial<MenuFilters>) => void;
+};
 
+const MenuManagerFilter = ({ filters, onChange }: MenuManagerFilterProps) => {
   return (
-    <div className="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
-      {/* Category Filter */}
-      <div className="flex items-center gap-2">
-        <span className="text-[13.7px] font-medium text-slate-900">
-          Category:
-        </span>
-        <div className="flex gap-2">
-          {categories.map((cat) => (
-            <Button
-              key={cat}
-              onPress={() => setActiveCategory(cat)}
-              className={getBtnClasses(activeCategory === cat)}
-            >
-              {cat}
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      {/* Availability Filter */}
-      <div className="flex items-center gap-4">
-        <span className="text-[13.7px] font-medium text-slate-900">
-          Availability:
-        </span>
-        <div className="flex gap-2">
-          {availabilityOptions.map((opt) => (
-            <Button
-              key={opt}
-              onPress={() => setActiveAvailability(opt)}
-              className={getBtnClasses(activeAvailability === opt)}
-            >
-              {opt}
-            </Button>
-          ))}
-        </div>
-      </div>
-    </div>
+    <Card className="w-full text-md font-normal rounded-lg bg-white shadow-sm px-6 py-3 max-xl:gap-1 xl:grid grid-cols-[auto_1fr_auto] items-center border-0">
+      <FilterPillGroup
+        label="Category:"
+        options={categoryOptions}
+        value={filters.category}
+        onChange={(category) => onChange({ category, page: 1 })}
+      />
+      <div />
+      <FilterPillGroup
+        label="Availability:"
+        options={availabilityOptions}
+        value={filters.isAvailable}
+        onChange={(isAvailable) => onChange({ isAvailable, page: 1 })}
+        align="end"
+      />
+    </Card>
   );
 };
 

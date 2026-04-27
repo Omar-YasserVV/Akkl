@@ -135,10 +135,7 @@ const CreateOrderModal = ({
                 item={item}
                 index={index}
                 canRemove={draft.items.length > 1}
-                menuItems={(Array.isArray(branchMenu)
-                  ? branchMenu
-                  : branchMenu?.data || []
-                ).filter(
+                menuItems={branchMenu?.filter(
                   (menuItem) =>
                     menuItem.isAvailable && menuItem.variations.length > 0,
                 )}

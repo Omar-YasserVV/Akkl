@@ -7,6 +7,8 @@ import {
 export interface MenuFilters {
   page: number;
   limit: number;
+  category?: string;
+  isAvailable?: boolean;
 }
 
 export interface BranchMenuItem {
