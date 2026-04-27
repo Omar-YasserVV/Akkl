@@ -1,8 +1,12 @@
+import {
+  DASHBOARD_TABLE_SKELETON_CELL_CLASSNAME,
+  DashboardTableLoadingOverlay,
+  createDashboardTableLoadingRows,
+} from "@/features/dashboard/components/shared/DashboardTableLoading";
 import { useOrders } from "@/hooks/Orders/FetchOrders";
 import { Order } from "@/types/Order";
 import {
   Skeleton,
-  Spinner,
   Table,
   TableBody,
   TableCell,
@@ -14,10 +18,7 @@ import { columns } from "../constants/StatsCard.constants";
 import { useOrderStore } from "../store/OrderStore";
 import { OrderCell } from "./RenderCell";
 
-const LOADING_ROW_COUNT = 6;
-const loadingRows = Array.from({ length: LOADING_ROW_COUNT }, (_, index) => ({
-  id: `loading-row-${index}`,
-}));
+const loadingRows = createDashboardTableLoadingRows();
 
 const OrderList = () => {
   const filters = useOrderStore((state) => state.filters);
@@ -50,7 +51,9 @@ const OrderList = () => {
               <TableRow key={item.id}>
                 {() => (
                   <TableCell>
-                    <Skeleton className="h-5 w-full rounded-md" />
+                    <Skeleton
+                      className={DASHBOARD_TABLE_SKELETON_CELL_CLASSNAME}
+                    />
                   </TableCell>
                 )}
               </TableRow>
@@ -72,14 +75,7 @@ const OrderList = () => {
       </Table>
       {/* //TODO:Omar maybe move it to be reusable later*/}
       {isFetching && !isLoading && (
-        <div className="absolute inset-0 top-10.25 flex items-center justify-center bg-white/50 backdrop-blur-[2px] z-10">
-          <div className="flex flex-col items-center gap-2">
-            <Spinner size="lg" />
-            <span className="text-xs text-gray-400 font-medium">
-              Loading...
-            </span>
-          </div>
-        </div>
+        <DashboardTableLoadingOverlay className="absolute inset-0 top-10.25 flex items-center justify-center bg-white/50 backdrop-blur-[2px] z-10" />
       )}
     </div>
   );

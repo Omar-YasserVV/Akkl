@@ -4,6 +4,11 @@ import {
   RecipeItem,
 } from "@/features/dashboard/menu-manager/types/Menu";
 
+export interface MenuFilters {
+  page: number;
+  limit: number;
+}
+
 export interface BranchMenuItem {
   id: string;
   branchId: string;

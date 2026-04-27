@@ -1,6 +1,6 @@
 import { fetchOrders } from "@/api/Orders/FetchOrder";
 import { orderKeys } from "@/features/dashboard/live-orders/hooks/LiveOrders.keys";
-import { OrderFilters } from "@/features/dashboard/live-orders/types/LiveOrders.types";
+import { OrderFilters } from "@/types/Order";
 import { useQuery } from "@tanstack/react-query";
 
 export const useOrders = (filters: OrderFilters) => {

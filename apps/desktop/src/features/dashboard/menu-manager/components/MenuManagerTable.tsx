@@ -1,7 +1,14 @@
+import {
+  DASHBOARD_TABLE_SKELETON_CELL_CLASSNAME,
+  DashboardTableLoadingOverlay,
+  createDashboardTableLoadingRows,
+} from "@/features/dashboard/components/shared/DashboardTableLoading";
+import PaginationButtons from "@/features/dashboard/components/shared/PaginationButtons";
 import { useBranchMenu } from "@/hooks/Menu/FetchMenu";
 import {
   Button,
   Chip,
+  Skeleton,
   Table,
   TableBody,
   TableCell,
@@ -9,103 +16,141 @@ import {
   TableHeader,
   TableRow,
 } from "@heroui/react";
+import { useState } from "react";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { FiEdit } from "react-icons/fi";
+import { MENU_COLUMNS } from "../constants/MenuColumns";
+
+const PAGE_SIZE = 10;
+const loadingRows = createDashboardTableLoadingRows();
 
 export default function MenuManagerTable() {
-  const { data: branchMenu, isLoading: isLoadingMenu } = useBranchMenu();
-  console.log(branchMenu, "dddd");
+  const [page, setPage] = useState(1);
+  const {
+    data: branchMenu,
+    isLoading: isLoadingMenu,
+    isFetching: isFetchingMenu,
+  } = useBranchMenu({ page, limit: PAGE_SIZE });
+
+  const menuItems = branchMenu?.data ?? [];
+  const totalPages = branchMenu?.meta.pages ?? 1;
+  const currentPage = branchMenu?.meta.currentPage ?? page;
 
   return (
     <div>
-      <Table
-        aria-label="Restaurant Menu Table"
-        layout="fixed"
-        classNames={{
-          wrapper: "shadow-sm border border-slate-100 p-0",
-          th: "bg-slate-50 text-zinc-900 text-sm font-semibold !rounded-b-none py-5 px-6",
-          td: "py-4 border-b border-slate-50",
-        }}
-      >
-        <TableHeader>
-          <TableColumn>Item Name</TableColumn>
-          <TableColumn align="start">Category</TableColumn>
-          <TableColumn align="center">Price</TableColumn>
-          <TableColumn align="center">Prep Time</TableColumn>
-          <TableColumn align="start">Status</TableColumn>
-          <TableColumn align="center">Description</TableColumn>
-          <TableColumn align="start">Actions</TableColumn>
-        </TableHeader>
-        <TableBody>
-          {branchMenu?.data?.map((item) => (
-            <TableRow key={item.id}>
-              <TableCell>
-                <div className="flex items-center gap-3">
-                  <img
-                    src={item.image || ""}
-                    alt={item.name}
-                    className="w-11 h-11 rounded-lg object-cover"
-                  />
-                  <span className="font-medium text-zinc-900">{item.name}</span>
-                </div>
-              </TableCell>
+      <div className="relative">
+        <Table
+          aria-label="Restaurant Menu Table"
+          layout="fixed"
+          classNames={{
+            wrapper: "shadow-sm border border-slate-100 p-0",
+            th: "bg-slate-50 text-zinc-900 text-sm font-semibold !rounded-b-none py-5 px-6",
+            td: "py-4 border-b border-slate-50",
+            tr: isFetchingMenu && !isLoadingMenu ? "opacity-40" : "",
+          }}
+        >
+          <TableHeader columns={MENU_COLUMNS}>
+            {(column) => (
+              <TableColumn key={column.key} align={column.align}>
+                {column.label}
+              </TableColumn>
+            )}
+          </TableHeader>
+          {isLoadingMenu ? (
+            <TableBody>
+              {loadingRows.map((item) => (
+                <TableRow key={item.id}>
+                  {Array.from({ length: MENU_COLUMNS.length }, (_, index) => (
+                    <TableCell key={`loading-cell-${item.id}-${index}`}>
+                      <Skeleton
+                        className={DASHBOARD_TABLE_SKELETON_CELL_CLASSNAME}
+                      />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          ) : (
+            <TableBody emptyContent="No menu items yet.">
+              {menuItems.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={item.image || ""}
+                        alt={item.name}
+                        className="w-11 h-11 rounded-lg object-cover"
+                      />
+                      <span className="font-medium text-zinc-900">
+                        {item.name}
+                      </span>
+                    </div>
+                  </TableCell>
 
-              <TableCell>
-                <div className="flex ml-3">
-                  <span className="inline-flex items-center rounded-full text-primary px-3 py-1 text-xs font-medium border border-primary/20 bg-primary/10">
-                    {item.category}
-                  </span>
-                </div>
-              </TableCell>
+                  <TableCell>
+                    <div className="flex ml-3">
+                      <span className="inline-flex items-center rounded-full text-primary px-3 py-1 text-xs font-medium border border-primary/20 bg-primary/10">
+                        {item.category}
+                      </span>
+                    </div>
+                  </TableCell>
 
-              <TableCell className="text-zinc-900 font-medium text-center">
-                ${item.price}
-              </TableCell>
+                  <TableCell className="text-zinc-900 font-medium text-center">
+                    ${item.price}
+                  </TableCell>
 
-              <TableCell className="text-zinc-900 text-center">
-                {item.preparationTime || "-"}
-              </TableCell>
+                  <TableCell className="text-zinc-900 text-center">
+                    {item.preparationTime || "-"}
+                  </TableCell>
 
-              <TableCell>
-                <div className="flex">
-                  <Chip
-                    variant="flat"
-                    className="bg-green-100 text-green-800 font-semibold"
-                    size="sm"
-                  >
-                    {item.isAvailable ? "Active" : "Inactive"}
-                  </Chip>
-                </div>
-              </TableCell>
+                  <TableCell>
+                    <div className="flex">
+                      <Chip
+                        variant="flat"
+                        className="bg-green-100 text-green-800 font-semibold"
+                        size="sm"
+                      >
+                        {item.isAvailable ? "Active" : "Inactive"}
+                      </Chip>
+                    </div>
+                  </TableCell>
 
-              <TableCell className="text-slate-500 text-center">
-                <span className="block truncate max-w-50 mx-auto">
-                  {item.description}
-                </span>
-              </TableCell>
+                  <TableCell className="text-slate-500 text-center">
+                    <span className="block truncate max-w-50 mx-auto">
+                      {item.description}
+                    </span>
+                  </TableCell>
 
-              <TableCell>
-                <div className="flex gap-2 justify-start">
-                  <Button
-                    isIconOnly
-                    variant="light"
-                    className="border border-slate-200 rounded-lg min-w-10 h-10"
-                  >
-                    <FiEdit className="w-4 h-4 text-slate-600" />
-                  </Button>
-                  <Button
-                    isIconOnly
-                    variant="light"
-                    className="border border-slate-200 rounded-lg min-w-10 h-10"
-                  >
-                    <FaRegTrashAlt className="w-4 h-4 text-danger" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          )) || []}
-        </TableBody>
-      </Table>
+                  <TableCell>
+                    <div className="flex gap-2 justify-start">
+                      <Button
+                        isIconOnly
+                        variant="light"
+                        className="border border-slate-200 rounded-lg min-w-10 h-10"
+                      >
+                        <FiEdit className="w-4 h-4 text-slate-600" />
+                      </Button>
+                      <Button
+                        isIconOnly
+                        variant="light"
+                        className="border border-slate-200 rounded-lg min-w-10 h-10"
+                      >
+                        <FaRegTrashAlt className="w-4 h-4 text-danger" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          )}
+        </Table>
+        {isFetchingMenu && !isLoadingMenu && <DashboardTableLoadingOverlay />}
+      </div>
+      <PaginationButtons
+        page={currentPage}
+        total={totalPages}
+        onChange={setPage}
+      />
     </div>
   );
 }
