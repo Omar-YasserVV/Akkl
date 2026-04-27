@@ -1,5 +1,7 @@
 import { useOrders } from "@/hooks/Orders/FetchOrders";
+import { Order } from "@/types/Order";
 import {
+  Skeleton,
   Spinner,
   Table,
   TableBody,
@@ -12,9 +14,15 @@ import { columns } from "../constants/StatsCard.constants";
 import { useOrderStore } from "../store/OrderStore";
 import { OrderCell } from "./RenderCell";
 
+const LOADING_ROW_COUNT = 6;
+const loadingRows = Array.from({ length: LOADING_ROW_COUNT }, (_, index) => ({
+  id: `loading-row-${index}`,
+}));
+
 const OrderList = () => {
   const filters = useOrderStore((state) => state.filters);
   const { data, isLoading, isFetching } = useOrders(filters);
+  const orders: Order[] = data?.data ?? [];
 
   return (
     <div className="relative w-full rounded-lg font-normal text-black border border-gray-100 bg-white overflow-hidden shadow-sm">
@@ -36,21 +44,31 @@ const OrderList = () => {
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody
-          items={data?.data || []}
-          emptyContent={isLoading ? <Spinner /> : "No orders yet."}
-          isLoading={isLoading}
-        >
-          {(item) => (
-            <TableRow key={item.id}>
-              {(columnKey) => (
-                <TableCell>
-                  <OrderCell order={item} columnKey={columnKey} />
-                </TableCell>
-              )}
-            </TableRow>
-          )}
-        </TableBody>
+        {isLoading ? (
+          <TableBody items={loadingRows}>
+            {(item) => (
+              <TableRow key={item.id}>
+                {() => (
+                  <TableCell>
+                    <Skeleton className="h-5 w-full rounded-md" />
+                  </TableCell>
+                )}
+              </TableRow>
+            )}
+          </TableBody>
+        ) : (
+          <TableBody<Order> items={orders} emptyContent="No orders yet.">
+            {(item) => (
+              <TableRow key={item.id}>
+                {(columnKey) => (
+                  <TableCell>
+                    <OrderCell order={item} columnKey={columnKey} />
+                  </TableCell>
+                )}
+              </TableRow>
+            )}
+          </TableBody>
+        )}
       </Table>
       {/* //TODO:Omar maybe move it to be reusable later*/}
       {isFetching && !isLoading && (
