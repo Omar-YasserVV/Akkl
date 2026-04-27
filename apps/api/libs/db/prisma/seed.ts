@@ -639,6 +639,26 @@ async function main() {
     },
   });
 
+  const chocolateLavaCake = await prisma.branchMenuItem.create({
+    data: {
+      branchId: branch.id,
+      menuItemId: 'menu005',
+      name: 'Chocolate Lava Cake',
+      description: 'Warm chocolate cake with molten chocolate center',
+      category: category.DESSERT,
+      price: 6.99,
+      discountPrice: 5.99,
+      preparationTime: 8,
+      isAvailable: true,
+      variations: {
+        create: [
+          { size: 'Single', price: 6.99, discountPrice: 5.99 },
+          { size: 'Double', price: 12.99 },
+        ],
+      },
+    },
+  });
+
   const chickenSandwich = await prisma.branchMenuItem.create({
     data: {
       branchId: branch.id,
@@ -887,6 +907,372 @@ async function main() {
       status: OrderState.CANCELLED,
       items: {
         create: [{ menuItemId: burgerItem.id, quantity: 1, price: 12.99 }],
+      },
+    },
+  });
+
+  // --- Additional 20 diverse orders for seeding ---
+  await prisma.order.create({
+    data: {
+      totalPrice: 24.97,
+      itemCount: 2,
+      branchId: branch.id,
+      userId: customer.id,
+      CustomerName: 'Jane Doe',
+      source: source.APP,
+      status: OrderState.COMPLETED,
+      specialInstructions: '',
+      items: {
+        create: [
+          { menuItemId: truffleBurger.id, quantity: 1, price: 17.99 },
+          { menuItemId: friesMenuItem.id, quantity: 1, price: 6.99 },
+        ],
+      },
+    },
+  });
+
+  await prisma.order.create({
+    data: {
+      totalPrice: 13.99,
+      itemCount: 1,
+      branchId: branch.id,
+      userId: customer2.id,
+      CustomerName: 'John Smith',
+      source: source.STORE,
+      status: OrderState.PENDING,
+      specialInstructions: 'Extra crispy fries',
+      items: {
+        create: [{ menuItemId: friesMenuItem.id, quantity: 2, price: 6.99 }],
+      },
+    },
+  });
+
+  await prisma.order.create({
+    data: {
+      totalPrice: 21.99,
+      itemCount: 2,
+      branchId: branch.id,
+      userId: customer.id,
+      CustomerName: 'Jane Doe',
+      source: source.APP,
+      status: OrderState.IN_PROGRESS,
+      items: {
+        create: [{ menuItemId: chickenSandwich.id, quantity: 2, price: 10.99 }],
+      },
+    },
+  });
+
+  await prisma.order.create({
+    data: {
+      totalPrice: 14.98,
+      itemCount: 2,
+      branchId: branch.id,
+      userId: customer2.id,
+      CustomerName: 'John Smith',
+      source: source.APP,
+      status: OrderState.COMPLETED,
+      items: {
+        create: [
+          { menuItemId: chocolateLavaCake.id, quantity: 2, price: 7.49 },
+        ],
+      },
+    },
+  });
+
+  await prisma.order.create({
+    data: {
+      totalPrice: 7.49,
+      itemCount: 1,
+      branchId: branch.id,
+      userId: customer.id,
+      CustomerName: 'Jane Doe',
+      source: source.STORE,
+      status: OrderState.CANCELLED,
+      items: {
+        create: [
+          { menuItemId: chocolateLavaCake.id, quantity: 1, price: 7.49 },
+        ],
+      },
+    },
+  });
+
+  await prisma.order.create({
+    data: {
+      totalPrice: 18.98,
+      itemCount: 2,
+      branchId: branch.id,
+      userId: customer2.id,
+      CustomerName: 'John Smith',
+      source: source.APP,
+      status: OrderState.COMPLETED,
+      items: {
+        create: [
+          { menuItemId: truffleBurger.id, quantity: 1, price: 17.99 },
+          { menuItemId: softDrink.id, quantity: 1, price: 0.99 },
+        ],
+      },
+    },
+  });
+
+  await prisma.order.create({
+    data: {
+      totalPrice: 10.98,
+      itemCount: 2,
+      branchId: branch.id,
+      userId: customer.id,
+      CustomerName: 'Jane Doe',
+      source: source.STORE,
+      status: OrderState.IN_PROGRESS,
+      items: {
+        create: [{ menuItemId: onionRings.id, quantity: 2, price: 5.49 }],
+      },
+    },
+  });
+
+  await prisma.order.create({
+    data: {
+      totalPrice: 25.98,
+      itemCount: 2,
+      branchId: branch.id,
+      userId: customer2.id,
+      CustomerName: 'John Smith',
+      source: source.APP,
+      status: OrderState.COMPLETED,
+      items: {
+        create: [
+          { menuItemId: truffleBurger.id, quantity: 1, price: 17.99 },
+          { menuItemId: chickenSandwich.id, quantity: 1, price: 7.99 },
+        ],
+      },
+    },
+  });
+
+  await prisma.order.create({
+    data: {
+      totalPrice: 12.49,
+      itemCount: 1,
+      branchId: branch.id,
+      userId: customer.id,
+      CustomerName: 'Jane Doe',
+      source: source.APP,
+      status: OrderState.PENDING,
+      items: {
+        create: [
+          { menuItemId: friesMenuItem.id, quantity: 1, price: 6.99 },
+          { menuItemId: softDrink.id, quantity: 1, price: 0.99 },
+          { menuItemId: onionRings.id, quantity: 1, price: 4.51 },
+        ],
+      },
+    },
+  });
+
+  await prisma.order.create({
+    data: {
+      totalPrice: 17.99,
+      itemCount: 1,
+      branchId: branch.id,
+      userId: customer2.id,
+      CustomerName: 'John Smith',
+      source: source.STORE,
+      status: OrderState.IN_PROGRESS,
+      items: {
+        create: [{ menuItemId: truffleBurger.id, quantity: 1, price: 17.99 }],
+      },
+    },
+  });
+
+  await prisma.order.create({
+    data: {
+      totalPrice: 22.48,
+      itemCount: 3,
+      branchId: branch.id,
+      userId: customer.id,
+      CustomerName: 'Jane Doe',
+      source: source.APP,
+      status: OrderState.COMPLETED,
+      items: {
+        create: [
+          { menuItemId: burgerItem.id, quantity: 1, price: 9.49 },
+          { menuItemId: friesMenuItem.id, quantity: 2, price: 6.49 },
+        ],
+      },
+    },
+  });
+
+  await prisma.order.create({
+    data: {
+      totalPrice: 11.99,
+      itemCount: 2,
+      branchId: branch.id,
+      userId: customer2.id,
+      CustomerName: 'John Smith',
+      source: source.STORE,
+      status: OrderState.CANCELLED,
+      items: {
+        create: [
+          { menuItemId: softDrink.id, quantity: 1, price: 0.99 },
+          { menuItemId: chickenSandwich.id, quantity: 1, price: 11.0 },
+        ],
+      },
+    },
+  });
+
+  await prisma.order.create({
+    data: {
+      totalPrice: 36.97,
+      itemCount: 3,
+      branchId: branch.id,
+      userId: customer.id,
+      CustomerName: 'Jane Doe',
+      source: source.APP,
+      status: OrderState.COMPLETED,
+      items: {
+        create: [
+          { menuItemId: burgerItem.id, quantity: 2, price: 9.99 },
+          { menuItemId: friesMenuItem.id, quantity: 2, price: 6.99 },
+        ],
+      },
+    },
+  });
+
+  await prisma.order.create({
+    data: {
+      totalPrice: 10.98,
+      itemCount: 2,
+      branchId: branch.id,
+      userId: customer2.id,
+      CustomerName: 'John Smith',
+      source: source.APP,
+      status: OrderState.PENDING,
+      items: {
+        create: [{ menuItemId: onionRings.id, quantity: 2, price: 5.49 }],
+      },
+    },
+  });
+
+  await prisma.order.create({
+    data: {
+      totalPrice: 29.98,
+      itemCount: 2,
+      branchId: branch.id,
+      userId: customer.id,
+      CustomerName: 'Jane Doe',
+      source: source.STORE,
+      status: OrderState.IN_PROGRESS,
+      items: {
+        create: [
+          { menuItemId: truffleBurger.id, quantity: 1, price: 17.99 },
+          { menuItemId: chickenSandwich.id, quantity: 1, price: 11.99 },
+        ],
+      },
+    },
+  });
+
+  await prisma.order.create({
+    data: {
+      totalPrice: 7.98,
+      itemCount: 2,
+      branchId: branch.id,
+      userId: customer2.id,
+      CustomerName: 'John Smith',
+      source: source.STORE,
+      status: OrderState.COMPLETED,
+      items: {
+        create: [
+          { menuItemId: softDrink.id, quantity: 2, price: 0.99 },
+          { menuItemId: onionRings.id, quantity: 1, price: 5.0 },
+        ],
+      },
+    },
+  });
+
+  await prisma.order.create({
+    data: {
+      totalPrice: 12.98,
+      itemCount: 2,
+      branchId: branch.id,
+      userId: customer.id,
+      CustomerName: 'Jane Doe',
+      source: source.APP,
+      status: OrderState.COMPLETED,
+      items: {
+        create: [
+          { menuItemId: burgerItem.id, quantity: 1, price: 9.99 },
+          { menuItemId: softDrink.id, quantity: 1, price: 2.99 },
+        ],
+      },
+    },
+  });
+
+  await prisma.order.create({
+    data: {
+      totalPrice: 10.98,
+      itemCount: 2,
+      branchId: branch.id,
+      userId: customer2.id,
+      CustomerName: 'John Smith',
+      source: source.STORE,
+      status: OrderState.CANCELLED,
+      items: {
+        create: [
+          { menuItemId: friesMenuItem.id, quantity: 1, price: 5.49 },
+          { menuItemId: chocolateLavaCake.id, quantity: 1, price: 5.49 },
+        ],
+      },
+    },
+  });
+
+  await prisma.order.create({
+    data: {
+      totalPrice: 31.98,
+      itemCount: 4,
+      branchId: branch.id,
+      userId: customer.id,
+      CustomerName: 'Jane Doe',
+      source: source.APP,
+      status: OrderState.IN_PROGRESS,
+      items: {
+        create: [
+          { menuItemId: burgerItem.id, quantity: 2, price: 9.99 },
+          { menuItemId: friesMenuItem.id, quantity: 2, price: 5.99 },
+        ],
+      },
+    },
+  });
+
+  await prisma.order.create({
+    data: {
+      totalPrice: 19.97,
+      itemCount: 3,
+      branchId: branch.id,
+      userId: customer2.id,
+      CustomerName: 'John Smith',
+      source: source.STORE,
+      status: OrderState.COMPLETED,
+      items: {
+        create: [
+          { menuItemId: onionRings.id, quantity: 1, price: 5.99 },
+          { menuItemId: chocolateLavaCake.id, quantity: 1, price: 7.99 },
+          { menuItemId: softDrink.id, quantity: 1, price: 5.99 },
+        ],
+      },
+    },
+  });
+
+  await prisma.order.create({
+    data: {
+      totalPrice: 15.99,
+      itemCount: 2,
+      branchId: branch.id,
+      userId: customer.id,
+      CustomerName: 'Jane Doe',
+      source: source.APP,
+      status: OrderState.COMPLETED,
+      items: {
+        create: [
+          { menuItemId: chickenSandwich.id, quantity: 1, price: 11.99 },
+          { menuItemId: onionRings.id, quantity: 1, price: 4.0 },
+        ],
       },
     },
   });
