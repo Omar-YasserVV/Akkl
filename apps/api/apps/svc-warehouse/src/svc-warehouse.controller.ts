@@ -2,6 +2,7 @@
 import { WAREHOUSE_TOPICS } from '@app/common';
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
+import { IngredientDto } from './dto/inventory/Inventory.base.dto';
 import {
   CreateInventoryItemReqDto,
   CreateInventoryItemResDto,
@@ -90,5 +91,17 @@ export class SvcWarehouseController {
     @Payload() data: DeductForOrderReqDto,
   ): Promise<DeductForOrderResDto> {
     return this.svcWarehouseService.deductForOrder(data);
+  }
+
+  @MessagePattern(WAREHOUSE_TOPICS.CREATE_INGREDIENT)
+  async createIngredient(
+    @Payload() data: IngredientDto,
+  ): Promise<IngredientDto> {
+    return this.svcWarehouseService.createIngredient(data);
+  }
+
+  @MessagePattern(WAREHOUSE_TOPICS.GET_INGREDIENTS)
+  async getIngredients(){
+    return this.svcWarehouseService.getIngredients();
   }
 }

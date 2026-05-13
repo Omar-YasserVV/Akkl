@@ -7,6 +7,9 @@ import {
   InventoryLogAction,
   stockStatus,
 } from 'libs/db/generated/client/enums';
+import {
+  IngredientDto
+} from './dto/inventory/Inventory.base.dto';
 import { CreateInventoryItemReqDto } from './dto/inventory/inventory.create.dto';
 import { ListInventoryItemsReqDto } from './dto/inventory/inventory.list.dto';
 import {
@@ -27,6 +30,17 @@ export class WarehouseRepository {
 
   async getIngredient(ingredientId: string) {
     return this.prisma.ingredient.findUnique({ where: { id: ingredientId } });
+  }
+
+  async findIngredientByName(name: string) {
+    return this.prisma.ingredient.findUnique({ where: { name } });
+  }
+
+  async createIngredient(dto: IngredientDto) {
+    return this.prisma.ingredient.create({ data: dto });
+  }
+  async getIngredients() {
+    return this.prisma.ingredient.findMany();
   }
 
   async getInventoryItem(inventoryItemId: string) {

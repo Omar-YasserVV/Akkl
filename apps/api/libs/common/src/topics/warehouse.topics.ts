@@ -7,4 +7,6 @@ export const WAREHOUSE_TOPICS = {
   RESTOCK_INVENTORY_ITEM: 'restock_inventory_item',
   UPDATE_INVENTORY_ITEM: 'update_inventory_item',
   DEDUCT_FOR_ORDER: 'warehouse.deduct_for_order',
+  CREATE_INGREDIENT: 'warehouse.create_ingredient',
+  GET_INGREDIENTS: 'warehouse.get_ingredients',
 };

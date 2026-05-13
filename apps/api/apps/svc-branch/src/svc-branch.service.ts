@@ -59,7 +59,7 @@ export class SvcBranchService {
         warehouses:
           data.haveWarehouses && warehouseName
             ? {
-                create: [{ name: warehouseName }],
+                create: { name: warehouseName },
               }
             : undefined,
 

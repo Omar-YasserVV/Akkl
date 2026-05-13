@@ -2,6 +2,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import { createPagination } from 'utils/pagination.util';
+import { IngredientDto } from './dto/inventory/Inventory.base.dto';
 import {
   CreateInventoryItemReqDto,
   CreateInventoryItemResDto,
@@ -249,5 +250,28 @@ export class SvcWarehouseService {
         message: error instanceof Error ? error.message : 'Deduction failed',
       };
     }
+  }
+
+  async createIngredient(dto: IngredientDto): Promise<IngredientDto> {
+    const existing = await this.repo.findIngredientByName(dto.name);
+    if (existing) {
+      throw new RpcException({
+        message: 'Ingredient already exists',
+        status: 409,
+      });
+    }
+    const created = await this.repo.createIngredient(dto);
+    return created;
+  }
+
+  async getIngredients() {
+    const ingredients = await this.repo.getIngredients();
+    if (!ingredients) {
+      throw new RpcException({
+        message: 'Ingredient not found',
+        status: 404,
+      });
+    }
+    return ingredients;
   }
 }

@@ -12,6 +12,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
+import { IngredientDto } from 'apps/svc-warehouse/src/dto/inventory/Inventory.base.dto';
 import {
   CreateInventoryItemReqDto,
   CreateInventoryItemResDto,
@@ -119,6 +120,22 @@ export class WarehouseController implements OnModuleInit {
         ...data,
         id,
       }),
+    );
+  }
+
+  @Post('ingredients')
+  async createIngredient(
+    @Body() data: IngredientDto,
+  ): Promise<IngredientDto> {
+    return lastValueFrom(
+      this.warehouseClient.send(WAREHOUSE_TOPICS.CREATE_INGREDIENT, data),
+    );
+  }
+
+  @Get('ingredients')
+  async getIngredients(){
+    return lastValueFrom(
+      this.warehouseClient.send(WAREHOUSE_TOPICS.GET_INGREDIENTS, {}),
     );
   }
 }
