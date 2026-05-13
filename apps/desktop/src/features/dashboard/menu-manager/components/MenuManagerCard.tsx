@@ -1,6 +1,6 @@
 interface MenuManagerCardProps {
   title: string;
-  value: number;
+  value: number | string;
 }
 
 function MenuManagerCard({ title, value }: MenuManagerCardProps) {
