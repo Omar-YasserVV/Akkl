@@ -18,6 +18,11 @@ export class MenuController {
     return this.menuService.getMenu(branchId);
   }
 
+  @MessagePattern(BRANCH_TOPICS.GET_MENU_SUMMARY)
+  async getMenuSummary(@Payload('branchId') branchId: string) {
+    return this.menuService.getMenuSummary(branchId);
+  }
+
   @MessagePattern(BRANCH_TOPICS.GET_MENU)
   async getBranchMenu(
     @Payload('branchId') branchId: string,
