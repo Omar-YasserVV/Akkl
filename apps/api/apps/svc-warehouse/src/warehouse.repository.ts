@@ -101,7 +101,7 @@ export class WarehouseRepository {
         },
       },
       orderBy: {
-        stockStatus: 'desc', // OUT_OF_STOCK first, then LOW_STOCK
+        stockStatus: 'desc',
       },
     });
   }

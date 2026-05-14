@@ -1294,6 +1294,7 @@ async function main() {
         notes: 'Used for 2 double cheeseburgers',
         previousQuantity: 10,
         newQuantity: 8,
+        quantityChange: -2,
         createdAt: new Date(),
       },
       {
@@ -1302,6 +1303,7 @@ async function main() {
         notes: 'Used for 2 double cheeseburgers',
         previousQuantity: 12,
         newQuantity: 10,
+        quantityChange: -2,
         createdAt: new Date(),
       },
       {
@@ -1310,6 +1312,7 @@ async function main() {
         notes: 'Wilted lettuce discarded',
         previousQuantity: 5,
         newQuantity: 4,
+        quantityChange: -1,
         createdAt: new Date(),
       },
       {
@@ -1318,6 +1321,7 @@ async function main() {
         notes: 'Daily fries prep',
         previousQuantity: 7,
         newQuantity: 5,
+        quantityChange: -2,
         createdAt: new Date(Date.now() - 86400000),
       },
       {
@@ -1326,6 +1330,7 @@ async function main() {
         notes: 'Used for 1 crispy chicken sandwich',
         previousQuantity: 10,
         newQuantity: 9,
+        quantityChange: -1,
         createdAt: new Date(),
       },
     ],
