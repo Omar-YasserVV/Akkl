@@ -158,11 +158,13 @@ export default function MenuManagerTable({
         </Table>
         {isFetchingMenu && !isLoadingMenu && <DashboardTableLoadingOverlay />}
       </div>
-      <PaginationButtons
-        page={currentPage}
-        total={totalPages}
-        onChange={(page) => onChange({ page })}
-      />
+      {totalPages > 1 && (
+        <PaginationButtons
+          page={currentPage}
+          total={totalPages}
+          onChange={(page) => onChange({ page })}
+        />
+      )}
     </div>
   );
 }

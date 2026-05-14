@@ -4,6 +4,7 @@ import { Outlet, useNavigation } from "react-router-dom";
 
 const ProtectedRoute = () => {
   const { isAuthenticated } = useAuthStore();
+  void isAuthenticated;
   const navigation = useNavigation();
   const isLoading = navigation.state === "loading";
 
