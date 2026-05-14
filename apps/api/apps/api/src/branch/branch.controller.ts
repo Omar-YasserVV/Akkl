@@ -160,24 +160,36 @@ export class BranchController implements OnModuleInit {
     });
   }
 
-  @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
-  @Post('menu/upload')
-  @ApiConsumes('multipart/form-data')
-  @UseInterceptors(FileInterceptor('file'))
-  async uploadMenuExcel(
-    @GetBranchId() branchId: string,
-    @UploadedFile() file: Express.Multer.File,
-    @Res() res: Response,
-  ) {
-    const result = await lastValueFrom<{ message: string; items: unknown[] }>(
-      this.branchClient.send(BRANCH_TOPICS.UPLOAD_MENU, {
-        branchId,
-        fileBuffer: file.buffer,
-      }),
+@Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
+@Post('menu/upload')
+@ApiConsumes('multipart/form-data')
+@UseInterceptors(FileInterceptor('file'))
+async uploadMenuExcel(
+  @GetBranchId() branchId: string,
+  @UploadedFile() file: Express.Multer.File,
+  @Res() res: Response,
+) {
+  if (!file) {
+    return res.status(HttpStatus.BAD_REQUEST).json({ message: 'No file uploaded' });
+  }
+
+  try {
+    const result = await lastValueFrom(
+      this.branchClient
+        .send(BRANCH_TOPICS.UPLOAD_MENU, {
+          branchId,
+          fileBuffer: file.buffer,
+        })
     );
 
     return res.status(HttpStatus.CREATED).json(result);
+  } catch (error) {
+    const status = (error as any)?.statusCode || HttpStatus.INTERNAL_SERVER_ERROR;
+    return res.status(status).json({
+      message: (error as any)?.message || 'Gateway Timeout or Internal Error',
+    });
   }
+}
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
   @Patch('menu/:menuItemId')
@@ -271,3 +283,4 @@ export class BranchController implements OnModuleInit {
     return this.branchClient.send(BRANCH_TOPICS.DELETE_ORDER, { orderId });
   }
 }
+

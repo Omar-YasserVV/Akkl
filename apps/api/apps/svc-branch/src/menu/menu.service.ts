@@ -373,20 +373,24 @@ export class MenuService {
     }
 
     try {
-      const bulkItems = await this.prisma.$transaction(
-        items.map((item) =>
-          this.prisma.branchMenuItem.create({
+      const bulkItems = await this.prisma.$transaction(async (tx) => {
+        // Use Promise.all for internal mapping if rows are independent 
+        // but keep them in the loop for safe relational creation
+        const createdItems: any[] = [];
+        
+        for (const item of items) {
+          const created = await tx.branchMenuItem.create({
             data: {
               name: item.name,
               description: item.description,
               image: item.image,
               isAvailable: item.isAvailable,
               menuItemId: item.menuItemId,
-              category: item.category, // ✅ Added
-              price: item.price, // ✅ Added
-              discountPrice: item.discountPrice, // ✅ Added
-              preparationTime: item.preparationTime, // ✅ Added
-              branchId,
+              category: item.category,
+              price: item.price,
+              discountPrice: item.discountPrice,
+              preparationTime: item.preparationTime,
+              branch: { connect: { id: branchId } }, // Using connect is cleaner
               variations: {
                 create: item.variations?.map((v) => ({
                   size: v.size,
@@ -399,24 +403,49 @@ export class MenuService {
               },
               recipe: {
                 create: item.recipe?.map((r) => ({
-                  ingredientId: r.ingredientId,
+                  ingredient: { connect: { id: r.ingredientId } },
                   quantityRequired: r.quantityRequired,
                 })),
               },
             },
-          }),
-        ),
-      );
+          });
+          createdItems.push(created);
+        }
+        return createdItems;
+      }, {
+        timeout: 60000, // Increased to 60s for very large imports
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable, // Prevents race conditions
+      });
 
-      this.kafkaClient.emit('menu-items.bulk-created', bulkItems);
+      // 3. Emit a SUMMARY to Kafka to avoid "Message Size Too Large" errors
+      this.kafkaClient.emit('menu-items.bulk-created', {
+        branchId,
+        totalCreated: bulkItems.length,
+        itemIds: bulkItems.map(i => i.id), // Only send IDs or a summary
+      });
+
       return {
-        message: `${bulkItems.length} menu items created successfully`,
-        items: bulkItems,
+        success: true,
+        count: bulkItems.length,
+        message: 'Menu items and relations imported successfully',
       };
+
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : 'Bulk upload failed';
-      throw new RpcException({ message, statusCode: 400 });
+      this.handlePrismaError(error);
     }
+  }
+
+  private handlePrismaError(error: any) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      switch (error.code) {
+        case 'P2025':
+          throw new RpcException({ message: 'Foreign key failure: Check if all Ingredient IDs and Dietary Tags exist.', status: 400 });
+        case 'P2002':
+          throw new RpcException({ message: 'Duplicate found: One of these items is already in the menu.', status: 409 });
+        default:
+          throw new RpcException({ message: `Database error: ${error.code}`, status: 400 });
+      }
+    }
+    throw new RpcException({ message: error.message || 'Bulk upload failed', status: 500 });
   }
 }
