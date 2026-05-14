@@ -6,7 +6,14 @@ interface EnumChipProps extends ChipProps {
   value: AllEnums;
 }
 
-const Chip = ({ value, className, ...props }: EnumChipProps) => {
+const Chip = ({
+  value,
+  className,
+  // HeroUI / React 19 ref typing: ref is not forwarded
+  ref: _ref,
+  ...props
+}: EnumChipProps) => {
+  void _ref;
   const meta = ENUM_META[value];
   return (
     <HeroChip className={`${meta?.color} ${className}`} {...props}>
