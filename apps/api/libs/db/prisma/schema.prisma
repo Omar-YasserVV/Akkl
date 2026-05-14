@@ -166,6 +166,9 @@ model InventoryItem {
   batches         StockBatch[]
 
   @@unique([ingredientId, warehouseId])
+  @@index([warehouseId])
+  @@index([ingredientId])
+  @@index([stockStatus])
 }
 
 model StockBatch {
@@ -192,6 +195,11 @@ model InventoryUsageLog {
   notes            String?
   createdAt        DateTime           @default(now())
   inventoryItem    InventoryItem      @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
+
+  @@index([inventoryItemId])
+  @@index([inventoryItemId, createdAt])
+  @@index([action])
+  @@index([createdAt])
 }
 
 model Order {

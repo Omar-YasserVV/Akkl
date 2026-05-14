@@ -1,6 +1,6 @@
 import { useAuthStore } from "@/store/AuthStore";
 import { Spinner } from "@heroui/react";
-import { Outlet, useNavigation } from "react-router-dom";
+import { Navigate, Outlet, useNavigation } from "react-router-dom";
 
 const ProtectedRoute = () => {
   const { isAuthenticated } = useAuthStore();
@@ -15,9 +15,9 @@ const ProtectedRoute = () => {
       </div>
     );
 
-  // if (!isAuthenticated) {
-  //   return <Navigate to="/" />;
-  // }
+  if (!isAuthenticated) {
+    return <Navigate to="/" />;
+  }
 
   return <Outlet />;
 };
