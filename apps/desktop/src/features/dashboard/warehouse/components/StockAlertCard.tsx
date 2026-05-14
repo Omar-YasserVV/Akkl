@@ -4,6 +4,7 @@ interface StockAlertProps {
   name: string;
   currentStock: number;
   minRequired: number;
+  unit: string;
   status: "low" | "critical";
 }
 
@@ -11,6 +12,7 @@ const StockAlertCard = ({
   name,
   currentStock,
   minRequired,
+  unit,
   status,
 }: StockAlertProps) => {
   const isCritical = status === "critical";
@@ -39,11 +41,15 @@ const StockAlertCard = ({
       <CardBody className="text-xs">
         <p>
           Current stock:{" "}
-          <span className="font-semibold">{currentStock} units.</span>
+          <span className="font-semibold">
+            {currentStock} {unit}.
+          </span>
         </p>
         <p>
           Minimum Required:{" "}
-          <span className="font-semibold">{minRequired} units.</span>
+          <span className="font-semibold">
+            {minRequired} {unit}.
+          </span>
         </p>
       </CardBody>
 

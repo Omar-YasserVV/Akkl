@@ -10,6 +10,8 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
+  Select,
+  SelectItem,
   Table,
   TableBody,
   TableCell,
@@ -18,12 +20,59 @@ import {
   TableRow,
 } from "@heroui/react";
 import { NumberFormatter } from "@repo/utils";
-import { FiChevronDown } from "react-icons/fi";
+import type { ReactNode } from "react";
 import { MdOutlineEdit } from "react-icons/md";
 import { Link } from "react-router-dom";
+import type { InventoryItemDto, StockStatus } from "../types/inventory.types";
 
-const StockLevelsTable = ({ data }: { data: any[] }) => {
-  const Column = ["Item Name", "Category", "Current Stock", "Status", "Action"];
+const STOCK_FILTER_OPTIONS: { key: string; label: string }[] = [
+  { key: "ALL", label: "All statuses" },
+  { key: "IN_STOCK", label: "In stock" },
+  { key: "LOW_STOCK", label: "Low stock" },
+  { key: "OUT_OF_STOCK", label: "Out of stock" },
+];
+
+const chipColor = (status: StockStatus) => {
+  switch (status) {
+    case "IN_STOCK":
+      return "success";
+    case "LOW_STOCK":
+      return "warning";
+    case "OUT_OF_STOCK":
+      return "danger";
+    default:
+      return "default";
+  }
+};
+
+export interface StockLevelsTableProps {
+  data: InventoryItemDto[];
+  isLoading: boolean;
+  stockStatusKey: string;
+  onStockStatusChange: (key: string) => void;
+  onRowAction: (
+    item: InventoryItemDto,
+    mode: "consume" | "restock" | "editMin",
+  ) => void;
+  pagination?: ReactNode;
+}
+
+const StockLevelsTable = ({
+  data,
+  isLoading,
+  stockStatusKey,
+  onStockStatusChange,
+  onRowAction,
+  pagination,
+}: StockLevelsTableProps) => {
+  const columns = [
+    "Item Name",
+    "Category",
+    "Current Stock",
+    "Status",
+    "Action",
+  ];
+
   return (
     <Card
       classNames={{
@@ -32,36 +81,28 @@ const StockLevelsTable = ({ data }: { data: any[] }) => {
       }}
       className="col-span-3 row-start-1 row-span-3"
     >
-      <CardHeader className="justify-between">
+      <CardHeader className="justify-between flex-wrap gap-3">
         <p className="font-bold capitalize">stock levels</p>
-        <Dropdown>
-          <DropdownTrigger>
-            <Button
-              className="capitalize"
-              variant="bordered"
-              endContent={<FiChevronDown />}
-            >
-              All Categories
-            </Button>
-          </DropdownTrigger>
-          <DropdownMenu
-            disallowEmptySelection
-            aria-label="Single selection example"
-            selectionMode="single"
-            variant="flat"
-          >
-            <DropdownItem key="text">Text</DropdownItem>
-            <DropdownItem key="number">Number</DropdownItem>
-            <DropdownItem key="date">Date</DropdownItem>
-            <DropdownItem key="single_date">Single Date</DropdownItem>
-            <DropdownItem key="iteration">Iteration</DropdownItem>
-          </DropdownMenu>
-        </Dropdown>
+        <Select
+          aria-label="Filter by stock status"
+          className="max-w-xs capitalize"
+          selectedKeys={new Set([stockStatusKey])}
+          onSelectionChange={(keys) => {
+            const k = [...keys][0];
+            if (typeof k === "string") onStockStatusChange(k);
+          }}
+          size="sm"
+          variant="bordered"
+        >
+          {STOCK_FILTER_OPTIONS.map((opt) => (
+            <SelectItem key={opt.key}>{opt.label}</SelectItem>
+          ))}
+        </Select>
       </CardHeader>
       <Divider />
       <CardBody>
         <Table
-          aria-label="Example static collection table"
+          aria-label="Inventory stock levels"
           isHeaderSticky
           classNames={{
             wrapper: "rounded-none p-0",
@@ -70,40 +111,82 @@ const StockLevelsTable = ({ data }: { data: any[] }) => {
             td: "px-5 py-4 border-b border-default-100",
           }}
         >
-          <TableHeader className="rounded-none">
-            {Column.map((item) => (
+          <TableHeader>
+            {columns.map((item) => (
               <TableColumn className="uppercase" key={item}>
                 {item}
               </TableColumn>
             ))}
           </TableHeader>
-          <TableBody>
+          <TableBody
+            isLoading={isLoading}
+            emptyContent={isLoading ? " " : "No inventory lines yet."}
+          >
             {data.map((item) => (
-              <TableRow key={item.itemName}>
-                <TableCell className="font-medium">{item.itemName}</TableCell>
+              <TableRow key={item.id}>
+                <TableCell className="font-medium">
+                  {item.ingredient.name}
+                </TableCell>
                 <TableCell className="text-default-600">
-                  {item.category}
+                  {String(item.ingredient.category).replace(/_/g, " ")}
                 </TableCell>
                 <TableCell className="font-semibold">
-                  {NumberFormatter.getNumberOnly(item.currentStock, {
-                    unit: item.unit,
+                  {NumberFormatter.getNumberOnly(item.quantity, {
+                    unit: item.ingredient.unit,
                     isCompact: true,
                     unitStyle: "text-default-400",
                   })}
                 </TableCell>
                 <TableCell>
-                  <Chip>{item.status}</Chip>
+                  <Chip
+                    color={chipColor(item.stockStatus)}
+                    variant="flat"
+                    size="sm"
+                  >
+                    {String(item.stockStatus).replace(/_/g, " ")}
+                  </Chip>
                 </TableCell>
                 <TableCell>
-                  <Button variant="light" isIconOnly>
-                    <MdOutlineEdit size={20} className="text-primary" />
-                  </Button>
+                  <Dropdown>
+                    <DropdownTrigger>
+                      <Button
+                        variant="light"
+                        isIconOnly
+                        aria-label="Row actions"
+                      >
+                        <MdOutlineEdit size={20} className="text-primary" />
+                      </Button>
+                    </DropdownTrigger>
+                    <DropdownMenu aria-label="Inventory actions">
+                      <DropdownItem
+                        key="consume"
+                        onPress={() => onRowAction(item, "consume")}
+                      >
+                        Record usage
+                      </DropdownItem>
+                      <DropdownItem
+                        key="restock"
+                        onPress={() => onRowAction(item, "restock")}
+                      >
+                        Restock
+                      </DropdownItem>
+                      <DropdownItem
+                        key="editMin"
+                        onPress={() => onRowAction(item, "editMin")}
+                      >
+                        Edit minimum
+                      </DropdownItem>
+                    </DropdownMenu>
+                  </Dropdown>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </CardBody>
+      {pagination ? (
+        <div className="border-t border-default-100 px-2">{pagination}</div>
+      ) : null}
       <Divider />
       <CardFooter className="p-5">
         <Link to={""} className="text-center w-full text-blue-700 font-medium">

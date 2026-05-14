@@ -1,17 +1,23 @@
 import { Button } from "@heroui/react";
-import Header from "../../components/shared/header";
+import { useState } from "react";
 import { PiExportBold } from "react-icons/pi";
 import { TbWriting } from "react-icons/tb";
+import Header from "../../components/shared/header";
 import AddRecordModal from "./add-record-modal";
-import { useState } from "react";
 
-const WarehouseHeader = () => {
+interface WarehouseHeaderProps {
+  warehouseName?: string;
+}
+
+const WarehouseHeader = ({ warehouseName }: WarehouseHeaderProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const onClose = () => setIsOpen(false);
   return (
     <>
       <Header
-        title="Warehouse Overview"
+        title={
+          warehouseName ? `Warehouse — ${warehouseName}` : "Warehouse Overview"
+        }
         description="Live inventory monitoring and stock movement tracking."
         right={
           <div className="flex justify-end items-end gap-2.5">
@@ -29,7 +35,7 @@ const WarehouseHeader = () => {
               startContent={<TbWriting />}
               onPress={() => setIsOpen(true)}
             >
-              Record Usage
+              Stock actions
             </Button>
           </div>
         }

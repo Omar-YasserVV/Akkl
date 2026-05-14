@@ -1,103 +1,128 @@
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  DateInput,
-  TimeInput,
-  Textarea,
-} from "@heroui/react";
-import { FormProvider, Controller } from "react-hook-form";
+import { Button, Modal, ModalBody, ModalContent } from "@heroui/react";
+import type { FormEvent } from "react";
+import { FormProvider } from "react-hook-form";
 import { BiX } from "react-icons/bi";
 
-import RecordModalHeader from "./RecordModalHeader";
-import RecordModalFooter from "./RecordModalFooter";
 import { ControlledAutocomplete } from "@/features/dashboard/components/shared/ControlledAutocomplete";
 import { ControlledInput } from "@/features/dashboard/components/shared/ControlledInput";
-import { StockComparison } from "./StockComparison";
-import { CalendarDate, Time } from "@internationalized/date";
-import { useAddRecordForm } from "../../hooks/useAddRecordForm";
+import { useWarehouseBranch } from "../../context/WarehouseBranchContext";
+import {
+  useConsumeInventoryItem,
+  useCreateInventoryItem,
+  useIngredients,
+  useInventoryItems,
+  useRestockInventoryItem,
+} from "../../hooks/useWarehouse";
+import { useWarehouseModalForm } from "../../hooks/useWarehouseModalForm";
+import type { WarehouseModalFormData } from "../../types/WarehouseModal";
+import RecordModalFooter from "./RecordModalFooter";
+import RecordModalHeader from "./RecordModalHeader";
 
 export interface AddRecordModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+const tabDefaults = (
+  tab: WarehouseModalFormData["tab"],
+): WarehouseModalFormData => {
+  if (tab === "usage") {
+    return { tab: "usage", inventoryItemId: "", quantity: 0 };
+  }
+  if (tab === "restock") {
+    return {
+      tab: "restock",
+      inventoryItemId: "",
+      quantity: 0,
+      expiresAt: "",
+    };
+  }
+  return {
+    tab: "register",
+    ingredientId: "",
+    minimumQuantity: 0,
+    initialRestock: 0,
+  };
+};
+
 const AddRecordModal = ({ isOpen, onClose }: AddRecordModalProps) => {
-  const methods = useAddRecordForm();
+  const methods = useWarehouseModalForm();
+  const { warehouseId } = useWarehouseBranch();
+  const tab = methods.watch("tab");
+
+  const listQuery = useInventoryItems(
+    warehouseId ? { warehouseId, page: 1, limit: 200 } : null,
+  );
+  const ingredientsQuery = useIngredients();
+
+  const consume = useConsumeInventoryItem();
+  const restock = useRestockInventoryItem();
+  const createLine = useCreateInventoryItem();
+
+  const inventoryOptions =
+    listQuery.data?.data.map((row) => ({
+      key: row.id,
+      label: `${row.ingredient.name} (${row.quantity} ${row.ingredient.unit})`,
+    })) ?? [];
+
+  const ingredientOptions =
+    ingredientsQuery.data?.map((ing) => ({
+      key: ing.id,
+      label: `${ing.name} (${ing.unit})`,
+    })) ?? [];
 
   const handleClose = () => {
     onClose();
-    methods.reset();
+    methods.reset(tabDefaults("usage"));
   };
 
-  /**
-   * Mock form submit handler for testing purposes only.
-   * Logs the submitted data, simulates a 2-second async operation,
-   * and then closes the modal and resets the form.
-   * TODO: Replace with actual API submission logic.
-   */
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const setTab = (next: WarehouseModalFormData["tab"]) => {
+    methods.reset(tabDefaults(next));
+  };
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!warehouseId) return;
 
-    methods.handleSubmit(
-      async (data) => {
-        console.log("Form Submitted:", data);
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+    void methods.handleSubmit(async (data) => {
+      try {
+        if (data.tab === "usage") {
+          await consume.mutateAsync({
+            id: data.inventoryItemId,
+            consumedQuantity: data.quantity,
+            warehouseId,
+          });
+        } else if (data.tab === "restock") {
+          await restock.mutateAsync({
+            id: data.inventoryItemId,
+            warehouseId,
+            addedQuantity: data.quantity,
+            ...(data.expiresAt
+              ? { expiresAt: new Date(data.expiresAt).toISOString() }
+              : {}),
+          });
+        } else {
+          const created = await createLine.mutateAsync({
+            ingredientId: data.ingredientId,
+            warehouseId,
+            minimumQuantity: data.minimumQuantity,
+          });
+          if (data.initialRestock && data.initialRestock > 0) {
+            await restock.mutateAsync({
+              id: created.id,
+              warehouseId,
+              addedQuantity: data.initialRestock,
+            });
+          }
+        }
         handleClose();
-      },
-      (errors) => console.error("Form Errors:", errors),
-    )();
+      } catch {
+        /* axios / server errors */
+      }
+    })();
   };
 
-  const animals = [
-    {
-      label: "Cat",
-      key: "cat",
-    },
-
-    {
-      label: "Dog",
-      key: "dog",
-    },
-    {
-      label: "Elephant",
-      key: "elephant",
-    },
-    { label: "Lion", key: "lion" },
-    { label: "Tiger", key: "tiger" },
-    {
-      label: "Giraffe",
-      key: "giraffe",
-    },
-    {
-      label: "Dolphin",
-      key: "dolphin",
-    },
-    {
-      label: "Penguin",
-      key: "penguin",
-    },
-    {
-      label: "Zebra",
-      key: "zebra",
-    },
-    {
-      label: "Shark",
-      key: "shark",
-    },
-    {
-      label: "Whale",
-      key: "whale",
-    },
-    {
-      label: "Otter",
-      key: "otter",
-    },
-    {
-      label: "Crocodile",
-      key: "crocodile",
-    },
-  ];
+  const busy = consume.isPending || restock.isPending || createLine.isPending;
 
   return (
     <Modal
@@ -117,123 +142,95 @@ const AddRecordModal = ({ isOpen, onClose }: AddRecordModalProps) => {
         {(internalClose) => (
           <FormProvider {...methods}>
             <form onSubmit={handleSubmit}>
-              <RecordModalHeader onClose={internalClose} />
+              <RecordModalHeader
+                onClose={internalClose}
+                title="Stock actions"
+                description="Consume, restock, or register a new ingredient line for this warehouse."
+              />
 
-              <ModalBody className="py-6 px-8 bg-default-50 grid grid-cols-2 gap-x-4 gap-y-6">
-                <ControlledAutocomplete
-                  name="ingredientId"
-                  label="Select Item"
-                  placeholder="Search for an ingredient..."
-                  items={animals}
-                  className="col-span-2"
-                />
-
-                <ControlledInput
-                  name="quantity"
-                  label="Quantity"
-                  type="number"
-                  placeholder="0.00"
-                  className="col-span-1"
-                />
-
-                <ControlledAutocomplete
-                  name="unit"
-                  label="Select Unit"
-                  placeholder="Search for a unit..."
-                  items={animals}
-                  className="col-span-1"
-                />
-
-                <div className="flex gap-4 col-span-1">
-                  <Controller
-                    name="recordedAt.date"
-                    control={methods.control}
-                    render={({ field, fieldState: { error } }) => (
-                      <DateInput
-                        {...field}
-                        value={
-                          field.value
-                            ? new CalendarDate(
-                                field.value.year,
-                                field.value.month,
-                                field.value.day,
-                              )
-                            : null
-                        }
-                        label="Date"
-                        labelPlacement="outside"
-                        radius="sm"
-                        variant="bordered"
-                        isInvalid={!!error}
-                        errorMessage={error?.message}
-                      />
-                    )}
-                  />
-                  <Controller
-                    name="recordedAt.time"
-                    control={methods.control}
-                    render={({ field, fieldState: { error } }) => (
-                      <TimeInput
-                        {...field}
-                        hourCycle={12}
-                        value={
-                          field.value
-                            ? new Time(field.value.hour, field.value.minute)
-                            : null
-                        }
-                        label="Time"
-                        labelPlacement="outside"
-                        radius="sm"
-                        variant="bordered"
-                        isInvalid={!!error}
-                        errorMessage={error?.message}
-                      />
-                    )}
-                  />
+              <ModalBody className="py-6 px-8 bg-default-50 flex flex-col gap-4">
+                <div className="flex flex-wrap gap-2">
+                  {(
+                    [
+                      ["usage", "Record usage"],
+                      ["restock", "Restock"],
+                      ["register", "New inventory line"],
+                    ] as const
+                  ).map(([key, label]) => (
+                    <Button
+                      key={key}
+                      type="button"
+                      size="sm"
+                      variant={tab === key ? "solid" : "bordered"}
+                      color={tab === key ? "primary" : "default"}
+                      onPress={() => setTab(key)}
+                    >
+                      {label}
+                    </Button>
+                  ))}
                 </div>
 
-                <ControlledAutocomplete
-                  name="reason"
-                  label="Reason for Usage"
-                  placeholder="Search for a reason..."
-                  items={[
-                    { label: "Kitchen Prep", key: "Kitchen Prep" },
-                    { label: "Internal Transfer", key: "Internal Transfer" },
-                    { label: "Damaged", key: "Damaged" },
-                    { label: "Expired", key: "Expired" },
-                    { label: "Sample/Testing", key: "Sample/Testing" },
-                    {
-                      label: "Discrepancy Correction",
-                      key: "Discrepancy Correction",
-                    },
-                  ]}
-                  className="col-span-1"
-                />
-
-                <Controller
-                  name="notes"
-                  control={methods.control}
-                  render={({ field }) => (
-                    <Textarea
-                      {...field}
-                      label="Notes (Optional)"
-                      placeholder="Add specific details..."
-                      className="col-span-2"
-                      radius="sm"
-                      variant="bordered"
-                      labelPlacement="outside"
+                {(tab === "usage" || tab === "restock") && (
+                  <>
+                    <ControlledAutocomplete
+                      name="inventoryItemId"
+                      label="Inventory line"
+                      placeholder="Search inventory…"
+                      items={inventoryOptions}
+                      className="w-full"
                     />
-                  )}
-                />
+                    <ControlledInput
+                      name="quantity"
+                      label={
+                        tab === "usage"
+                          ? "Quantity to consume"
+                          : "Quantity to add"
+                      }
+                      type="number"
+                      placeholder="0"
+                      className="max-w-md"
+                    />
+                  </>
+                )}
 
-                <StockComparison
-                  currentStock={45.5}
-                  projectedStock={40.0}
-                  unit="kg"
-                />
+                {tab === "restock" && (
+                  <ControlledInput
+                    name="expiresAt"
+                    label="Expiry (optional)"
+                    type="datetime-local"
+                    placeholder=""
+                    className="max-w-md"
+                  />
+                )}
+
+                {tab === "register" && (
+                  <>
+                    <ControlledAutocomplete
+                      name="ingredientId"
+                      label="Ingredient"
+                      placeholder="Choose ingredient…"
+                      items={ingredientOptions}
+                      className="w-full"
+                    />
+                    <ControlledInput
+                      name="minimumQuantity"
+                      label="Minimum quantity (alert threshold)"
+                      type="number"
+                      placeholder="0"
+                      className="max-w-md"
+                    />
+                    <ControlledInput
+                      name="initialRestock"
+                      label="Initial stock (optional)"
+                      type="number"
+                      placeholder="0"
+                      className="max-w-md"
+                    />
+                  </>
+                )}
               </ModalBody>
 
-              <RecordModalFooter onClose={internalClose} />
+              <RecordModalFooter onClose={internalClose} isBusy={busy} />
             </form>
           </FormProvider>
         )}

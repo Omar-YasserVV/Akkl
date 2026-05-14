@@ -1,83 +1,51 @@
-import { Card, CardBody, CardHeader, Divider } from "@heroui/react";
+import { Card, CardBody, CardHeader, Divider, Spinner } from "@heroui/react";
 import { NumberFormatter } from "@repo/utils";
-import { FiMinusCircle, FiPlusCircle } from "react-icons/fi";
+import { FiPlusCircle, FiMinusCircle, FiRefreshCw, FiEdit } from "react-icons/fi";
+import { useInventoryLogs } from "../hooks/useWarehouse";
 
-const mockStockMovements = [
-  {
-    id: 1,
-    product: "Atlantic Salmon",
-    date: "Oct 24, 09:15 AM",
-    supplier: "Ocean Delights",
-    quantity: 1000,
-    unit: "kg",
-    increase: true,
-  },
-  {
-    id: 2,
-    product: "Chicken Breast",
-    date: "Oct 24, 11:40 AM",
-    supplier: "Kitchen Usage",
-    quantity: 250,
-    unit: "kg",
-    increase: false,
-  },
-  {
-    id: 3,
-    product: "Olive Oil",
-    date: "Oct 23, 04:20 PM",
-    supplier: "Mediterranean Supplies",
-    quantity: 120,
-    unit: "L",
-    increase: true,
-  },
-  {
-    id: 4,
-    product: "Mozzarella Cheese",
-    date: "Oct 23, 01:10 PM",
-    supplier: "Pizza Station",
-    quantity: 80,
-    unit: "kg",
-    increase: false,
-  },
-  {
-    id: 4,
-    product: "Mozzarella Cheese",
-    date: "Oct 23, 01:10 PM",
-    supplier: "Pizza Station",
-    quantity: 80,
-    unit: "kg",
-    increase: false,
-  },
-  {
-    id: 4,
-    product: "Mozzarella Cheese",
-    date: "Oct 23, 01:10 PM",
-    supplier: "Pizza Station",
-    quantity: 80,
-    unit: "kg",
-    increase: false,
-  },
-  {
-    id: 4,
-    product: "Mozzarella Cheese",
-    date: "Oct 23, 01:10 PM",
-    supplier: "Pizza Station",
-    quantity: 80,
-    unit: "kg",
-    increase: false,
-  },
-  {
-    id: 4,
-    product: "Mozzarella Cheese",
-    date: "Oct 23, 01:10 PM",
-    supplier: "Pizza Station",
-    quantity: 80,
-    unit: "kg",
-    increase: false,
-  },
-];
+interface RecentStockMovementProps {
+  warehouseId: string;
+}
 
-const RecentStockMovement = () => {
+const RecentStockMovement = ({ warehouseId }: RecentStockMovementProps) => {
+  const { data, isLoading } = useInventoryLogs({
+    warehouseId,
+    page: 1,
+    limit: 15,
+  });
+
+  const movements = data?.data ?? [];
+
+  const getActionIcon = (action: string) => {
+    switch (action) {
+      case "RESTOCK":
+        return <FiPlusCircle />;
+      case "CONSUME":
+        return <FiMinusCircle />;
+      case "CREATE":
+        return <FiPlusCircle />;
+      case "UPDATE":
+        return <FiEdit />;
+      default:
+        return <FiRefreshCw />;
+    }
+  };
+
+  const getActionColor = (action: string) => {
+    switch (action) {
+      case "RESTOCK":
+        return "bg-green-600/10 text-green-600";
+      case "CONSUME":
+        return "bg-red-600/10 text-red-600";
+      case "CREATE":
+        return "bg-blue-600/10 text-blue-600";
+      case "UPDATE":
+        return "bg-orange-600/10 text-orange-600";
+      default:
+        return "bg-default-600/10 text-default-600";
+    }
+  };
+
   return (
     <Card
       classNames={{
@@ -87,48 +55,53 @@ const RecentStockMovement = () => {
       className="col-span-3 row-span-2"
     >
       <CardHeader>
-        <p className="font-bold">Recent Stock Movement</p>
+        <p className="font-bold">Recent Stock Movements</p>
       </CardHeader>
       <Divider />
-      <CardBody className="flex flex-col gap-4 overflow-y-auto">
-        {mockStockMovements.map((item) => {
-          return (
-            <div key={item.id} className="flex items-center justify-between">
+      <CardBody className="flex flex-col gap-4 overflow-y-auto max-h-[320px]">
+        {isLoading ? (
+          <div className="flex justify-center py-6">
+            <Spinner size="sm" />
+          </div>
+        ) : movements.length === 0 ? (
+          <p className="text-sm text-default-500">
+            No recent stock movements.
+          </p>
+        ) : (
+          movements.map((log) => (
+            <div key={log.id} className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div
-                  className={`p-1.5 rounded-full ${
-                    item.increase
-                      ? "bg-green-600/10 text-green-600"
-                      : "bg-default-500/10 text-default-500"
-                  }`}
-                >
-                  {item.increase ? <FiPlusCircle /> : <FiMinusCircle />}
+                <div className={`p-1.5 rounded-full ${getActionColor(log.action)}`}>
+                  {getActionIcon(log.action)}
                 </div>
 
                 <div>
                   <p className="text-sm font-semibold">
-                    {item.increase ? "Restock" : "Usage"}: {item.product}
+                    {log.action.charAt(0) + log.action.slice(1).toLowerCase()}: {log.inventoryItem?.ingredient.name}
                   </p>
                   <p className="text-xs text-default-500">
-                    {item.date} • {item.increase ? "Supplier" : "Used by"}:{" "}
-                    {item.supplier}
+                    {new Date(log.createdAt).toLocaleString(undefined, {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
                   </p>
                 </div>
               </div>
 
-              <p
-                className={`text-sm font-semibold ${
-                  item.increase ? "text-green-600" : "text-default-500"
-                }`}
-              >
-                {item.increase ? "+" : "-"}
-                {NumberFormatter.getNumberOnly(Number(item.quantity), {
-                  unit: item.unit,
-                })}
-              </p>
+              <div className="text-right">
+                <p className={`text-sm font-semibold ${log.quantityChange > 0 ? "text-green-600" : log.quantityChange < 0 ? "text-red-600" : "text-default-600"}`}>
+                  {log.quantityChange > 0 ? "+" : ""}
+                  {NumberFormatter.getNumberOnly(Number(log.quantityChange), {
+                    unit: log.inventoryItem?.ingredient.unit,
+                  })}
+                </p>
+                <p className="text-[10px] text-default-400">
+                  New: {log.newQuantity} {log.inventoryItem?.ingredient.unit}
+                </p>
+              </div>
             </div>
-          );
-        })}
+          ))
+        )}
       </CardBody>
     </Card>
   );

@@ -6,54 +6,27 @@ import {
   CardHeader,
   Chip,
 } from "@heroui/react";
-import StockAlertCard from "./StockAlertCard";
+import { useMemo } from "react";
 import { IoArrowForward } from "react-icons/io5";
+import { useStockAlerts } from "../hooks/useWarehouse";
+import type { InventoryItemDto } from "../types/inventory.types";
+import StockAlertCard from "./StockAlertCard";
 
-const StockAlerts = () => {
-  const alerts = [
-    {
-      name: "Avocados (Hass)",
-      currentStock: 4,
-      minRequired: 10,
-      status: "critical" as const,
-    },
-    {
-      name: "Bananas",
-      currentStock: 6,
-      minRequired: 15,
-      status: "low" as const,
-    },
-    {
-      name: "Avocados (Hass)",
-      currentStock: 4,
-      minRequired: 10,
-      status: "critical" as const,
-    },
-    {
-      name: "Bananas",
-      currentStock: 6,
-      minRequired: 15,
-      status: "low" as const,
-    },
-    {
-      name: "Avocados (Hass)",
-      currentStock: 4,
-      minRequired: 10,
-      status: "critical" as const,
-    },
-    {
-      name: "Bananas",
-      currentStock: 6,
-      minRequired: 15,
-      status: "low" as const,
-    },
-    {
-      name: "Avocados (Hass)",
-      currentStock: 4,
-      minRequired: 10,
-      status: "critical" as const,
-    },
-  ];
+interface StockAlertsProps {
+  warehouseId: string;
+}
+
+const StockAlerts = ({ warehouseId }: StockAlertsProps) => {
+  const { data, isLoading } = useStockAlerts(warehouseId);
+
+  const alerts = useMemo(() => {
+    return data?.items.slice(0, 12) ?? [];
+  }, [data]);
+
+  const alertCount = data?.items.length ?? 0;
+
+  const loading = isLoading;
+
   return (
     <Card
       className="flex-1"
@@ -62,19 +35,26 @@ const StockAlerts = () => {
       <CardHeader className="justify-between">
         <p className="font-bold">Low Stock Alerts</p>
         <Chip radius="full" className="bg-red-500 text-white">
-          2
+          {loading ? "…" : alertCount}
         </Chip>
       </CardHeader>
-      <CardBody className="flex flex-col gap-4 overflow-y-auto  flex-1">
-        {alerts.map((alert) => (
-          <StockAlertCard
-            key={alert.name}
-            name={alert.name}
-            currentStock={alert.currentStock}
-            minRequired={alert.minRequired}
-            status={alert.status}
-          />
-        ))}
+      <CardBody className="flex flex-col gap-4 overflow-y-auto flex-1">
+        {!loading && alerts.length === 0 ? (
+          <p className="text-sm text-default-500">
+            No low or out-of-stock items.
+          </p>
+        ) : (
+          alerts.map((row) => (
+            <StockAlertCard
+              key={row.id}
+              name={row.ingredient.name}
+              currentStock={row.quantity}
+              minRequired={row.minimumQuantity}
+              unit={row.ingredient.unit}
+              status={row.stockStatus === "OUT_OF_STOCK" ? "critical" : "low"}
+            />
+          ))
+        )}
       </CardBody>
       <CardFooter className="pt-3">
         <Button

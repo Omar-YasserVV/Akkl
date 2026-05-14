@@ -1,39 +1,62 @@
 import { Card, CardBody } from "@heroui/react";
 import { cn, NumberFormatter } from "@repo/utils";
-import { FaMoneyBills } from "react-icons/fa6";
 import { LuTriangleAlert } from "react-icons/lu";
-import { MdOutlinePendingActions } from "react-icons/md";
-import { FaExchangeAlt } from "react-icons/fa";
+import { MdOutlineInventory2 } from "react-icons/md";
+import { TbCircleCheck, TbCircleOff } from "react-icons/tb";
+import { useInventoryMetaCount } from "../hooks/useWarehouse";
 
-const StatsGrid = () => {
+interface StatsGridProps {
+  warehouseId: string;
+}
+
+const StatsGrid = ({ warehouseId }: StatsGridProps) => {
+  const { data: total = 0, isLoading: l1 } = useInventoryMetaCount(
+    warehouseId,
+    undefined,
+  );
+  const { data: low = 0, isLoading: l2 } = useInventoryMetaCount(
+    warehouseId,
+    "LOW_STOCK",
+  );
+  const { data: out = 0, isLoading: l3 } = useInventoryMetaCount(
+    warehouseId,
+    "OUT_OF_STOCK",
+  );
+  const { data: inStock = 0, isLoading: l4 } = useInventoryMetaCount(
+    warehouseId,
+    "IN_STOCK",
+  );
+
+  const loading = l1 || l2 || l3 || l4;
+
   const statuses = [
     {
-      title: "Total Stock Value",
-      value: 1234500,
+      title: "Inventory lines",
+      value: total,
       colorClass: "text-primary bg-primary/10",
-      icon: FaMoneyBills,
-      fromLastMonth: "12.5",
-      increase: true,
+      icon: MdOutlineInventory2,
+      subtitle: loading ? "…" : "All tracked ingredients",
     },
     {
-      title: "Low Stock Items",
-      value: 890,
-      colorClass: "text-danger bg-danger/10",
-      icon: LuTriangleAlert,
-      fromLastMonth: "2.1",
-      increase: false,
-    },
-    {
-      title: "Pending Purchase Orders",
-      value: 12,
+      title: "Low stock",
+      value: low,
       colorClass: "text-warning bg-warning/10",
-      icon: MdOutlinePendingActions,
+      icon: LuTriangleAlert,
+      subtitle: "At or below minimum",
     },
     {
-      title: "Inventory Turnover",
-      value: "4.2x",
-      colorClass: "text-indigo-700 bg-indigo-700/10",
-      icon: FaExchangeAlt,
+      title: "Out of stock",
+      value: out,
+      colorClass: "text-danger bg-danger/10",
+      icon: TbCircleOff,
+      subtitle: "Needs restock",
+    },
+    {
+      title: "In stock",
+      value: inStock,
+      colorClass: "text-success bg-success/10",
+      icon: TbCircleCheck,
+      subtitle: "Above minimum",
     },
   ];
 
@@ -58,26 +81,11 @@ const StatsGrid = () => {
                   {typeof status.value === "number"
                     ? NumberFormatter.getNumberOnly(status.value, {
                         isCompact: true,
-                        isCurrency: status.title === "Total Stock Value",
                       })
                     : status.value}
                 </p>
 
-                {status.fromLastMonth ? (
-                  <p
-                    className={cn(
-                      "flex items-center font-medium",
-                      status.increase ? "text-green-600" : "text-danger",
-                    )}
-                  >
-                    <span>{status.increase ? "+" : "-"}</span>
-                    <span className="ml-1">
-                      {status.fromLastMonth}% from last month
-                    </span>
-                  </p>
-                ) : (
-                  <p className="text-default-400">Stable vs last month</p>
-                )}
+                <p className="text-default-400 text-sm">{status.subtitle}</p>
               </div>
 
               <div className={cn("p-3 rounded-xl h-fit", status.colorClass)}>
