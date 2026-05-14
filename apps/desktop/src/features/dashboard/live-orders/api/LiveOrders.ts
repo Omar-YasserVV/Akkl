@@ -1,6 +1,7 @@
+import { Order } from "@/types/Order";
 import { OrderState } from "@repo/types";
 import { apiClient } from "@repo/utils";
-import { CreateOrderBody, Order } from "../types/LiveOrders.types";
+import { CreateOrderBody } from "../types/LiveOrders.types";
 
 const BASE_URL = "/branches/orders";
 

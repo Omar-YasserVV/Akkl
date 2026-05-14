@@ -123,6 +123,14 @@ export class BranchController implements OnModuleInit {
   // ---------------- MENU ----------------
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.CASHIER, UserRole.MANAGER)
+  @Get('menu/summary')
+  getMenuSummary(@GetBranchId() branchId: string) {
+    return this.branchClient.send(BRANCH_TOPICS.GET_MENU_SUMMARY, {
+      branchId,
+    });
+  }
+
+  @Roles(UserRole.BUSINESS_OWNER, UserRole.CASHIER, UserRole.MANAGER)
   @Get('menu/all')
   getAllMenuItems(@GetBranchId() branchId: string) {
     return this.branchClient.send(BRANCH_TOPICS.GET_ALL_MENU_ITEMS, {

@@ -7,6 +7,7 @@ export const BRANCH_TOPICS = {
   DELETE: 'delete-branch',
   // Menu
   GET_MENU: 'get_branch_menu',
+  GET_MENU_SUMMARY: 'get_menu_summary',
   GET_ALL_MENU_ITEMS: 'get_all_menu_items',
   CREATE_MENU: 'create_menu_item',
   UPDATE_MENU: 'update_menu_item',

@@ -1,22 +1,28 @@
-export const MenuManagerCards_Constants = [
+export interface MenuItemSummary {
+  totalItems: number;
+  availableItems: number;
+  averagePrice: string | number;
+  categories: number;
+}
+
+export const MenuManagerCards_Metadata: {
+  id: keyof MenuItemSummary;
+  title: string;
+}[] = [
   {
-    id: 1,
+    id: "totalItems",
     title: "Total Items",
-    value: 3,
   },
   {
-    id: 2,
+    id: "availableItems",
     title: "Available",
-    value: 3,
   },
   {
-    id: 3,
+    id: "averagePrice",
     title: "Avg Price",
-    value: 8.66,
   },
   {
-    id: 4,
+    id: "categories",
     title: "Categories",
-    value: 4,
   },
 ];

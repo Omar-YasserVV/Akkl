@@ -11,6 +11,13 @@ export interface RecipeItem {
   ingredient: Ingredient;
 }
 
+export interface MenuItemSummary {
+  totalItems: number;
+  availableItems: number;
+  averagePrice: string;
+  categories: number;
+}
+
 export interface Ingredient {
   id: string;
   name: string;

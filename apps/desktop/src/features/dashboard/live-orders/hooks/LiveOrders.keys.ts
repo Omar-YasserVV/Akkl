@@ -1,4 +1,4 @@
-import { OrderFilters } from "../types/LiveOrders.types";
+import { OrderFilters } from "@/types/Order";
 
 export const orderKeys = {
   all: ["orders"] as const,

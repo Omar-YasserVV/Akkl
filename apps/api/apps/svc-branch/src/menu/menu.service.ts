@@ -43,6 +43,35 @@ export class MenuService {
     });
   }
 
+  async getMenuSummary(branchId: string) {
+    const stats = await this.prisma.branchMenuItem.aggregate({
+      where: { branchId },
+      _count: {
+        id: true,
+        isAvailable: true,
+      },
+      _avg: {
+        price: true,
+      },
+    });
+
+    const availableCount = await this.prisma.branchMenuItem.count({
+      where: { branchId, isAvailable: true },
+    });
+
+    const categories = await this.prisma.branchMenuItem.groupBy({
+      by: ['category'],
+      where: { branchId },
+    });
+
+    return {
+      totalItems: stats._count.id,
+      availableItems: availableCount,
+      averagePrice: stats._avg.price,
+      categories: categories.length,
+    };
+  }
+
   async getBranchMenu(
     branchId: string,
     pagination: {
