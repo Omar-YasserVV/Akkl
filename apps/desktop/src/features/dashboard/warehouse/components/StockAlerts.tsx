@@ -4,14 +4,11 @@ import {
   CardBody,
   CardFooter,
   CardHeader,
-  Chip,
-  Divider,
   Skeleton,
 } from "@heroui/react";
 import { useMemo } from "react";
 import { IoArrowForward } from "react-icons/io5";
 import { useStockAlerts } from "../hooks/useWarehouse";
-import type { InventoryItemDto } from "../types/inventory.types";
 import StockAlertCard from "./StockAlertCard";
 
 interface StockAlertsProps {
@@ -32,16 +29,20 @@ const StockAlerts = ({ warehouseId, isLoading }: StockAlertsProps) => {
 
   return (
     <Card
-      className="flex-1"
+      className="flex-1 justify-between"
       classNames={{ header: "p-5 pb-2", body: "p-5 pt-2 " }}
     >
       <CardHeader className="justify-between">
         <p className="font-bold">Low Stock Alerts</p>
-        <Chip radius="full" className="bg-red-500 text-white">
-          {loading ? "…" : alertCount}
-        </Chip>
+        {loading ? (
+          <Skeleton className="h-6 w-6 rounded-full" />
+        ) : (
+          <div className="bg-red-500 text-white p-1.5 rounded-full w-6 h-6 flex items-center justify-center text-sm">
+            {alertCount}
+          </div>
+        )}
       </CardHeader>
-      <CardBody className="flex flex-col gap-4 overflow-y-auto max-h-[400px]">
+      <CardBody className="flex flex-col gap-4 overflow-y-auto">
         {loading ? (
           <>
             {[1, 2, 3].map((i) => (

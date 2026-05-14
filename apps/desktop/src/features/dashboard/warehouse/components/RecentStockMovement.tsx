@@ -1,6 +1,11 @@
-import { Card, CardBody, CardHeader, Divider, Skeleton, Spinner } from "@heroui/react";
+import { Card, CardBody, CardHeader, Divider, Skeleton } from "@heroui/react";
 import { NumberFormatter } from "@repo/utils";
-import { FiPlusCircle, FiMinusCircle, FiRefreshCw, FiEdit } from "react-icons/fi";
+import {
+  FiEdit,
+  FiMinusCircle,
+  FiPlusCircle,
+  FiRefreshCw,
+} from "react-icons/fi";
 import { useInventoryLogs } from "../hooks/useWarehouse";
 
 interface RecentStockMovementProps {
@@ -81,20 +86,21 @@ const RecentStockMovement = ({
             ))}
           </div>
         ) : movements.length === 0 ? (
-          <p className="text-sm text-default-500">
-            No recent stock movements.
-          </p>
+          <p className="text-sm text-default-500">No recent stock movements.</p>
         ) : (
           movements.map((log) => (
             <div key={log.id} className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className={`p-1.5 rounded-full ${getActionColor(log.action)}`}>
+                <div
+                  className={`p-1.5 rounded-full ${getActionColor(log.action)}`}
+                >
                   {getActionIcon(log.action)}
                 </div>
 
                 <div>
                   <p className="text-sm font-semibold">
-                    {log.action.charAt(0) + log.action.slice(1).toLowerCase()}: {log.inventoryItem?.ingredient.name}
+                    {log.action.charAt(0) + log.action.slice(1).toLowerCase()}:{" "}
+                    {log.inventoryItem?.ingredient.name}
                   </p>
                   <p className="text-xs text-default-500">
                     {new Date(log.createdAt).toLocaleString(undefined, {
@@ -106,7 +112,9 @@ const RecentStockMovement = ({
               </div>
 
               <div className="text-right">
-                <p className={`text-sm font-semibold ${log.quantityChange > 0 ? "text-green-600" : log.quantityChange < 0 ? "text-red-600" : "text-default-600"}`}>
+                <p
+                  className={`text-sm font-semibold ${log.quantityChange > 0 ? "text-green-600" : log.quantityChange < 0 ? "text-red-600" : "text-default-600"}`}
+                >
                   {log.quantityChange > 0 ? "+" : ""}
                   {NumberFormatter.getNumberOnly(Number(log.quantityChange), {
                     unit: log.inventoryItem?.ingredient.unit,
