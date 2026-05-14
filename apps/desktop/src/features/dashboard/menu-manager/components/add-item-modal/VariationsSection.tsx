@@ -1,16 +1,22 @@
 import { memo } from "react";
-import { useFormContext, useFieldArray } from "react-hook-form";
+import { useFormContext, useFieldArray, useWatch } from "react-hook-form";
 import { Button } from "@heroui/react";
 import { BiPlus } from "react-icons/bi";
 import type { AddMenuItemFormData } from "../../types/AddItem";
+import { MENU_SIZE_OPTIONS } from "../../constants/formConfig";
 import SizeRow from "./SizeRow";
 
 function VariationsSectionInner() {
-  const { control, watch } = useFormContext<AddMenuItemFormData>();
-  const { fields, remove } = useFieldArray({
+  const { control } = useFormContext<AddMenuItemFormData>();
+  const { fields, remove, append } = useFieldArray({
     control,
     name: "sizes",
   });
+  const sizes = useWatch({ control, name: "sizes" }) ?? [];
+  const selectedSizes = sizes.map((size) => size.name).filter(Boolean);
+  const nextAvailableSize = MENU_SIZE_OPTIONS.find(
+    (option) => !selectedSizes.includes(option.value),
+  )?.value;
 
   return (
     <section className="mb-10">
@@ -23,7 +29,14 @@ function VariationsSectionInner() {
           variant="light"
           startContent={<BiPlus />}
           className="font-bold text-sm text-primary hover:bg-primary/5!"
-          onPress={() => {}}
+          isDisabled={!nextAvailableSize}
+          onPress={() =>
+            append({
+              id: crypto.randomUUID(),
+              name: nextAvailableSize ?? "",
+              price: "",
+            })
+          }
         >
           Add Size
         </Button>
@@ -34,7 +47,7 @@ function VariationsSectionInner() {
             <SizeRow
               key={field.id}
               index={index}
-              watch={watch}
+              selectedSizes={selectedSizes}
               onRemove={() => remove(index)}
             />
           ))

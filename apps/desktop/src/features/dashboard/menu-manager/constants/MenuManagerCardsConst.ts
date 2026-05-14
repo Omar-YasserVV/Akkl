@@ -1,9 +1,4 @@
-export interface MenuItemSummary {
-  totalItems: number;
-  availableItems: number;
-  averagePrice: string | number;
-  categories: number;
-}
+import type { MenuItemSummary } from "../types/Menu";
 
 export const MenuManagerCards_Metadata: {
   id: keyof MenuItemSummary;

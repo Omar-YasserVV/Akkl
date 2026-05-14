@@ -1,5 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
+
+export enum Size {
+  SMALL = "SMALL",
+  MEDIUM = "MEDIUM",
+  LARGE = "LARGE",
+}
 
 export enum DietaryType {
   VEGAN = 'VEGAN',
@@ -9,11 +15,12 @@ export enum DietaryType {
 
 export class MenuItemVariationDto {
   @ApiProperty({
-    example: 'Large',
+    enum: Size,
+    example: Size.LARGE,
     description: 'Size of the menu item',
   })
-  @IsString()
-  size!: string;
+  @IsEnum(Size)
+  size!: Size;
 
   @ApiProperty({
     example: 80,

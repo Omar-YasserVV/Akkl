@@ -1,10 +1,35 @@
-import type { AddMenuItemFormData, SpicinessLevel } from "../types/AddItem";
+import type {
+  AddMenuItemFormData,
+  MenuItemCategory,
+  SpicinessLevel,
+} from "../types/AddItem";
+import { Size } from "../types/AddItem";
+
+export const MENU_CATEGORY_OPTIONS: {
+  value: MenuItemCategory;
+  label: string;
+}[] = [
+  { value: "APPETIZER", label: "Appetizer" },
+  { value: "MAIN_COURSE", label: "Main Course" },
+  { value: "DESSERT", label: "Dessert" },
+  { value: "BEVERAGE", label: "Beverage" },
+  { value: "SIDE_DISH", label: "Side Dish" },
+  { value: "OTHER", label: "Other" },
+];
+
+export const MENU_SIZE_OPTIONS: { value: Size; label: string }[] = [
+  { value: Size.SMALL, label: "Small" },
+  { value: Size.MEDIUM, label: "Medium" },
+  { value: Size.LARGE, label: "Large" },
+];
 
 export const ADD_MENU_ITEM_DEFAULT_VALUES: AddMenuItemFormData = {
   itemName: "",
   description: "",
+  category: "MAIN_COURSE",
   imageData: null,
-  sizes: [{ id: "1", name: "Standard", price: "12.99" }],
+  sizes: [{ id: "1", name: Size.MEDIUM, price: "12.99" }],
+  recipeRows: [],
   addOns: [
     { id: "1", name: "Extra Cheese", price: "2.00" },
     { id: "2", name: "Bacon Strips", price: "3.50" },

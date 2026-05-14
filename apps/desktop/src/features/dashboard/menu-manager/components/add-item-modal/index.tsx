@@ -9,12 +9,13 @@ import BasicInfoSection from "./BasicInfoSection";
 import VariationsSection from "./VariationsSection";
 import ModifiersSection from "./ModifiersSection";
 import DietaryAndAvailabilitySection from "./DietaryAndAvailabilitySection";
+import RecipeSection from "./RecipeSection";
 import type { AddMenuItemFormData } from "../../types/AddItem";
 
 export interface AddMenuItemModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit?: (data: AddMenuItemFormData) => void;
+  onSubmit?: (data: AddMenuItemFormData) => void | Promise<void>;
 }
 
 export default function AddMenuItemModal({
@@ -53,6 +54,7 @@ export default function AddMenuItemModal({
               <ModalBody className="py-6 px-8 bg-default-50">
                 <BasicInfoSection />
                 <VariationsSection />
+                <RecipeSection />
                 <ModifiersSection />
                 <DietaryAndAvailabilitySection />
               </ModalBody>

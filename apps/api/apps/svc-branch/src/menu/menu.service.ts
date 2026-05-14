@@ -67,7 +67,8 @@ export class MenuService {
     return {
       totalItems: stats._count.id,
       availableItems: availableCount,
-      averagePrice: stats._avg.price,
+      averagePrice:
+        stats._avg.price != null ? Number(stats._avg.price) : null,
       categories: categories.length,
     };
   }

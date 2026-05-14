@@ -1,9 +1,10 @@
 import { memo, useRef } from "react";
 import { useFormContext, Controller } from "react-hook-form";
-import { Input, Textarea, Button } from "@heroui/react";
+import { Input, Textarea, Button, Select, SelectItem } from "@heroui/react";
 import { BiCloudUpload, BiTrash } from "react-icons/bi";
 import { useAddMenuItemModalStore } from "../../stores/useAddMenuItemModalStore";
 import { SHARED_INPUT_CLASS_NAMES } from "../../constants/SharedInputStyle";
+import { MENU_CATEGORY_OPTIONS } from "../../constants/formConfig";
 import type { AddMenuItemFormData } from "../../types/AddItem";
 
 function BasicInfoSectionInner() {
@@ -71,6 +72,32 @@ function BasicInfoSectionInner() {
             />
           )}
         />
+        <div className="pt-3">
+          <Controller
+            name="category"
+            control={control}
+            render={({ field }) => (
+              <Select
+                label="Category"
+                labelPlacement="outside"
+                placeholder="Choose category"
+                selectedKeys={field.value ? [field.value] : []}
+                onSelectionChange={(keys) => {
+                  if (keys === "all") return;
+                  const value = Array.from(keys)[0];
+                  field.onChange(typeof value === "string" ? value : "");
+                }}
+                classNames={{
+                  trigger: SHARED_INPUT_CLASS_NAMES.inputWrapper.join(" "),
+                }}
+              >
+                {MENU_CATEGORY_OPTIONS.map((option) => (
+                  <SelectItem key={option.value}>{option.label}</SelectItem>
+                ))}
+              </Select>
+            )}
+          />
+        </div>
 
         <div className="space-y-2">
           <label className="text-sm font-medium text-slate-700">
