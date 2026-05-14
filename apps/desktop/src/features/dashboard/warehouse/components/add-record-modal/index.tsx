@@ -198,7 +198,7 @@ const AddRecordModal = ({ isOpen, onClose }: AddRecordModalProps) => {
                     name="expiresAt"
                     label="Expiry (optional)"
                     type="datetime-local"
-                    placeholder=""
+                    placeholder="Select expiry date and time"
                     className="max-w-md"
                   />
                 )}

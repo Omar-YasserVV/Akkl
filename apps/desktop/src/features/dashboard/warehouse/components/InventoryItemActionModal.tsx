@@ -151,6 +151,7 @@ const InventoryItemActionModal = ({
               <Input
                 label="Expiry (optional)"
                 type="datetime-local"
+                placeholder="Select expiry date and time"
                 value={expiresAt}
                 onValueChange={setExpiresAt}
               />
