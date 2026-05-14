@@ -18,6 +18,7 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
+  Skeleton,
 } from "@heroui/react";
 import { NumberFormatter } from "@repo/utils";
 import type { ReactNode } from "react";
@@ -119,68 +120,87 @@ const StockLevelsTable = ({
             ))}
           </TableHeader>
           <TableBody
-            isLoading={isLoading}
-            emptyContent={isLoading ? " " : "No inventory lines yet."}
+            emptyContent={!isLoading && data.length === 0 ? "No inventory lines yet." : " "}
           >
-            {data.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell className="font-medium">
-                  {item.ingredient.name}
-                </TableCell>
-                <TableCell className="text-default-600">
-                  {String(item.ingredient.category).replace(/_/g, " ")}
-                </TableCell>
-                <TableCell className="font-semibold">
-                  {NumberFormatter.getNumberOnly(item.quantity, {
-                    unit: item.ingredient.unit,
-                    isCompact: true,
-                    unitStyle: "text-default-400",
-                  })}
-                </TableCell>
-                <TableCell>
-                  <Chip
-                    color={chipColor(item.stockStatus)}
-                    variant="flat"
-                    size="sm"
-                  >
-                    {String(item.stockStatus).replace(/_/g, " ")}
-                  </Chip>
-                </TableCell>
-                <TableCell>
-                  <Dropdown>
-                    <DropdownTrigger>
-                      <Button
-                        variant="light"
-                        isIconOnly
-                        aria-label="Row actions"
+            {isLoading
+              ? [...Array(10)].map((_, index) => (
+                  <TableRow key={`skeleton-${index}`}>
+                    <TableCell>
+                      <Skeleton className="h-4 w-3/4 rounded-lg" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-1/2 rounded-lg" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-1/4 rounded-lg" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-6 w-20 rounded-full" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-8 w-8 rounded-lg" />
+                    </TableCell>
+                  </TableRow>
+                ))
+              : data.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell className="font-medium">
+                      {item.ingredient.name}
+                    </TableCell>
+                    <TableCell className="text-default-600">
+                      {String(item.ingredient.category).replace(/_/g, " ")}
+                    </TableCell>
+                    <TableCell className="font-semibold">
+                      {NumberFormatter.getNumberOnly(item.quantity, {
+                        unit: item.ingredient.unit,
+                        isCompact: true,
+                        unitStyle: "text-default-400",
+                      })}
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        color={chipColor(item.stockStatus)}
+                        variant="flat"
+                        size="sm"
                       >
-                        <MdOutlineEdit size={20} className="text-primary" />
-                      </Button>
-                    </DropdownTrigger>
-                    <DropdownMenu aria-label="Inventory actions">
-                      <DropdownItem
-                        key="consume"
-                        onPress={() => onRowAction(item, "consume")}
-                      >
-                        Record usage
-                      </DropdownItem>
-                      <DropdownItem
-                        key="restock"
-                        onPress={() => onRowAction(item, "restock")}
-                      >
-                        Restock
-                      </DropdownItem>
-                      <DropdownItem
-                        key="editMin"
-                        onPress={() => onRowAction(item, "editMin")}
-                      >
-                        Edit minimum
-                      </DropdownItem>
-                    </DropdownMenu>
-                  </Dropdown>
-                </TableCell>
-              </TableRow>
-            ))}
+                        {String(item.stockStatus).replace(/_/g, " ")}
+                      </Chip>
+                    </TableCell>
+                    <TableCell>
+                      <Dropdown>
+                        <DropdownTrigger>
+                          <Button
+                            variant="light"
+                            isIconOnly
+                            aria-label="Row actions"
+                          >
+                            <MdOutlineEdit size={20} className="text-primary" />
+                          </Button>
+                        </DropdownTrigger>
+                        <DropdownMenu aria-label="Inventory actions">
+                          <DropdownItem
+                            key="consume"
+                            onPress={() => onRowAction(item, "consume")}
+                          >
+                            Record usage
+                          </DropdownItem>
+                          <DropdownItem
+                            key="restock"
+                            onPress={() => onRowAction(item, "restock")}
+                          >
+                            Restock
+                          </DropdownItem>
+                          <DropdownItem
+                            key="editMin"
+                            onPress={() => onRowAction(item, "editMin")}
+                          >
+                            Edit minimum
+                          </DropdownItem>
+                        </DropdownMenu>
+                      </Dropdown>
+                    </TableCell>
+                  </TableRow>
+                ))}
           </TableBody>
         </Table>
       </CardBody>

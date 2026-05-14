@@ -1,4 +1,4 @@
-import { Button } from "@heroui/react";
+import { Button, Skeleton } from "@heroui/react";
 import { useState } from "react";
 import { PiExportBold } from "react-icons/pi";
 import { TbWriting } from "react-icons/tb";
@@ -7,16 +7,26 @@ import AddRecordModal from "./add-record-modal";
 
 interface WarehouseHeaderProps {
   warehouseName?: string;
+  isLoading?: boolean;
 }
 
-const WarehouseHeader = ({ warehouseName }: WarehouseHeaderProps) => {
+const WarehouseHeader = ({
+  warehouseName,
+  isLoading,
+}: WarehouseHeaderProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const onClose = () => setIsOpen(false);
   return (
     <>
       <Header
         title={
-          warehouseName ? `Warehouse — ${warehouseName}` : "Warehouse Overview"
+          isLoading ? (
+            <Skeleton className="h-10 w-64 rounded-lg" />
+          ) : warehouseName ? (
+            `Warehouse — ${warehouseName}`
+          ) : (
+            "Warehouse Overview"
+          )
         }
         description="Live inventory monitoring and stock movement tracking."
         right={

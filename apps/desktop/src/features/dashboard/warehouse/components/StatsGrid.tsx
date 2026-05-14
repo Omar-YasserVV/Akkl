@@ -1,4 +1,4 @@
-import { Card, CardBody } from "@heroui/react";
+import { Card, CardBody, Skeleton } from "@heroui/react";
 import { cn, NumberFormatter } from "@repo/utils";
 import { LuTriangleAlert } from "react-icons/lu";
 import { MdOutlineInventory2 } from "react-icons/md";
@@ -6,10 +6,11 @@ import { TbCircleCheck, TbCircleOff } from "react-icons/tb";
 import { useInventoryMetaCount } from "../hooks/useWarehouse";
 
 interface StatsGridProps {
-  warehouseId: string;
+  warehouseId: string | undefined;
+  isLoading?: boolean;
 }
 
-const StatsGrid = ({ warehouseId }: StatsGridProps) => {
+const StatsGrid = ({ warehouseId, isLoading }: StatsGridProps) => {
   const { data: total = 0, isLoading: l1 } = useInventoryMetaCount(
     warehouseId,
     undefined,
@@ -27,7 +28,7 @@ const StatsGrid = ({ warehouseId }: StatsGridProps) => {
     "IN_STOCK",
   );
 
-  const loading = l1 || l2 || l3 || l4;
+  const loading = isLoading || l1 || l2 || l3 || l4;
 
   const statuses = [
     {
@@ -75,22 +76,34 @@ const StatsGrid = ({ warehouseId }: StatsGridProps) => {
             }}
           >
             <CardBody className="flex flex-row justify-between ">
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1 w-full">
                 <p className="font-medium text-default-500">{status.title}</p>
-                <p className="font-bold text-2xl">
-                  {typeof status.value === "number"
-                    ? NumberFormatter.getNumberOnly(status.value, {
-                        isCompact: true,
-                      })
-                    : status.value}
-                </p>
+                {loading ? (
+                  <Skeleton className="h-8 w-16 rounded-lg my-1" />
+                ) : (
+                  <p className="font-bold text-2xl">
+                    {typeof status.value === "number"
+                      ? NumberFormatter.getNumberOnly(status.value, {
+                          isCompact: true,
+                        })
+                      : status.value}
+                  </p>
+                )}
 
-                <p className="text-default-400 text-sm">{status.subtitle}</p>
+                {loading ? (
+                  <Skeleton className="h-4 w-32 rounded-lg" />
+                ) : (
+                  <p className="text-default-400 text-sm">{status.subtitle}</p>
+                )}
               </div>
 
-              <div className={cn("p-3 rounded-xl h-fit", status.colorClass)}>
-                <Icon size={24} />
-              </div>
+              {loading ? (
+                <Skeleton className="h-12 w-12 rounded-xl" />
+              ) : (
+                <div className={cn("p-3 rounded-xl h-fit", status.colorClass)}>
+                  <Icon size={24} />
+                </div>
+              )}
             </CardBody>
           </Card>
         );

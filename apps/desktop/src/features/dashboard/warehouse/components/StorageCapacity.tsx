@@ -1,4 +1,4 @@
-import { Card, CardBody, CardHeader, Progress } from "@heroui/react";
+import { Card, CardBody, CardHeader, Progress, Skeleton } from "@heroui/react";
 import { useMemo } from "react";
 import type {
   IngredientCategory,
@@ -10,9 +10,10 @@ const COLD_CHAIN: IngredientCategory[] = ["MEAT", "SEAFOOD", "DAIRY", "BAKERY"];
 
 interface StorageCapacityProps {
   items: InventoryItemDto[];
+  isLoading?: boolean;
 }
 
-const StorageCapacity = ({ items }: StorageCapacityProps) => {
+const StorageCapacity = ({ items, isLoading }: StorageCapacityProps) => {
   const bands = useMemo(() => {
     const sum = (cats: IngredientCategory[]) =>
       items
@@ -60,7 +61,19 @@ const StorageCapacity = ({ items }: StorageCapacityProps) => {
         </p>
       </CardHeader>
       <CardBody className="space-y-4">
-        {items.length === 0 ? (
+        {isLoading ? (
+          <div className="space-y-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="space-y-2">
+                <div className="flex justify-between">
+                  <Skeleton className="h-4 w-32 rounded-lg" />
+                  <Skeleton className="h-4 w-8 rounded-lg" />
+                </div>
+                <Skeleton className="h-2 w-full rounded-full" />
+              </div>
+            ))}
+          </div>
+        ) : items.length === 0 ? (
           <p className="text-sm text-default-500">No inventory to chart yet.</p>
         ) : (
           bands.map((storage) => (

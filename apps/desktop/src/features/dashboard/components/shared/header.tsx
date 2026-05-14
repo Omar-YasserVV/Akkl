@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 
 type HeaderProps = {
-  title: string;
+  title: string | ReactNode;
   description: string;
   right?: ReactNode;
   left?: ReactNode;

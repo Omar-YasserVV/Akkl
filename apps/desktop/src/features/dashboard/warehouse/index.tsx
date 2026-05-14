@@ -22,11 +22,7 @@ function WarehouseDashboardBody() {
     warehouseId ? { warehouseId, page: 1, limit: 100 } : null,
   );
 
-  if (branchLoading) {
-    return <div className="p-8 text-default-600">Loading warehouse…</div>;
-  }
-
-  if (error) {
+  if (error && !branchLoading) {
     const message =
       error instanceof Error ? error.message : "Something went wrong.";
     return (
@@ -36,7 +32,7 @@ function WarehouseDashboardBody() {
     );
   }
 
-  if (!warehouseId) {
+  if (!warehouseId && !branchLoading) {
     return (
       <div className="p-8 text-default-600">
         No warehouse is linked to your branch yet.
@@ -46,20 +42,21 @@ function WarehouseDashboardBody() {
 
   return (
     <>
-      <WarehouseHeader warehouseName={warehouse?.name} />
-      <StatsGrid warehouseId={warehouseId} />
+      <WarehouseHeader warehouseName={warehouse?.name} isLoading={branchLoading} />
+      <StatsGrid warehouseId={warehouseId} isLoading={branchLoading} />
       <div
         className="grid
        grid-cols-4 grid-rows-5 gap-x-8 gap-y-6 max-h-[calc(100vh-200px)]"
       >
         <div className="flex flex-col gap-6 row-span-5">
-          <StockAlerts warehouseId={warehouseId} />
-          <StorageCapacity items={summaryQuery.data?.data ?? []} />
+          <StockAlerts warehouseId={warehouseId} isLoading={branchLoading} />
+          <StorageCapacity
+            items={summaryQuery.data?.data ?? []}
+            isLoading={branchLoading || summaryQuery.isLoading}
+          />
         </div>
         <StockLevelsTableManager />
-        <RecentStockMovement
-          warehouseId={warehouseId}
-        />
+        <RecentStockMovement warehouseId={warehouseId} isLoading={branchLoading} />
       </div>
     </>
   );

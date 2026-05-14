@@ -7,7 +7,7 @@ import InventoryItemActionModal from "./InventoryItemActionModal";
 import StockLevelsTable from "./StockLevelsTable";
 
 const StockLevelsTableManager = () => {
-  const { warehouseId } = useWarehouseBranch();
+  const { warehouseId, isLoading: branchLoading } = useWarehouseBranch();
   const [page, setPage] = useState(1);
   const [stockFilterKey, setStockFilterKey] = useState("ALL");
   const [modal, setModal] = useState<{
@@ -27,14 +27,15 @@ const StockLevelsTableManager = () => {
     };
   }, [warehouseId, page, stockFilterKey]);
 
-  const { data, isLoading } = useInventoryItems(listParams);
+  const { data, isLoading: queryLoading } = useInventoryItems(listParams);
 
+  const combinedLoading = branchLoading || queryLoading;
   const rows = data?.data ?? [];
   const totalPages = data?.meta.pages ?? 1;
 
   const closeModal = () => setModal(null);
 
-  if (!warehouseId) {
+  if (!warehouseId && !branchLoading) {
     return null;
   }
 
@@ -42,7 +43,7 @@ const StockLevelsTableManager = () => {
     <>
       <StockLevelsTable
         data={rows}
-        isLoading={isLoading}
+        isLoading={combinedLoading}
         stockStatusKey={stockFilterKey}
         onStockStatusChange={(key) => {
           setStockFilterKey(key);
@@ -62,7 +63,7 @@ const StockLevelsTableManager = () => {
       <InventoryItemActionModal
         mode={modal?.mode ?? null}
         item={modal?.item ?? null}
-        warehouseId={warehouseId}
+        warehouseId={warehouseId ?? ""}
         onClose={closeModal}
       />
     </>

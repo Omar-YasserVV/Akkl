@@ -1,18 +1,24 @@
-import { Card, CardBody, CardHeader, Divider, Spinner } from "@heroui/react";
+import { Card, CardBody, CardHeader, Divider, Skeleton, Spinner } from "@heroui/react";
 import { NumberFormatter } from "@repo/utils";
 import { FiPlusCircle, FiMinusCircle, FiRefreshCw, FiEdit } from "react-icons/fi";
 import { useInventoryLogs } from "../hooks/useWarehouse";
 
 interface RecentStockMovementProps {
-  warehouseId: string;
+  warehouseId: string | undefined;
+  isLoading?: boolean;
 }
 
-const RecentStockMovement = ({ warehouseId }: RecentStockMovementProps) => {
-  const { data, isLoading } = useInventoryLogs({
-    warehouseId,
+const RecentStockMovement = ({
+  warehouseId,
+  isLoading,
+}: RecentStockMovementProps) => {
+  const { data, isLoading: queryLoading } = useInventoryLogs({
+    warehouseId: warehouseId!,
     page: 1,
     limit: 15,
   });
+
+  const loading = isLoading || queryLoading;
 
   const movements = data?.data ?? [];
 
@@ -59,9 +65,20 @@ const RecentStockMovement = ({ warehouseId }: RecentStockMovementProps) => {
       </CardHeader>
       <Divider />
       <CardBody className="flex flex-col gap-4 overflow-y-auto max-h-[320px]">
-        {isLoading ? (
-          <div className="flex justify-center py-6">
-            <Spinner size="sm" />
+        {loading ? (
+          <div className="space-y-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                  <div className="space-y-1">
+                    <Skeleton className="h-4 w-32 rounded-lg" />
+                    <Skeleton className="h-3 w-24 rounded-lg" />
+                  </div>
+                </div>
+                <Skeleton className="h-4 w-12 rounded-lg" />
+              </div>
+            ))}
           </div>
         ) : movements.length === 0 ? (
           <p className="text-sm text-default-500">
