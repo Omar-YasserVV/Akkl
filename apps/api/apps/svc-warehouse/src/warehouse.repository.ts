@@ -4,12 +4,11 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from 'libs/db/generated/client/client';
 import {
   BatchStatus,
+  IngredientCategory,
   InventoryLogAction,
+  MeasurementUnit,
   stockStatus,
 } from 'libs/db/generated/client/enums';
-import {
-  IngredientDto
-} from './dto/inventory/Inventory.base.dto';
 import { CreateInventoryItemReqDto } from './dto/inventory/inventory.create.dto';
 import { ListInventoryItemsReqDto } from './dto/inventory/inventory.list.dto';
 import {
@@ -36,8 +35,14 @@ export class WarehouseRepository {
     return this.prisma.ingredient.findUnique({ where: { name } });
   }
 
-  async createIngredient(dto: IngredientDto) {
-    return this.prisma.ingredient.create({ data: dto });
+  async createIngredient(dto: {
+    name: string;
+    unit: MeasurementUnit;
+    category: IngredientCategory;
+  }) {
+    return this.prisma.ingredient.create({
+      data: { name: dto.name, unit: dto.unit, category: dto.category },
+    });
   }
   async getIngredients() {
     return this.prisma.ingredient.findMany();
@@ -78,6 +83,65 @@ export class WarehouseRepository {
     ]);
 
     return { items, total, page, limit };
+  }
+
+  async getStockAlerts(warehouseId: string) {
+    return this.prisma.inventoryItem.findMany({
+      where: {
+        warehouseId,
+        stockStatus: {
+          in: [stockStatus.LOW_STOCK, stockStatus.OUT_OF_STOCK],
+        },
+      },
+      include: {
+        ingredient: true,
+        batches: {
+          where: { status: BatchStatus.ACTIVE },
+          orderBy: [{ expiresAt: 'asc' }, { receivedAt: 'asc' }],
+        },
+      },
+      orderBy: {
+        stockStatus: 'desc', // OUT_OF_STOCK first, then LOW_STOCK
+      },
+    });
+  }
+
+  async getInventoryLogs(dto: {
+    warehouseId: string;
+    page: number;
+    limit: number;
+  }) {
+    const { warehouseId, page = 1, limit = 10 } = dto;
+    const where = {
+      inventoryItem: {
+        warehouseId,
+      },
+    };
+
+    const [logs, total] = await this.prisma.$transaction([
+      this.prisma.inventoryUsageLog.findMany({
+        where,
+        include: {
+          inventoryItem: {
+            include: {
+              ingredient: true,
+              batches: {
+                where: { status: BatchStatus.ACTIVE },
+                orderBy: [{ expiresAt: 'asc' }, { receivedAt: 'asc' }],
+              },
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        skip: (page - 1) * limit,
+        take: Number(limit),
+      }),
+      this.prisma.inventoryUsageLog.count({ where }),
+    ]);
+
+    return { logs, total, page, limit };
   }
 
   // ── CRUD ───────────────────────────────────────────────────────────────────

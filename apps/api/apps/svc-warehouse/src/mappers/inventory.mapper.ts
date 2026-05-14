@@ -27,7 +27,7 @@ export function toInventoryResDto(
       category: item.ingredient.category,
       unit: item.ingredient.unit,
     },
-    batches: item.batches.map((batch) => ({
+    batches: (item.batches || []).map((batch) => ({
       id: batch.id,
       initialQuantity: batch.initialQuantity,
       remainingQuantity: batch.remainingQuantity,

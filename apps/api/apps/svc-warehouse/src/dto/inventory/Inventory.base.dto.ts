@@ -3,6 +3,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   BatchStatus,
   IngredientCategory,
+  InventoryLogAction,
   MeasurementUnit,
   stockStatus,
 } from 'libs/db/generated/client/enums';
@@ -84,4 +85,33 @@ export class BaseInventoryItemDto {
 
   @ApiProperty({ type: () => [StockBatchDto] })
   batches: StockBatchDto[];
+}
+
+export class InventoryUsageLogDto {
+  @ApiProperty({ example: 'uuid-here' })
+  id: string;
+
+  @ApiProperty({ example: 'uuid-here' })
+  inventoryItemId: string;
+
+  @ApiProperty({ enum: InventoryLogAction, example: InventoryLogAction.RESTOCK })
+  action: InventoryLogAction;
+
+  @ApiProperty({ example: 10 })
+  quantityChange: number;
+
+  @ApiProperty({ example: 40 })
+  previousQuantity: number;
+
+  @ApiProperty({ example: 50 })
+  newQuantity: number;
+
+  @ApiPropertyOptional({ example: 'Restocked for winter season' })
+  notes: string | null;
+
+  @ApiProperty({ example: '2025-01-01T00:00:00.000Z' })
+  createdAt: Date;
+
+  @ApiPropertyOptional({ type: () => BaseInventoryItemDto })
+  inventoryItem?: BaseInventoryItemDto;
 }

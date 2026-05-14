@@ -3,10 +3,19 @@ import { Injectable, Logger } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import { createPagination } from 'utils/pagination.util';
 import { IngredientDto } from './dto/inventory/Inventory.base.dto';
+import { CreateIngredientReqDto } from './dto/inventory/ingredient.create.dto';
 import {
   CreateInventoryItemReqDto,
   CreateInventoryItemResDto,
 } from './dto/inventory/inventory.create.dto';
+import {
+  GetStockAlertsReqDto,
+  GetStockAlertsResDto,
+} from './dto/inventory/inventory.alerts.dto';
+import {
+  GetInventoryLogsReqDto,
+  GetInventoryLogsResDto,
+} from './dto/inventory/inventory.logs.dto';
 import {
   DeductForOrderReqDto,
   DeductForOrderResDto,
@@ -31,6 +40,10 @@ import {
   UpdateInventoryItemReqDto,
   UpdateInventoryItemResDto,
 } from './dto/inventory/inventory.update.dto';
+import {
+  GetWarehouseByBranchReqDto,
+  GetWarehouseByBranchResDto,
+} from './dto/warehouse/warehouse.by-branch.dto';
 import { toInventoryResDto } from './mappers/inventory.mapper';
 import { WarehouseRepository } from './warehouse.repository';
 
@@ -39,6 +52,22 @@ export class SvcWarehouseService {
   private readonly logger = new Logger(SvcWarehouseService.name);
 
   constructor(private readonly repo: WarehouseRepository) {}
+
+  async getWarehouseByBranch(
+    dto: GetWarehouseByBranchReqDto,
+  ): Promise<GetWarehouseByBranchResDto> {
+    const warehouse = await this.repo.getWarehouseByBranch(dto.branchId);
+    if (!warehouse)
+      throw new RpcException({
+        message: 'Warehouse not found for branch',
+        status: 404,
+      });
+    return {
+      id: warehouse.id,
+      name: warehouse.name,
+      branchId: warehouse.branchId,
+    };
+  }
 
   /**
    * Retrieve a single inventory item by ID.
@@ -252,7 +281,7 @@ export class SvcWarehouseService {
     }
   }
 
-  async createIngredient(dto: IngredientDto): Promise<IngredientDto> {
+  async createIngredient(dto: CreateIngredientReqDto): Promise<IngredientDto> {
     const existing = await this.repo.findIngredientByName(dto.name);
     if (existing) {
       throw new RpcException({
@@ -273,5 +302,27 @@ export class SvcWarehouseService {
       });
     }
     return ingredients;
+  }
+
+  async getStockAlerts(
+    dto: GetStockAlertsReqDto,
+  ): Promise<GetStockAlertsResDto> {
+    const items = await this.repo.getStockAlerts(dto.warehouseId);
+    return { items: items.map(toInventoryResDto) };
+  }
+
+  async getInventoryLogs(
+    dto: GetInventoryLogsReqDto,
+  ): Promise<GetInventoryLogsResDto> {
+    const { logs, total, page, limit } = await this.repo.getInventoryLogs(dto);
+    return createPagination(
+      logs.map((log) => ({
+        ...log,
+        inventoryItem: toInventoryResDto(log.inventoryItem),
+      })),
+      total,
+      page,
+      limit,
+    );
   }
 }

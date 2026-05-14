@@ -1,4 +1,5 @@
 export const WAREHOUSE_TOPICS = {
+  GET_WAREHOUSE_BY_BRANCH: 'get_warehouse_by_branch',
   GET_INVENTORY_ITEM: 'get_inventory_item',
   LIST_INVENTORY_ITEMS: 'list_inventory_items',
   CREATE_INVENTORY_ITEM: 'create_inventory_item',
@@ -9,4 +10,6 @@ export const WAREHOUSE_TOPICS = {
   DEDUCT_FOR_ORDER: 'warehouse.deduct_for_order',
   CREATE_INGREDIENT: 'warehouse.create_ingredient',
   GET_INGREDIENTS: 'warehouse.get_ingredients',
+  GET_STOCK_ALERTS: 'warehouse.get_stock_alerts',
+  GET_INVENTORY_LOGS: 'warehouse.get_inventory_logs',
 };

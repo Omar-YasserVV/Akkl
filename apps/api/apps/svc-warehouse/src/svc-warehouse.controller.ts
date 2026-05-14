@@ -3,10 +3,19 @@ import { WAREHOUSE_TOPICS } from '@app/common';
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { IngredientDto } from './dto/inventory/Inventory.base.dto';
+import { CreateIngredientReqDto } from './dto/inventory/ingredient.create.dto';
 import {
   CreateInventoryItemReqDto,
   CreateInventoryItemResDto,
 } from './dto/inventory/inventory.create.dto';
+import {
+  GetStockAlertsReqDto,
+  GetStockAlertsResDto,
+} from './dto/inventory/inventory.alerts.dto';
+import {
+  GetInventoryLogsReqDto,
+  GetInventoryLogsResDto,
+} from './dto/inventory/inventory.logs.dto';
 import {
   DeductForOrderReqDto,
   DeductForOrderResDto,
@@ -31,11 +40,22 @@ import {
   UpdateInventoryItemReqDto,
   UpdateInventoryItemResDto,
 } from './dto/inventory/inventory.update.dto';
+import {
+  GetWarehouseByBranchReqDto,
+  GetWarehouseByBranchResDto,
+} from './dto/warehouse/warehouse.by-branch.dto';
 import { SvcWarehouseService } from './svc-warehouse.service';
 
 @Controller()
 export class SvcWarehouseController {
   constructor(private readonly svcWarehouseService: SvcWarehouseService) {}
+
+  @MessagePattern(WAREHOUSE_TOPICS.GET_WAREHOUSE_BY_BRANCH)
+  async getWarehouseByBranch(
+    @Payload() data: GetWarehouseByBranchReqDto,
+  ): Promise<GetWarehouseByBranchResDto> {
+    return this.svcWarehouseService.getWarehouseByBranch(data);
+  }
 
   @MessagePattern(WAREHOUSE_TOPICS.GET_INVENTORY_ITEM)
   async getInventoryItem(
@@ -95,13 +115,27 @@ export class SvcWarehouseController {
 
   @MessagePattern(WAREHOUSE_TOPICS.CREATE_INGREDIENT)
   async createIngredient(
-    @Payload() data: IngredientDto,
+    @Payload() data: CreateIngredientReqDto,
   ): Promise<IngredientDto> {
     return this.svcWarehouseService.createIngredient(data);
   }
 
   @MessagePattern(WAREHOUSE_TOPICS.GET_INGREDIENTS)
-  async getIngredients(){
+  async getIngredients() {
     return this.svcWarehouseService.getIngredients();
+  }
+
+  @MessagePattern(WAREHOUSE_TOPICS.GET_STOCK_ALERTS)
+  async getStockAlerts(
+    @Payload() data: GetStockAlertsReqDto,
+  ): Promise<GetStockAlertsResDto> {
+    return this.svcWarehouseService.getStockAlerts(data);
+  }
+
+  @MessagePattern(WAREHOUSE_TOPICS.GET_INVENTORY_LOGS)
+  async getInventoryLogs(
+    @Payload() data: GetInventoryLogsReqDto,
+  ): Promise<GetInventoryLogsResDto> {
+    return this.svcWarehouseService.getInventoryLogs(data);
   }
 }
