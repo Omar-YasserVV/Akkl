@@ -20,6 +20,11 @@ export class CreateOrderItemDto {
   @IsInt()
   quantity!: number;
 
+  @ApiProperty({ example: 'Please include extra sauce' })
+  @IsOptional()
+  @Type(() => String)
+  specialInstructions?: string;
+
   @IsNumber({ maxDecimalPlaces: 2 })
   price!: number;
 }
@@ -32,11 +37,6 @@ export class CreateOrderDto {
   @IsOptional()
   @Type(() => String)
   CustomerName?: string;
-
-  @ApiProperty({ example: 'Please include extra sauce' })
-  @IsOptional()
-  @Type(() => String)
-  specialInstructions?: string;
 
   @ApiProperty({ type: [CreateOrderItemDto] })
   @IsArray()
