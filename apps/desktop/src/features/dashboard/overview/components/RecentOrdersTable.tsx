@@ -1,4 +1,5 @@
 import { useOrders } from "@/hooks/Orders/FetchOrders";
+import { orderIdFormat } from "@/utils/OrderIdFormatter";
 import {
   Card,
   CardBody,
@@ -57,7 +58,7 @@ const RecentOrdersTable = () => {
             {data?.data?.map((order) => (
               <TableRow key={order.id}>
                 <TableCell className="font-medium text-default-700">
-                  {order.id.slice(0, 8)}
+                  {orderIdFormat(order.orderNumber)}
                 </TableCell>
                 <TableCell>{order.CustomerName}</TableCell>
                 <TableCell>{order.totalPrice}</TableCell>

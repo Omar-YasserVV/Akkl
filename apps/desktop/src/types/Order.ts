@@ -16,6 +16,7 @@ export interface Order {
   source: Source;
   itemCount: number;
   status: OrderState;
+  orderNumber: number;
   createdAt: string;
   updatedAt: string;
   items: Array<{
