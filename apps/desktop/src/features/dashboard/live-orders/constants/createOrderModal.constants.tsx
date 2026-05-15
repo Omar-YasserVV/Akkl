@@ -12,7 +12,7 @@ export const createDraftItem = (): DraftItem => ({
   id: crypto.randomUUID(),
   menuItemId: "",
   quantity: 1,
-  specialNotes: "",
+  specialInstructions: null,
 });
 
 export const createInitialDraft = (): CreateOrderDraft => ({

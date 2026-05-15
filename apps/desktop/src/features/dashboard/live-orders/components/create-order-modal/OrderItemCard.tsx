@@ -42,7 +42,7 @@ const OrderItemCard = ({
 
       <div className="p-5 space-y-5">
         <div className="space-y-3">
-          <label className="text-sm font-bold text-gray-700">Order Items</label>
+          <label className="text-sm font-bold text-gray-700">Order Item</label>
           <div className="grid grid-cols-[1fr_100px_100px] gap-3">
             <Select
               placeholder="Select Item"
@@ -80,7 +80,7 @@ const OrderItemCard = ({
 
             <Button
               color="primary"
-              className="h-12 font-bold bg-[#1a73e8] "
+              className="h-12 font-bold bg-[#1a73e8]"
               startContent={<BiPlus size={20} />}
               onPress={() =>
                 onItemChange(item.id, "quantity", item.quantity + 1)
@@ -93,13 +93,13 @@ const OrderItemCard = ({
 
         <div className="space-y-3">
           <label className="text-sm font-bold text-gray-700">
-            Special Notes
+            Special Instructions
           </label>
           <Textarea
-            placeholder="Any special instructions..."
-            value={item.specialNotes}
+            placeholder="Any special instructions for this item..."
+            value={item.specialInstructions ?? ""}
             onValueChange={(value) =>
-              onItemChange(item.id, "specialNotes", value)
+              onItemChange(item.id, "specialInstructions", value || null)
             }
             classNames={{
               inputWrapper: "bg-white border border-gray-200 shadow-none",

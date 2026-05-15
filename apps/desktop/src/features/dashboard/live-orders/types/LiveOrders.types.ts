@@ -5,6 +5,7 @@ export interface CreateOrderBody {
   items: {
     menuItemId: string;
     quantity: number;
+    specialInstructions?: string | null;
   }[];
   status: OrderState;
   userId: string;

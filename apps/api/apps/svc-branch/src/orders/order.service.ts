@@ -103,16 +103,37 @@ export class OrderService implements OnModuleInit {
       }
 
       const { items, ...rest } = data;
+      let updatePayload: Prisma.OrderUpdateInput = { ...rest };
 
-      const updated = await this.repo.update(orderId, {
-        ...rest,
-        ...(items && {
+      // If items are being updated, we must recalculate prices and totals
+      if (items && items.length > 0) {
+        this.validator.validateItems(items);
+
+        // 1. Get menu items to get their current prices
+        const menuItems = await this.repo.getMenuItems(
+          existing.branchId,
+          items.map((i) => i.menuItemId),
+        );
+
+        // 2. Use your calculator to get the price and formatted data
+        const { total, itemCount, orderItemsData } = this.calculator.calculate(
+          items,
+          menuItems,
+        );
+
+        // 3. Update the payload with new totals and the correct item structure
+        updatePayload = {
+          ...updatePayload,
+          totalPrice: total,
+          itemCount: itemCount,
           items: {
             deleteMany: {},
-            create: items,
+            create: orderItemsData, // This now includes the 'price' field!
           },
-        }),
-      });
+        };
+      }
+
+      const updated = await this.repo.update(orderId, updatePayload);
 
       this.kafka.emit('order.updated', updated);
       return updated;
@@ -162,7 +183,16 @@ export class OrderService implements OnModuleInit {
       const order = await this.repo.findById(orderId);
       if (!order)
         throw new RpcException({ statusCode: 404, message: 'Order not found' });
-      return order;
+      return {
+        ...order,
+        user: order.user
+          ? {
+              id: order.user.id,
+              fullName: order.user.fullName,
+              email: order.user.email,
+            }
+          : null,
+      };
     } catch (error) {
       this.handleError(error);
     }

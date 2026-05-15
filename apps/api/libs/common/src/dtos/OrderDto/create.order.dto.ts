@@ -33,6 +33,11 @@ export class CreateOrderDto {
   @Type(() => String)
   CustomerName?: string;
 
+  @ApiProperty({ example: 'Please include extra sauce' })
+  @IsOptional()
+  @Type(() => String)
+  specialInstructions?: string;
+
   @ApiProperty({ type: [CreateOrderItemDto] })
   @IsArray()
   @ValidateNested({ each: true })

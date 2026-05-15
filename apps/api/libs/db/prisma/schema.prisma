@@ -232,7 +232,6 @@ model Order {
   source              source      @default(STORE)                 /// Origin (app, store).
   itemCount           Int                                         /// Number of items.
   status              OrderState  @default(PENDING)               /// Status of the order.
-  specialInstructions String?                                    /// Special instructions for preparation.
   createdAt           DateTime    @default(now())                 /// When created.
   updatedAt           DateTime    @updatedAt                      /// Last update.
   branch              Branch      @relation(fields: [branchId], references: [id]) /// Branch relation.
@@ -245,6 +244,7 @@ model OrderItem {
   id             String         @id @default(uuid())         /// Primary key.
   orderId        String                                 /// Reference to Order.
   menuItemId     String                                 /// Reference to BranchMenuItem.
+  specialInstructions String?                                    /// Special instructions for preparation.
   quantity       Int                                    /// Number of units ordered.
   price          Decimal        @db.Decimal(10, 2)       /// Unit price.
   branchMenuItem BranchMenuItem @relation(fields: [menuItemId], references: [id]) /// Menu item relation.

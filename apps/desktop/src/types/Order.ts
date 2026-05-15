@@ -24,6 +24,7 @@ export interface Order {
     orderId: string;
     menuItemId: string;
     quantity: number;
+    specialInstructions: string | null;
     price: string;
     branchMenuItem: {
       id: string;

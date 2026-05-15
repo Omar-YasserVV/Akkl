@@ -33,7 +33,7 @@ export const StatusSelect = ({
       classNames={{
         trigger: clsx(
           currentClass,
-          "w-fit min-w-[120px] h-7 min-h-7 px-3 shadow-none border-none transition-none overflow-hidden",
+          "w-fit min-w-[120px] h-7 min-h-7 px-3 shadow-none border-none transition-none overflow-hidden cursor-pointer",
           isLoading && "opacity-60 pointer-events-none",
         ),
         value: "text-xs font-medium text-inherit!",
