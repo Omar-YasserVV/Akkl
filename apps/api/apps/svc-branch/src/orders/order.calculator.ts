@@ -44,7 +44,7 @@ export class OrderCalculator {
         menuItemId: dbItem.id,
         quantity: itemInput.quantity,
         price: unitPrice,
-        specialInstructions: itemInput.specialInstructions ?? null, // 👈 add this
+        specialInstructions: itemInput.specialInstructions ?? null,
       };
     });
 
