@@ -8,6 +8,7 @@ type MenuItem = Prisma.BranchMenuItemGetPayload<{
 type OrderItemInput = {
   menuItemId: string;
   quantity: number;
+  specialInstructions?: string | null; // 👈 add this
 };
 
 @Injectable()
@@ -43,6 +44,7 @@ export class OrderCalculator {
         menuItemId: dbItem.id,
         quantity: itemInput.quantity,
         price: unitPrice,
+        specialInstructions: itemInput.specialInstructions ?? null, // 👈 add this
       };
     });
 
