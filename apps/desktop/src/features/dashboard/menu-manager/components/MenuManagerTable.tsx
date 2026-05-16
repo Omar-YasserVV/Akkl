@@ -8,7 +8,7 @@ import { usePaginatedBranchMenu } from "@/hooks/Menu/FetchMenu";
 import { MenuFilters } from "@/types/Menu";
 import {
   Button,
-  Chip,
+  Chip as HeroChip,
   Skeleton,
   Table,
   TableBody,
@@ -17,6 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@heroui/react";
+import Chip from "@repo/ui/components/chip";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { FiEdit } from "react-icons/fi";
 import { MENU_COLUMNS } from "../constants/MenuColumns";
@@ -96,11 +97,7 @@ export default function MenuManagerTable({
                   </TableCell>
 
                   <TableCell>
-                    <div className="flex ml-3">
-                      <span className="inline-flex items-center rounded-full text-primary px-3 py-1 text-xs font-medium border border-primary/20 bg-primary/10">
-                        {item.category}
-                      </span>
-                    </div>
+                    <Chip value={item.category}></Chip>
                   </TableCell>
 
                   <TableCell className="text-zinc-900 font-medium text-center">
@@ -113,7 +110,7 @@ export default function MenuManagerTable({
 
                   <TableCell>
                     <div className="flex">
-                      <Chip
+                      <HeroChip
                         variant="flat"
                         className={
                           item.isAvailable
@@ -123,7 +120,7 @@ export default function MenuManagerTable({
                         size="sm"
                       >
                         {item.isAvailable ? "Active" : "Inactive"}
-                      </Chip>
+                      </HeroChip>
                     </div>
                   </TableCell>
 

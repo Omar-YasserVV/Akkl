@@ -28,4 +28,12 @@ export const ENUM_META: Partial<Record<AllEnums, Meta>> = {
   UTILITIES: { label: "Utilities", color: "bg-yellow-100 text-yellow-800" },
   LOSSES: { label: "Losses", color: "bg-gray-100 text-gray-700" },
   MARKETING: { label: "Marketing", color: "bg-purple-100 text-purple-700" },
+  DESSERT: { label: "Dessert", color: "bg-pink-100 text-pink-700" },
+  MAIN_COURSE: { label: "Main Course", color: "bg-blue-100 text-blue-700" },
+  APPETIZER: { label: "Appetizer", color: "bg-green-100 text-green-700" },
+  BEVERAGE: { label: "Beverage", color: "bg-cyan-100 text-cyan-700" },
+  SIDE_DISH: { label: "Side Dish", color: "bg-yellow-100 text-yellow-800" },
+  MEAT: { label: "Meat", color: "bg-red-100 text-red-700" },
+  SEAFOOD: { label: "Seafood", color: "bg-blue-100 text-blue-700" },
+  DAIRY: { label: "Dairy", color: "bg-green-100 text-green-700" },
 };

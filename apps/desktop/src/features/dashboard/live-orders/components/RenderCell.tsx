@@ -6,7 +6,7 @@ import { NumberFormatter } from "@repo/utils";
 import { useCallback, useState } from "react";
 import { BiMobile } from "react-icons/bi";
 import { FaRegTrashAlt } from "react-icons/fa";
-import { FiEdit } from "react-icons/fi";
+import { FiEdit, FiHome } from "react-icons/fi";
 import { useDeleteOrder, useUpdateOrder } from "../hooks/useLiveOrders";
 import { ColumnKey, OrderCellProps } from "../types/OrderList.types";
 import { StatusSelect } from "./StatusSelect";
@@ -45,7 +45,7 @@ export const OrderCell = ({ order, columnKey }: OrderCellProps) => {
       return (
         <Chip
           value={order.source}
-          startContent={order.source === "APP" ? <BiMobile /> : null}
+          startContent={order.source === "APP" ? <BiMobile /> : <FiHome />}
         />
       );
     case "items":

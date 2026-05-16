@@ -4,22 +4,23 @@ import {
   CardBody,
   CardFooter,
   CardHeader,
-  Chip,
   Divider,
   Dropdown,
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
+  Chip as HeroChip,
   Select,
   SelectItem,
+  Skeleton,
   Table,
   TableBody,
   TableCell,
   TableColumn,
   TableHeader,
   TableRow,
-  Skeleton,
 } from "@heroui/react";
+import Chip from "@repo/ui/components/chip";
 import { NumberFormatter } from "@repo/utils";
 import type { ReactNode } from "react";
 import { MdOutlineEdit } from "react-icons/md";
@@ -120,7 +121,9 @@ const StockLevelsTable = ({
             ))}
           </TableHeader>
           <TableBody
-            emptyContent={!isLoading && data.length === 0 ? "No inventory lines yet." : " "}
+            emptyContent={
+              !isLoading && data.length === 0 ? "No inventory lines yet." : " "
+            }
           >
             {isLoading
               ? [...Array(10)].map((_, index) => (
@@ -148,7 +151,7 @@ const StockLevelsTable = ({
                       {item.ingredient.name}
                     </TableCell>
                     <TableCell className="text-default-600">
-                      {String(item.ingredient.category).replace(/_/g, " ")}
+                      <Chip value={item.ingredient.category}></Chip>
                     </TableCell>
                     <TableCell className="font-semibold">
                       {NumberFormatter.getNumberOnly(item.quantity, {
@@ -158,13 +161,13 @@ const StockLevelsTable = ({
                       })}
                     </TableCell>
                     <TableCell>
-                      <Chip
+                      <HeroChip
                         color={chipColor(item.stockStatus)}
                         variant="flat"
                         size="sm"
                       >
                         {String(item.stockStatus).replace(/_/g, " ")}
-                      </Chip>
+                      </HeroChip>
                     </TableCell>
                     <TableCell>
                       <Dropdown>

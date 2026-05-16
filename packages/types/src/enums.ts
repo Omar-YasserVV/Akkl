@@ -1,3 +1,5 @@
+import { IngredientCategory } from "@/features/dashboard/warehouse/types/inventory.types";
+
 export enum UserRole {
   CUSTOMER = "CUSTOMER",
   BUSINESS_OWNER = "BUSINESS_OWNER",
@@ -55,4 +57,18 @@ export type AllEnums =
   | OrderStateType
   | DietaryTypeType
   | SourceType
-  | ExpenseTypeType;
+  | ExpenseTypeType
+  | IngredientCategory
+  | CategoryType;
+
+export enum Category {
+  DESSERT = "DESSERT",
+  MAIN_COURSE = "MAIN_COURSE",
+  APPETIZER = "APPETIZER",
+  BEVERAGE = "BEVERAGE",
+  SIDE_DISH = "SIDE_DISH",
+  MEAT = "MEAT",
+  SEAFOOD = "SEAFOOD",
+  DAIRY = "DAIRY",
+}
+export type CategoryType = keyof typeof Category;
