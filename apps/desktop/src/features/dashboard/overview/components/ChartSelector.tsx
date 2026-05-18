@@ -1,47 +1,42 @@
-import { Button, cn } from "@heroui/react";
+import { AnalyticsRecord } from "@/types/analytics";
+import { Button, cn, Skeleton } from "@heroui/react";
 import { NumberFormatter } from "@repo/utils";
-import { useState } from "react";
 import { FaDollarSign } from "react-icons/fa";
-import { FiUsers } from "react-icons/fi";
-import { LuShoppingCart, LuWarehouse } from "react-icons/lu";
+import { LuShoppingCart } from "react-icons/lu";
 
-const ChartSelector = () => {
-  const [activeChartIndex, setActiveChartIndex] = useState(0);
+interface ChartItem {
+  title: string;
+  totalCount?: number;
+  percentageChange?: number;
+  records?: AnalyticsRecord[];
+  isCurrency: boolean;
+  isLoading: boolean;
+}
 
-  const charts = [
-    {
-      title: "Total Revenue",
-      value: "123456",
-      description: "-12% from last month",
-      icon: FaDollarSign,
-    },
-    {
-      title: "Total Orders",
-      value: "123",
-      description: "+12% from last month",
-      icon: LuShoppingCart,
-    },
-    {
-      title: "Inventory Items",
-      value: "123",
-      description: "-12% from last month",
-      icon: LuWarehouse,
-    },
-    {
-      title: "Active Users",
-      value: "123",
-      description: "+12% from last month",
-      icon: FiUsers,
-    },
-  ];
+interface ChartSelectorProps {
+  charts: ChartItem[];
+  activeChartIndex: number;
+  onSelect: (index: number) => void;
+}
+
+const icons = [FaDollarSign, LuShoppingCart];
+
+const ChartSelector = ({
+  charts,
+  activeChartIndex,
+  onSelect,
+}: ChartSelectorProps) => {
   return (
-    <div className="grid grid-cols-4 gap-4">
+    <div className="grid grid-cols-3 gap-4">
       {charts.map((chart, i) => {
         const isActive = activeChartIndex === i;
+        const Icon = icons[i];
+        const isPositive = (chart.percentageChange ?? 0) >= 0;
+
         return (
           <Button
             key={i}
-            onPress={() => setActiveChartIndex(i)}
+            onPress={() => onSelect(i)}
             className={cn(
               "bg-white border-2 p-6 flex-col gap-1 items-start h-auto rounded-2xl shadow-sm transition-all",
               isActive ? "border-primary" : "border-default-200",
@@ -50,12 +45,16 @@ const ChartSelector = () => {
             <div className="flex justify-between items-center w-full">
               <div className="space-y-1 text-start">
                 <p className="text-default-400 text-sm">{chart.title}</p>
-                <p className="text-2xl font-bold text-zinc-800 dark:text-white">
-                  {NumberFormatter.getNumberOnly(Number(chart.value || 0), {
-                    isCurrency: chart.title === "Total Revenue",
-                    isCompact: true,
-                  })}
-                </p>
+                {chart.isLoading ? (
+                  <Skeleton className="h-8 w-24 rounded-lg" />
+                ) : (
+                  <p className="text-2xl font-bold text-zinc-800 dark:text-white">
+                    {NumberFormatter.getNumberOnly(chart.totalCount ?? 0, {
+                      isCurrency: chart.isCurrency,
+                      isCompact: true,
+                    })}
+                  </p>
+                )}
               </div>
               <div
                 className={cn(
@@ -65,19 +64,23 @@ const ChartSelector = () => {
                     : "bg-primary-50 text-primary",
                 )}
               >
-                <chart.icon size={22} />
+                {Icon ? <Icon size={22} /> : null}
               </div>
             </div>
-            <p
-              className={cn(
-                "text-xs font-semibold mt-1",
-                chart.description.includes("-")
-                  ? "text-red-500"
-                  : "text-green-500",
-              )}
-            >
-              {chart.description}
-            </p>
+
+            {chart.isLoading ? (
+              <Skeleton className="h-4 w-32 rounded-lg mt-1" />
+            ) : (
+              <p
+                className={cn(
+                  "text-xs font-semibold mt-1",
+                  isPositive ? "text-green-500" : "text-red-500",
+                )}
+              >
+                {isPositive ? "+" : ""}
+                {chart.percentageChange}% from last period
+              </p>
+            )}
           </Button>
         );
       })}

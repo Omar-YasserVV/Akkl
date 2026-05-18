@@ -1,3 +1,5 @@
+import { AnalyticsRecord } from "@/types/analytics";
+import { Skeleton } from "@heroui/react";
 import {
   ChartConfig,
   ChartContainer,
@@ -7,38 +9,35 @@ import { CustomTooltip } from "@repo/ui/components/custom-tooltip";
 import { NumberFormatter } from "@repo/utils";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
-// Changed chartData to use days instead of months
-const chartData = [
-  { day: "2024-06-01", revenue: 250 },
-  { day: "2024-06-02", revenue: 320 },
-  { day: "2024-06-03", revenue: 400 },
-  { day: "2024-06-04", revenue: 380 },
-  { day: "2024-06-05", revenue: 470 },
-  { day: "2024-06-06", revenue: 510 },
-  { day: "2024-06-07", revenue: 600 },
-];
+interface ChartProps {
+  records: AnalyticsRecord[];
+  isCurrency: boolean;
+  isLoading: boolean;
+}
 
 const chartConfig = {
-  revenue: {
-    label: "Total Revenue",
+  value: {
+    label: "Value",
     color: "var(--primary)",
   },
 } satisfies ChartConfig;
 
-const Chart = () => {
+const Chart = ({ records, isCurrency, isLoading }: ChartProps) => {
+  if (isLoading) return <Skeleton className="h-75 w-full rounded-xl" />;
+
   return (
     <ChartContainer config={chartConfig} className="h-75 w-full">
-      <AreaChart accessibilityLayer data={chartData}>
+      <AreaChart accessibilityLayer data={records}>
         <defs>
-          <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id="fillValue" x1="0" y1="0" x2="0" y2="1">
             <stop
               offset="5%"
-              stopColor="var(--color-revenue)"
+              stopColor="var(--color-value)"
               stopOpacity={0.8}
             />
             <stop
               offset="95%"
-              stopColor="var(--color-revenue)"
+              stopColor="var(--color-value)"
               stopOpacity={0.1}
             />
           </linearGradient>
@@ -53,23 +52,20 @@ const Chart = () => {
           tickCount={5}
           tickFormatter={(value) =>
             NumberFormatter.getNumberOnly(value, {
-              isCurrency: true,
+              isCurrency,
               isCompact: true,
             })
           }
         />
 
         <XAxis
-          dataKey="day"
+          dataKey="timestamp"
           tickLine={false}
           axisLine={false}
           tickMargin={8}
-          // Format date as 'Jun 01', 'Jun 02', etc.
           tickFormatter={(value: string) => {
             const date = new Date(value);
-            return `${date.toLocaleString("default", {
-              month: "short",
-            })} ${String(date.getDate()).padStart(2, "0")}`;
+            return `${date.toLocaleString("default", { month: "short" })} ${String(date.getDate()).padStart(2, "0")}`;
           }}
         />
 
@@ -83,10 +79,10 @@ const Chart = () => {
         />
 
         <Area
-          dataKey="revenue"
+          dataKey="value"
           type="natural"
-          fill="url(#fillRevenue)"
-          stroke="var(--color-revenue)"
+          fill="url(#fillValue)"
+          stroke="var(--color-value)"
           strokeWidth={3}
           activeDot={{
             r: 8,
