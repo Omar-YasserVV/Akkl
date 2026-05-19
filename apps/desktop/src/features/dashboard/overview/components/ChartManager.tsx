@@ -1,7 +1,7 @@
 import {
   useBranchOrdersQuery,
   useBranchRevenueQuery,
-} from "@/features/dashboard/overview/hooks/Analytics/useAnalytics";
+} from "@/hooks/Analytics/useAnalytics";
 import { Card, Spinner } from "@heroui/react";
 import { useState } from "react";
 import { useAnalyticsStore } from "../store/useAnalyticsStore";
