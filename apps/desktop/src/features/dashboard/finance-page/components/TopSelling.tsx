@@ -10,7 +10,7 @@ const TopSelling = () => {
   if (isLoading) {
     return (
       <Card
-        className="border border-default-200 h-[423px] col-span-1 flex items-center justify-center p-6"
+        className="border border-default-200 h-105.75 col-span-1 flex items-center justify-center p-6"
         shadow="none"
       >
         <Spinner color="primary" label="Loading Top Selling Items..." />

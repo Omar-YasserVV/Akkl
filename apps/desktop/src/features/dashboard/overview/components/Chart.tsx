@@ -1,4 +1,3 @@
-import { AnalyticsRecord } from "@/types/analytics";
 import { Skeleton } from "@heroui/react";
 import {
   ChartConfig,
@@ -8,6 +7,7 @@ import {
 import { CustomTooltip } from "@repo/ui/components/custom-tooltip";
 import { NumberFormatter } from "@repo/utils";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { AnalyticsRecord } from "../types/analytics";
 
 interface ChartProps {
   records: AnalyticsRecord[];
