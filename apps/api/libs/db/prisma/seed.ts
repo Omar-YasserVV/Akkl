@@ -860,7 +860,6 @@ async function main() {
       CustomerName: 'Jane Doe',
       source: source.APP,
       status: OrderState.COMPLETED,
-      specialInstructions: 'No onions please',
       items: {
         create: [
           orderLine(burgerItem.id, 1, 12.99),
@@ -928,7 +927,6 @@ async function main() {
       CustomerName: 'Jane Doe',
       source: source.APP,
       status: OrderState.COMPLETED,
-      specialInstructions: '',
       items: {
         create: [
           orderLine(truffleBurger.id, 1, 17.99),
@@ -947,7 +945,6 @@ async function main() {
       CustomerName: 'John Smith',
       source: source.STORE,
       status: OrderState.PENDING,
-      specialInstructions: 'Extra crispy fries',
       items: {
         create: [orderLine(friesMenuItem.id, 2, 6.99)],
       },
@@ -979,9 +976,7 @@ async function main() {
       source: source.APP,
       status: OrderState.COMPLETED,
       items: {
-        create: [
-          orderLine(chocolateLavaCake.id, 2, 7.49),
-        ],
+        create: [orderLine(chocolateLavaCake.id, 2, 7.49)],
       },
     },
   });
@@ -996,9 +991,7 @@ async function main() {
       source: source.STORE,
       status: OrderState.CANCELLED,
       items: {
-        create: [
-          orderLine(chocolateLavaCake.id, 1, 7.49),
-        ],
+        create: [orderLine(chocolateLavaCake.id, 1, 7.49)],
       },
     },
   });
