@@ -4,7 +4,7 @@ import {
   GetTopSellingItemsParams,
   LineChartAnalyticsResponseDto,
   TopSellingItemsResponse,
-} from "../types/analytics";
+} from "../../features/dashboard/overview/types/analytics";
 
 const BASE_URL = "/analytics";
 

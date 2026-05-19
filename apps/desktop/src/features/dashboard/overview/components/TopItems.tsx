@@ -1,6 +1,6 @@
 import { Card, Progress, Spinner } from "@heroui/react";
 import { IoArrowDownCircle, IoArrowUpCircle } from "react-icons/io5";
-import { useTopSellingItemsQuery } from "../hooks/Analytics/useAnalytics";
+import { useTopSellingItemsQuery } from "../../../../hooks/Analytics/useAnalytics";
 import { useAnalyticsStore } from "../store/useAnalyticsStore";
 
 const TopItems = () => {

@@ -3,7 +3,7 @@ import {
   GetTopSellingItemsParams,
 } from "@/features/dashboard/overview/types/analytics";
 import { useQuery } from "@tanstack/react-query";
-import { analyticsApis } from "../../api/analytics";
+import { analyticsApis } from "../../api/Analytics/analytics";
 import { analyticsKeys } from "./analytics.keys";
 
 export const useBranchRevenueQuery = (daysAgo: AnalyticsDaysAgo) =>
