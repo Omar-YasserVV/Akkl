@@ -68,7 +68,7 @@ export class AnalyticsRepository {
       },
       orderBy: {
         _sum: {
-          totalPrice: 'desc',
+          quantity: 'desc',
         },
       },
       take: Number(limit),
