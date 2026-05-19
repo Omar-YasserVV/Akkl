@@ -1,6 +1,10 @@
 import { apiClient } from "@repo/utils";
 
-import type { CreateBranchMenuItemPayload } from "../types/CreateMenuItem";
+import type { BranchMenuItem } from "@/types/Menu";
+import type {
+  CreateBranchMenuItemPayload,
+  UpdateBranchMenuItemPayload,
+} from "../types/CreateMenuItem";
 import type { MenuItemSummary } from "../types/Menu";
 
 const BASE_URL = "/branches/menu";
@@ -66,6 +70,14 @@ export const menuApis = {
   },
 
   createMenuItem: async (body: CreateBranchMenuItemPayload) => {
-    return apiClient.post<unknown>(BASE_URL, body);
+    return apiClient.post<BranchMenuItem>(BASE_URL, body);
+  },
+
+  updateMenuItem: async (id: string, body: UpdateBranchMenuItemPayload) => {
+    return apiClient.patch<BranchMenuItem>(`${BASE_URL}/${id}`, body);
+  },
+
+  deleteMenuItem: async (id: string) => {
+    return apiClient.delete<{ message: string }>(`${BASE_URL}/${id}`);
   },
 };

@@ -6,6 +6,7 @@ import FinancePage from "@/features/dashboard/finance-page";
 import LiveOrders from "@/features/dashboard/live-orders";
 import MenuManager from "@/features/dashboard/menu-manager";
 import Overview from "@/features/dashboard/overview";
+import Settings from "@/features/dashboard/settings";
 import Warehouse from "@/features/dashboard/warehouse";
 import { useAuthStore } from "@/store/AuthStore";
 import { createBrowserRouter } from "react-router-dom";
@@ -42,6 +43,7 @@ export const router = createBrowserRouter([
           },
           { path: "warehouse", element: <Warehouse /> },
           { path: "finance-reports", element: <FinancePage /> },
+          { path: "settings", element: <Settings /> },
           { path: "*", element: <NotFound /> },
         ],
       },

@@ -1,19 +1,22 @@
 import type { AddMenuItemFormData } from "../types/AddItem";
-import type { CreateBranchMenuItemPayload } from "../types/CreateMenuItem";
+import type {
+  CreateBranchMenuItemPayload,
+  UpdateBranchMenuItemPayload,
+} from "../types/CreateMenuItem";
+
+type MenuItemPayloadFields = Omit<
+  CreateBranchMenuItemPayload,
+  "branchId" | "menuItemId"
+>;
 
 function parseMoney(value: string): number {
   const n = Number.parseFloat(value.trim());
   return Number.isFinite(n) && n >= 0 ? n : NaN;
 }
 
-/**
- * Maps the add-item modal form to the gateway create-menu body.
- * Uses safe defaults for required API fields that are not in this modal yet.
- */
-export function mapAddMenuFormToCreatePayload(
+function mapAddMenuFormToMenuFields(
   form: AddMenuItemFormData,
-  branchId: string,
-): CreateBranchMenuItemPayload {
+): MenuItemPayloadFields {
   const name = form.itemName.trim();
   if (!name) {
     throw new Error("Item name is required.");
@@ -43,13 +46,7 @@ export function mapAddMenuFormToCreatePayload(
 
   const basePrice = variations[0]!.price;
 
-  if (!branchId.trim()) {
-    throw new Error("Branch ID is missing; cannot create menu item.");
-  }
-
   return {
-    menuItemId: crypto.randomUUID(),
-    branchId: branchId.trim(),
     name,
     description: form.description.trim() || undefined,
     image: form.imageData?.trim() || undefined,
@@ -60,4 +57,29 @@ export function mapAddMenuFormToCreatePayload(
     variations,
     recipe,
   };
+}
+
+/**
+ * Maps the add-item modal form to the gateway create-menu body.
+ * Uses safe defaults for required API fields that are not in this modal yet.
+ */
+export function mapAddMenuFormToCreatePayload(
+  form: AddMenuItemFormData,
+  branchId: string,
+): CreateBranchMenuItemPayload {
+  if (!branchId.trim()) {
+    throw new Error("Branch ID is missing; cannot create menu item.");
+  }
+
+  return {
+    ...mapAddMenuFormToMenuFields(form),
+    menuItemId: crypto.randomUUID(),
+    branchId: branchId.trim(),
+  };
+}
+
+export function mapAddMenuFormToUpdatePayload(
+  form: AddMenuItemFormData,
+): UpdateBranchMenuItemPayload {
+  return mapAddMenuFormToMenuFields(form);
 }

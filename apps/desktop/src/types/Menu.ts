@@ -3,6 +3,7 @@ import {
   DietaryTag,
   RecipeItem,
 } from "@/features/dashboard/menu-manager/types/Menu";
+import type { MenuItemCategory } from "@/features/dashboard/menu-manager/types/AddItem";
 
 export interface MenuFilters {
   page: number;
@@ -15,7 +16,7 @@ export interface BranchMenuItem {
   id: string;
   branchId: string;
   menuItemId: string;
-  category: category;
+  category: MenuItemCategory;
   price: number;
   discountPrice: number | null;
   preparationTime: number;
@@ -28,13 +29,4 @@ export interface BranchMenuItem {
   dietaryTags: DietaryTag[];
   recipe: RecipeItem[];
   variations: BranchMenuItemVariation[];
-}
-
-enum category {
-  APPETIZER = "APPETIZER",
-  MAIN_COURSE = "MAIN_COURSE",
-  DESSERT = "DESSERT",
-  BEVERAGE = "BEVERAGE",
-  SIDE_DISH = "SIDE_DISH",
-  OTHER = "OTHER",
 }

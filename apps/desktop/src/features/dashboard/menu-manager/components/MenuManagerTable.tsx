@@ -21,6 +21,8 @@ import Chip from "@repo/ui/components/chip";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { FiEdit } from "react-icons/fi";
 import { MENU_COLUMNS } from "../constants/MenuColumns";
+import { useMenuItemActions } from "../hooks/useMenuItemActions";
+import AddMenuItemModal from "./add-item-modal";
 
 const loadingRows = createDashboardTableLoadingRows();
 
@@ -38,6 +40,16 @@ export default function MenuManagerTable({
     isLoading: isLoadingMenu,
     isFetching: isFetchingMenu,
   } = usePaginatedBranchMenu(filters);
+
+  const {
+    selectedItem,
+    isEditOpen,
+    isDeleting,
+    openEdit,
+    closeEdit,
+    updateSelectedItem,
+    deleteItem,
+  } = useMenuItemActions();
 
   const menuItems = branchMenu?.data ?? [];
   const totalPages = branchMenu?.meta.pages ?? 1;
@@ -136,6 +148,7 @@ export default function MenuManagerTable({
                         isIconOnly
                         variant="light"
                         className="border border-slate-200 rounded-lg min-w-10 h-10"
+                        onPress={() => openEdit(item)}
                       >
                         <FiEdit className="w-4 h-4 text-slate-600" />
                       </Button>
@@ -143,6 +156,8 @@ export default function MenuManagerTable({
                         isIconOnly
                         variant="light"
                         className="border border-slate-200 rounded-lg min-w-10 h-10"
+                        onPress={() => deleteItem(item)}
+                        isLoading={isDeleting && selectedItem?.id === item.id}
                       >
                         <FaRegTrashAlt className="w-4 h-4 text-danger" />
                       </Button>
@@ -162,6 +177,13 @@ export default function MenuManagerTable({
           onChange={(page) => onChange({ page })}
         />
       )}
+
+      <AddMenuItemModal
+        isOpen={isEditOpen}
+        onClose={closeEdit}
+        itemToEdit={selectedItem}
+        onSubmit={updateSelectedItem}
+      />
     </div>
   );
 }

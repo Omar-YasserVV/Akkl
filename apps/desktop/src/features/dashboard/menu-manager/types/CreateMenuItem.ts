@@ -28,3 +28,7 @@ export interface CreateBranchMenuItemPayload {
   dietaryTags?: string[];
   recipe: CreateMenuRecipeLinePayload[];
 }
+
+export type UpdateBranchMenuItemPayload = Partial<
+  Omit<CreateBranchMenuItemPayload, "branchId" | "menuItemId">
+>;
