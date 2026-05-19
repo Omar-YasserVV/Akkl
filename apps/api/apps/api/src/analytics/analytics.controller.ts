@@ -15,6 +15,10 @@ import {
   LineChartAnalyticsRequestDto,
   LineChartAnalyticsResponseDto,
 } from 'apps/svc-analytics/src/AnalyticsDto/line.chart.analytics.dto';
+import {
+  TopSellingAnalyticsRequestDto,
+  TopSellingAnalyticsResponseDto,
+} from 'apps/svc-analytics/src/AnalyticsDto/top-selling.analytics.dto';
 import { lastValueFrom } from 'rxjs';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -52,6 +56,19 @@ export class AnalyticsController implements OnModuleInit {
   ): Promise<LineChartAnalyticsResponseDto> {
     return lastValueFrom(
       this.analyticsClient.send(ANALYTICS_TOPICS.BRANCH_ORDERS, {
+        branchID,
+        dto,
+      }),
+    );
+  }
+
+  @Get('branch/top-selling')
+  async branchTopSelling(
+    @Query() dto: TopSellingAnalyticsRequestDto,
+    @GetBranchId() branchID: string,
+  ): Promise<TopSellingAnalyticsResponseDto> {
+    return lastValueFrom(
+      this.analyticsClient.send(ANALYTICS_TOPICS.BRANCH_TOP_SELLING, {
         branchID,
         dto,
       }),

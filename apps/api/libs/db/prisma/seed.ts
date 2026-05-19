@@ -844,6 +844,13 @@ async function main() {
   // 14. ORDERS
   // orderNumber is auto-incremented — do NOT pass it manually
   // -------------------------------------------------------
+  const orderLine = (menuItemId: string, quantity: number, price: number) => ({
+    menuItemId,
+    quantity,
+    price,
+    totalPrice: quantity * price,
+  });
+
   await prisma.order.create({
     data: {
       totalPrice: 27.97,
@@ -856,8 +863,8 @@ async function main() {
       specialInstructions: 'No onions please',
       items: {
         create: [
-          { menuItemId: burgerItem.id, quantity: 1, price: 12.99 },
-          { menuItemId: friesMenuItem.id, quantity: 2, price: 4.99 },
+          orderLine(burgerItem.id, 1, 12.99),
+          orderLine(friesMenuItem.id, 2, 4.99),
         ],
       },
     },
@@ -874,8 +881,8 @@ async function main() {
       status: OrderState.IN_PROGRESS,
       items: {
         create: [
-          { menuItemId: chickenSandwich.id, quantity: 1, price: 11.49 },
-          { menuItemId: friesMenuItem.id, quantity: 1, price: 5.99 },
+          orderLine(chickenSandwich.id, 1, 11.49),
+          orderLine(friesMenuItem.id, 1, 5.99),
         ],
       },
     },
@@ -891,7 +898,7 @@ async function main() {
       source: source.APP,
       status: OrderState.PENDING,
       items: {
-        create: [{ menuItemId: burgerItem.id, quantity: 1, price: 9.99 }],
+        create: [orderLine(burgerItem.id, 1, 9.99)],
       },
     },
   });
@@ -906,7 +913,7 @@ async function main() {
       source: source.STORE,
       status: OrderState.CANCELLED,
       items: {
-        create: [{ menuItemId: burgerItem.id, quantity: 1, price: 12.99 }],
+        create: [orderLine(burgerItem.id, 1, 12.99)],
       },
     },
   });
@@ -924,8 +931,8 @@ async function main() {
       specialInstructions: '',
       items: {
         create: [
-          { menuItemId: truffleBurger.id, quantity: 1, price: 17.99 },
-          { menuItemId: friesMenuItem.id, quantity: 1, price: 6.99 },
+          orderLine(truffleBurger.id, 1, 17.99),
+          orderLine(friesMenuItem.id, 1, 6.99),
         ],
       },
     },
@@ -942,7 +949,7 @@ async function main() {
       status: OrderState.PENDING,
       specialInstructions: 'Extra crispy fries',
       items: {
-        create: [{ menuItemId: friesMenuItem.id, quantity: 2, price: 6.99 }],
+        create: [orderLine(friesMenuItem.id, 2, 6.99)],
       },
     },
   });
@@ -957,7 +964,7 @@ async function main() {
       source: source.APP,
       status: OrderState.IN_PROGRESS,
       items: {
-        create: [{ menuItemId: chickenSandwich.id, quantity: 2, price: 10.99 }],
+        create: [orderLine(chickenSandwich.id, 2, 10.99)],
       },
     },
   });
@@ -973,7 +980,7 @@ async function main() {
       status: OrderState.COMPLETED,
       items: {
         create: [
-          { menuItemId: chocolateLavaCake.id, quantity: 2, price: 7.49 },
+          orderLine(chocolateLavaCake.id, 2, 7.49),
         ],
       },
     },
@@ -990,7 +997,7 @@ async function main() {
       status: OrderState.CANCELLED,
       items: {
         create: [
-          { menuItemId: chocolateLavaCake.id, quantity: 1, price: 7.49 },
+          orderLine(chocolateLavaCake.id, 1, 7.49),
         ],
       },
     },
@@ -1007,8 +1014,8 @@ async function main() {
       status: OrderState.COMPLETED,
       items: {
         create: [
-          { menuItemId: truffleBurger.id, quantity: 1, price: 17.99 },
-          { menuItemId: softDrink.id, quantity: 1, price: 0.99 },
+          orderLine(truffleBurger.id, 1, 17.99),
+          orderLine(softDrink.id, 1, 0.99),
         ],
       },
     },
@@ -1024,7 +1031,7 @@ async function main() {
       source: source.STORE,
       status: OrderState.IN_PROGRESS,
       items: {
-        create: [{ menuItemId: onionRings.id, quantity: 2, price: 5.49 }],
+        create: [orderLine(onionRings.id, 2, 5.49)],
       },
     },
   });
@@ -1040,8 +1047,8 @@ async function main() {
       status: OrderState.COMPLETED,
       items: {
         create: [
-          { menuItemId: truffleBurger.id, quantity: 1, price: 17.99 },
-          { menuItemId: chickenSandwich.id, quantity: 1, price: 7.99 },
+          orderLine(truffleBurger.id, 1, 17.99),
+          orderLine(chickenSandwich.id, 1, 7.99),
         ],
       },
     },
@@ -1058,9 +1065,9 @@ async function main() {
       status: OrderState.PENDING,
       items: {
         create: [
-          { menuItemId: friesMenuItem.id, quantity: 1, price: 6.99 },
-          { menuItemId: softDrink.id, quantity: 1, price: 0.99 },
-          { menuItemId: onionRings.id, quantity: 1, price: 4.51 },
+          orderLine(friesMenuItem.id, 1, 6.99),
+          orderLine(softDrink.id, 1, 0.99),
+          orderLine(onionRings.id, 1, 4.51),
         ],
       },
     },
@@ -1076,7 +1083,7 @@ async function main() {
       source: source.STORE,
       status: OrderState.IN_PROGRESS,
       items: {
-        create: [{ menuItemId: truffleBurger.id, quantity: 1, price: 17.99 }],
+        create: [orderLine(truffleBurger.id, 1, 17.99)],
       },
     },
   });
@@ -1092,8 +1099,8 @@ async function main() {
       status: OrderState.COMPLETED,
       items: {
         create: [
-          { menuItemId: burgerItem.id, quantity: 1, price: 9.49 },
-          { menuItemId: friesMenuItem.id, quantity: 2, price: 6.49 },
+          orderLine(burgerItem.id, 1, 9.49),
+          orderLine(friesMenuItem.id, 2, 6.49),
         ],
       },
     },
@@ -1110,8 +1117,8 @@ async function main() {
       status: OrderState.CANCELLED,
       items: {
         create: [
-          { menuItemId: softDrink.id, quantity: 1, price: 0.99 },
-          { menuItemId: chickenSandwich.id, quantity: 1, price: 11.0 },
+          orderLine(softDrink.id, 1, 0.99),
+          orderLine(chickenSandwich.id, 1, 11.0),
         ],
       },
     },
@@ -1128,8 +1135,8 @@ async function main() {
       status: OrderState.COMPLETED,
       items: {
         create: [
-          { menuItemId: burgerItem.id, quantity: 2, price: 9.99 },
-          { menuItemId: friesMenuItem.id, quantity: 2, price: 6.99 },
+          orderLine(burgerItem.id, 2, 9.99),
+          orderLine(friesMenuItem.id, 2, 6.99),
         ],
       },
     },
@@ -1145,7 +1152,7 @@ async function main() {
       source: source.APP,
       status: OrderState.PENDING,
       items: {
-        create: [{ menuItemId: onionRings.id, quantity: 2, price: 5.49 }],
+        create: [orderLine(onionRings.id, 2, 5.49)],
       },
     },
   });
@@ -1161,8 +1168,8 @@ async function main() {
       status: OrderState.IN_PROGRESS,
       items: {
         create: [
-          { menuItemId: truffleBurger.id, quantity: 1, price: 17.99 },
-          { menuItemId: chickenSandwich.id, quantity: 1, price: 11.99 },
+          orderLine(truffleBurger.id, 1, 17.99),
+          orderLine(chickenSandwich.id, 1, 11.99),
         ],
       },
     },
@@ -1179,8 +1186,8 @@ async function main() {
       status: OrderState.COMPLETED,
       items: {
         create: [
-          { menuItemId: softDrink.id, quantity: 2, price: 0.99 },
-          { menuItemId: onionRings.id, quantity: 1, price: 5.0 },
+          orderLine(softDrink.id, 2, 0.99),
+          orderLine(onionRings.id, 1, 5.0),
         ],
       },
     },
@@ -1197,8 +1204,8 @@ async function main() {
       status: OrderState.COMPLETED,
       items: {
         create: [
-          { menuItemId: burgerItem.id, quantity: 1, price: 9.99 },
-          { menuItemId: softDrink.id, quantity: 1, price: 2.99 },
+          orderLine(burgerItem.id, 1, 9.99),
+          orderLine(softDrink.id, 1, 2.99),
         ],
       },
     },
@@ -1215,8 +1222,8 @@ async function main() {
       status: OrderState.CANCELLED,
       items: {
         create: [
-          { menuItemId: friesMenuItem.id, quantity: 1, price: 5.49 },
-          { menuItemId: chocolateLavaCake.id, quantity: 1, price: 5.49 },
+          orderLine(friesMenuItem.id, 1, 5.49),
+          orderLine(chocolateLavaCake.id, 1, 5.49),
         ],
       },
     },
@@ -1233,8 +1240,8 @@ async function main() {
       status: OrderState.IN_PROGRESS,
       items: {
         create: [
-          { menuItemId: burgerItem.id, quantity: 2, price: 9.99 },
-          { menuItemId: friesMenuItem.id, quantity: 2, price: 5.99 },
+          orderLine(burgerItem.id, 2, 9.99),
+          orderLine(friesMenuItem.id, 2, 5.99),
         ],
       },
     },
@@ -1251,9 +1258,9 @@ async function main() {
       status: OrderState.COMPLETED,
       items: {
         create: [
-          { menuItemId: onionRings.id, quantity: 1, price: 5.99 },
-          { menuItemId: chocolateLavaCake.id, quantity: 1, price: 7.99 },
-          { menuItemId: softDrink.id, quantity: 1, price: 5.99 },
+          orderLine(onionRings.id, 1, 5.99),
+          orderLine(chocolateLavaCake.id, 1, 7.99),
+          orderLine(softDrink.id, 1, 5.99),
         ],
       },
     },
@@ -1270,8 +1277,8 @@ async function main() {
       status: OrderState.COMPLETED,
       items: {
         create: [
-          { menuItemId: chickenSandwich.id, quantity: 1, price: 11.99 },
-          { menuItemId: onionRings.id, quantity: 1, price: 4.0 },
+          orderLine(chickenSandwich.id, 1, 11.99),
+          orderLine(onionRings.id, 1, 4.0),
         ],
       },
     },

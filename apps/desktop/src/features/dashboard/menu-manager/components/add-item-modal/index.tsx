@@ -1,16 +1,14 @@
-import { Modal, ModalContent, ModalBody } from "@heroui/react";
-import { BiX } from "react-icons/bi";
+import { Modal, ModalBody, ModalContent } from "@heroui/react";
 import { FormProvider } from "react-hook-form";
-import AddModalHeader from "./AddModalHeader";
-import AddModalFooter from "./AddModalFooter";
+import { BiX } from "react-icons/bi";
 import { useAddMenuItemForm } from "../../hooks/useAddMenuItemForm";
 import { useAddMenuItemModalStore } from "../../stores/useAddMenuItemModalStore";
-import BasicInfoSection from "./BasicInfoSection";
-import VariationsSection from "./VariationsSection";
-import ModifiersSection from "./ModifiersSection";
-import DietaryAndAvailabilitySection from "./DietaryAndAvailabilitySection";
-import RecipeSection from "./RecipeSection";
 import type { AddMenuItemFormData } from "../../types/AddItem";
+import AddModalFooter from "./AddModalFooter";
+import AddModalHeader from "./AddModalHeader";
+import BasicInfoSection from "./BasicInfoSection";
+import RecipeSection from "./RecipeSection";
+import VariationsSection from "./VariationsSection";
 
 export interface AddMenuItemModalProps {
   isOpen: boolean;
@@ -55,8 +53,8 @@ export default function AddMenuItemModal({
                 <BasicInfoSection />
                 <VariationsSection />
                 <RecipeSection />
-                <ModifiersSection />
-                <DietaryAndAvailabilitySection />
+                {/* <ModifiersSection /> */}
+                {/* <DietaryAndAvailabilitySection /> */}
               </ModalBody>
               <AddModalFooter onClose={OnClose} onSubmit={onSubmit} />
             </FormProvider>

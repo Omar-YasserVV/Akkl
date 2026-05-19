@@ -5,6 +5,10 @@ import {
   LineChartAnalyticsRequestDto,
   LineChartAnalyticsResponseDto,
 } from './AnalyticsDto/line.chart.analytics.dto';
+import {
+  TopSellingAnalyticsRequestDto,
+  TopSellingAnalyticsResponseDto,
+} from './AnalyticsDto/top-selling.analytics.dto';
 import { SvcAnalyticsService } from './svc-analytics.service';
 
 @Controller()
@@ -26,5 +30,18 @@ export class SvcAnalyticsController {
     @Payload() payload: { branchID: string; dto: LineChartAnalyticsRequestDto },
   ): Promise<LineChartAnalyticsResponseDto> {
     return this.svcAnalyticsService.branchOrders(payload.branchID, payload.dto);
+  }
+
+  @MessagePattern(ANALYTICS_TOPICS.BRANCH_TOP_SELLING)
+  async branchTopSelling(
+    @Payload() payload: {
+      branchID: string;
+      dto: TopSellingAnalyticsRequestDto;
+    },
+  ): Promise<TopSellingAnalyticsResponseDto> {
+    return this.svcAnalyticsService.branchTopSelling(
+      payload.branchID,
+      payload.dto,
+    );
   }
 }

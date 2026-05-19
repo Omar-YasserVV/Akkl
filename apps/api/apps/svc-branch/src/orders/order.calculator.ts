@@ -36,14 +36,16 @@ export class OrderCalculator {
       }
 
       const unitPrice = variation.price.toNumber();
+      const lineTotal = unitPrice * itemInput.quantity;
 
-      total += unitPrice * itemInput.quantity;
+      total += lineTotal;
       itemCount += itemInput.quantity;
 
       return {
         menuItemId: dbItem.id,
         quantity: itemInput.quantity,
         price: unitPrice,
+        totalPrice: lineTotal,
         specialInstructions: itemInput.specialInstructions ?? null,
       };
     });

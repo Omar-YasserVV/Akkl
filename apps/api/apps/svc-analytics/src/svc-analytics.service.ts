@@ -5,6 +5,10 @@ import {
   LineChartAnalyticsRequestDto,
   LineChartAnalyticsResponseDto,
 } from './AnalyticsDto/line.chart.analytics.dto';
+import {
+  TopSellingAnalyticsRequestDto,
+  TopSellingAnalyticsResponseDto,
+} from './AnalyticsDto/top-selling.analytics.dto';
 import { SvcAnalyticsBase } from './svc-analytics.base';
 
 @Injectable()
@@ -67,5 +71,57 @@ export class SvcAnalyticsService extends SvcAnalyticsBase {
         value: 1,
       })),
     };
+  }
+
+  async branchTopSelling(
+    branchID: string,
+    dto: TopSellingAnalyticsRequestDto,
+  ): Promise<TopSellingAnalyticsResponseDto> {
+    await this.assertBranchExists(branchID);
+    const days = dto.daysAgo ?? 7;
+    const topN = dto.topN ?? 5;
+    const { currentStart, now } = this.buildPeriods(days);
+
+    const grouped = await this.repo.getTopSellingByMenuItem(
+      branchID,
+      currentStart,
+      now,
+      topN,
+    );
+
+    if (grouped.length === 0) {
+      return { totalCount: 0, items: [] };
+    }
+
+    const menuItems = await this.repo.getMenuItemsByIds(
+      grouped.map((row) => row.menuItemId),
+    );
+    const nameById = new Map(menuItems.map((item) => [item.id, item.name]));
+
+    const totalRevenue = grouped.reduce(
+      (sum, row) => sum + (row._sum?.totalPrice?.toNumber() ?? 0),
+      0,
+    );
+    const totalSold = grouped.reduce(
+      (sum, row) => sum + (row._sum?.quantity ?? 0),
+      0,
+    );
+
+    const items = grouped.map((row) => {
+      const revenue = row._sum?.totalPrice?.toNumber() ?? 0;
+      const sold = row._sum?.quantity ?? 0;
+      return {
+        menuItemId: row.menuItemId,
+        name: nameById.get(row.menuItemId) ?? 'Unknown item',
+        sold,
+        price: revenue,
+        revenuePercentage:
+          totalRevenue > 0
+            ? Math.round((revenue / totalRevenue) * 1000) / 10
+            : 0,
+      };
+    });
+
+    return { totalCount: totalSold, items };
   }
 }

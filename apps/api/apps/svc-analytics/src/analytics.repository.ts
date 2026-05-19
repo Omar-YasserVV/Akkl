@@ -46,4 +46,40 @@ export class AnalyticsRepository {
       orderBy: { createdAt: 'asc' },
     });
   }
+
+  async getTopSellingByMenuItem(
+    branchId: string,
+    start: Date,
+    end: Date,
+    limit: number,
+  ) {
+    return this.prisma.orderItem.groupBy({
+      by: ['menuItemId'],
+      where: {
+        order: {
+          branchId,
+          status: OrderState.COMPLETED,
+          createdAt: { gte: start, lte: end },
+        },
+      },
+      _sum: {
+        quantity: true,
+        totalPrice: true,
+      },
+      orderBy: {
+        _sum: {
+          totalPrice: 'desc',
+        },
+      },
+      take: Number(limit),
+    });
+  }
+
+  async getMenuItemsByIds(menuItemIds: string[]) {
+    if (menuItemIds.length === 0) return [];
+    return this.prisma.branchMenuItem.findMany({
+      where: { id: { in: menuItemIds } },
+      select: { id: true, name: true },
+    });
+  }
 }
