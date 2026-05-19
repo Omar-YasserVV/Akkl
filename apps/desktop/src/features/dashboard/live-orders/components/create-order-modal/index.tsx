@@ -108,11 +108,19 @@ const CreateOrderModal = ({ open, onClose, orderToEdit }: Props) => {
         status: draft.status,
         userId: user?.id?.toString() || "",
         items: draft.items.map(
-          ({ menuItemId, quantity, specialInstructions }) => ({
-            menuItemId,
-            quantity,
-            specialInstructions: specialInstructions || null,
-          }),
+          ({ menuItemId, quantity, specialInstructions }) => {
+            const menuItem = branchMenu?.find((m) => m.id === menuItemId);
+            const variationPrice = menuItem?.variations?.[0]?.price;
+            const price = variationPrice
+              ? parseFloat(variationPrice.toString())
+              : (menuItem?.price ? parseFloat(menuItem.price.toString()) : 0);
+            return {
+              menuItemId,
+              quantity,
+              specialInstructions: specialInstructions || null,
+              price,
+            };
+          },
         ),
       };
       createOrder(createPayload, { onSuccess: closeModal });
@@ -145,11 +153,19 @@ const CreateOrderModal = ({ open, onClose, orderToEdit }: Props) => {
 
     if (itemsChanged) {
       dirtyFields.items = draft.items.map(
-        ({ menuItemId, quantity, specialInstructions }) => ({
-          menuItemId,
-          quantity,
-          specialInstructions: specialInstructions || null,
-        }),
+        ({ menuItemId, quantity, specialInstructions }) => {
+          const menuItem = branchMenu?.find((m) => m.id === menuItemId);
+          const variationPrice = menuItem?.variations?.[0]?.price;
+          const price = variationPrice
+            ? parseFloat(variationPrice.toString())
+            : (menuItem?.price ? parseFloat(menuItem.price.toString()) : 0);
+          return {
+            menuItemId,
+            quantity,
+            specialInstructions: specialInstructions || null,
+            price,
+          };
+        },
       );
     }
 
