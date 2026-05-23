@@ -1,10 +1,12 @@
 export const BRANCH_TOPICS = {
   // Branch
-  GET_ALL: 'get-branches',
-  GET_BY_ID: 'get-branch-by-id',
-  CREATE: 'create-branch',
-  UPDATE: 'update-branch',
-  DELETE: 'delete-branch',
+  INITIALIZE: 'branch.initialize',               // Replaced CREATE
+  UPDATE_ONBOARDING: 'branch.update_onboarding', // New
+  FINALIZE: 'branch.finalize',                   // New
+  GET_ALL: 'branch.get_all',
+  GET_BY_ID: 'branch.get_by_id',
+  UPDATE: 'branch.update',
+  DELETE: 'branch.delete',
   // Menu
   GET_MENU: 'get_branch_menu',
   GET_MENU_SUMMARY: 'get_menu_summary',

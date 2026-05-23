@@ -4,9 +4,11 @@ import * as dotenv from 'dotenv';
 import { hashPassword } from 'utils/argon2';
 import {
   BatchStatus,
+  BranchStatus,
   category,
   DietaryType,
   ExpenseType,
+  HardwareType,
   IngredientCategory,
   InventoryLogAction,
   MeasurementUnit,
@@ -45,6 +47,7 @@ async function main() {
   await prisma.branchMenuItem.deleteMany({});
   await prisma.reservation.deleteMany({});
   await prisma.table.deleteMany({});
+  await prisma.hardware.deleteMany({}); // NEW: Added hardware cleanup
   await prisma.shift.deleteMany({});
   await prisma.warehouse.deleteMany({});
   await prisma.ingredient.deleteMany({});
@@ -209,10 +212,28 @@ async function main() {
       name: 'Downtown Branch',
       branchNumber: 'BR-001',
       address: '123 Tech Street, 10th of Ramadan City',
+      phone: '01555123456',
+      latitude: 30.3082,
+      longitude: 31.7428,
+      status: BranchStatus.ACTIVE, // Force active for seed data
       restaurantId: restaurant.id,
       haveTables: true,
       haveReservations: true,
       haveWarehouses: true,
+      weeklyHours: {
+        monday: '09:00 AM - 10:00 PM',
+        tuesday: '09:00 AM - 10:00 PM',
+        wednesday: '09:00 AM - 10:00 PM',
+        thursday: '09:00 AM - 11:00 PM',
+        friday: '10:00 AM - 12:00 AM',
+        saturday: '10:00 AM - 12:00 AM',
+        sunday: 'CLOSED',
+      },
+      busyModeSettings: {
+        autoBusyEnabled: true,
+        orderThreshold: 15,
+        extraPrepTimeMinutes: 10,
+      },
     },
   });
 
@@ -221,10 +242,23 @@ async function main() {
       name: 'Uptown Branch',
       branchNumber: 'BR-002',
       address: '456 Main Avenue, New Cairo',
+      phone: '01222987654',
+      latitude: 30.0055,
+      longitude: 31.4741,
+      status: BranchStatus.ACTIVE,
       restaurantId: restaurant.id,
       haveTables: false,
       haveReservations: false,
       haveWarehouses: true,
+      weeklyHours: {
+        monday: '10:00 AM - 08:00 PM',
+        tuesday: '10:00 AM - 08:00 PM',
+        wednesday: '10:00 AM - 08:00 PM',
+        thursday: '10:00 AM - 08:00 PM',
+        friday: '10:00 AM - 10:00 PM',
+        saturday: '10:00 AM - 10:00 PM',
+        sunday: '10:00 AM - 08:00 PM',
+      },
     },
   });
 
@@ -236,7 +270,41 @@ async function main() {
   console.log('✅ Branches created');
 
   // -------------------------------------------------------
-  // 6. DIETARY TAGS
+  // 6. HARDWARE (NEW: Step 4 Configurations)
+  // -------------------------------------------------------
+  await prisma.hardware.createMany({
+    data: [
+      {
+        branchId: branch.id,
+        type: HardwareType.KDS,
+        name: 'KitchenLine 01',
+        ipAddress: '192.168.1.101',
+      },
+      {
+        branchId: branch.id,
+        type: HardwareType.KDS,
+        name: 'Prep Station B',
+        ipAddress: '192.168.1.102',
+      },
+      {
+        branchId: branch.id,
+        type: HardwareType.PRINTER,
+        name: 'Main Bar Thermal',
+        ipAddress: '192.168.1.150',
+      },
+      {
+        branchId: branch2.id,
+        type: HardwareType.PRINTER,
+        name: 'Takeaway Counter Printer',
+        ipAddress: '10.0.0.50',
+      },
+    ],
+  });
+
+  console.log('✅ Hardware profiles created');
+
+  // -------------------------------------------------------
+  // 7. DIETARY TAGS
   // -------------------------------------------------------
   const veganTag = await prisma.dietaryTag.create({
     data: { name: DietaryType.VEGAN },
@@ -253,18 +321,33 @@ async function main() {
   console.log('✅ Dietary tags created');
 
   // -------------------------------------------------------
-  // 7. TABLES & RESERVATIONS
+  // 8. TABLES & RESERVATIONS (UPDATED WITH ZONES)
   // -------------------------------------------------------
   const table1 = await prisma.table.create({
-    data: { tableNumber: 'T1', capacity: 4, branchId: branch.id },
+    data: { 
+      tableNumber: 'Table 1', 
+      capacity: 4, 
+      zoneName: 'Indoor Dining', 
+      branchId: branch.id 
+    },
   });
 
   const table2 = await prisma.table.create({
-    data: { tableNumber: 'T2', capacity: 2, branchId: branch.id },
+    data: { 
+      tableNumber: 'Table 2', 
+      capacity: 2, 
+      zoneName: 'Indoor Dining', 
+      branchId: branch.id 
+    },
   });
 
   const table3 = await prisma.table.create({
-    data: { tableNumber: 'T3', capacity: 6, branchId: branch.id },
+    data: { 
+      tableNumber: 'Patio 1', 
+      capacity: 6, 
+      zoneName: 'Outdoor Patio', 
+      branchId: branch.id 
+    },
   });
 
   await prisma.reservation.createMany({
@@ -299,7 +382,7 @@ async function main() {
   console.log('✅ Tables & reservations created');
 
   // -------------------------------------------------------
-  // 8. WAREHOUSES
+  // 9. WAREHOUSES
   // -------------------------------------------------------
   const warehouse = await prisma.warehouse.create({
     data: { name: 'Main Cold Storage', branchId: branch.id },
@@ -312,7 +395,7 @@ async function main() {
   console.log('✅ Warehouses created');
 
   // -------------------------------------------------------
-  // 9. INGREDIENTS
+  // 10. INGREDIENTS
   // -------------------------------------------------------
   const beefPatty = await prisma.ingredient.upsert({
     where: { name: 'Premium Beef Patty' },
@@ -397,7 +480,7 @@ async function main() {
   console.log('✅ Ingredients created');
 
   // -------------------------------------------------------
-  // 10. INVENTORY ITEMS
+  // 11. INVENTORY ITEMS
   // -------------------------------------------------------
   const beefItem = await prisma.inventoryItem.create({
     data: {
@@ -482,7 +565,7 @@ async function main() {
   console.log('✅ Inventory items created');
 
   // -------------------------------------------------------
-  // 11. STOCK BATCHES
+  // 12. STOCK BATCHES
   // -------------------------------------------------------
   await prisma.stockBatch.createMany({
     data: [
@@ -615,8 +698,7 @@ async function main() {
   console.log('✅ Stock batches created & inventory synced');
 
   // -------------------------------------------------------
-  // 12. MENU ITEMS
-  // New required fields: category, price, discountPrice, preparationTime
+  // 13. MENU ITEMS
   // -------------------------------------------------------
   const burgerItem = await prisma.branchMenuItem.create({
     data: {
@@ -761,7 +843,7 @@ async function main() {
   console.log('✅ Menu items created');
 
   // -------------------------------------------------------
-  // 13. RECIPES
+  // 14. RECIPES
   // -------------------------------------------------------
   await prisma.recipe.createMany({
     data: [
@@ -841,8 +923,7 @@ async function main() {
   console.log('✅ Recipes created');
 
   // -------------------------------------------------------
-  // 14. ORDERS
-  // orderNumber is auto-incremented — do NOT pass it manually
+  // 15. ORDERS
   // -------------------------------------------------------
   const orderLine = (menuItemId: string, quantity: number, price: number) => ({
     menuItemId,
@@ -1280,12 +1361,8 @@ async function main() {
   console.log('✅ Orders created');
 
   // -------------------------------------------------------
-  // 15. INVENTORY USAGE LOGS
+  // 16. INVENTORY USAGE LOGS
   // -------------------------------------------------------
-  // The `consumedQuantity` field does not exist in the InventoryUsageLog model,
-  // so it is removed from data objects for createMany.
-  // If you have a new model field in the schema, re-add it. Otherwise,
-  // this silences the type/lint error.
   await prisma.inventoryUsageLog.createMany({
     data: [
       {
@@ -1339,7 +1416,7 @@ async function main() {
   console.log('✅ Inventory usage logs created');
 
   // -------------------------------------------------------
-  // 16. SHIFTS
+  // 17. SHIFTS
   // -------------------------------------------------------
   await prisma.shift.createMany({
     data: [
@@ -1374,7 +1451,7 @@ async function main() {
   console.log('✅ Shifts created');
 
   // -------------------------------------------------------
-  // 17. EXPENSES
+  // 18. EXPENSES
   // -------------------------------------------------------
   await prisma.expense.createMany({
     data: [
@@ -1426,7 +1503,8 @@ async function main() {
 ├── 1  System Admin
 ├── 7  Users  (owner · manager · cashier · chief · waiter · 2 customers)
 ├── 1  Restaurant
-├── 2  Branches
+├── 2  Branches (ACTIVE with Location Data & Schedules)
+├── 4  Hardware Devices (KDS & Printers)
 ├── 3  Dietary Tags
 ├── 3  Tables  +  3 Reservations
 ├── 2  Warehouses
@@ -1434,7 +1512,7 @@ async function main() {
 ├── 8  Inventory Items  +  8 Stock Batches
 ├── 7  Menu Items  (appetizer · mains · side · dessert · beverage · 1 unavailable)
 ├── 13 Recipe entries
-├── 4  Orders  (pending · in-progress · completed · cancelled)
+├── 24 Orders  (pending · in-progress · completed · cancelled)
 ├── 5  Inventory Usage Logs
 ├── 4  Shifts
 └── 6  Expenses

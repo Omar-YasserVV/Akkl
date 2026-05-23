@@ -1,4 +1,8 @@
-import { CreateBranchDto, UpdateBranchDto } from '@app/common';
+import {
+  InitializeBranchDto,
+  UpdateBranchDto,
+  UpdateOnboardingDto,
+} from '@app/common';
 import { BRANCH_TOPICS } from '@app/common/topics/branch.topics';
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
@@ -8,16 +12,49 @@ import { SvcBranchService } from './svc-branch.service';
 export class SvcBranchController {
   constructor(private readonly svcBranchService: SvcBranchService) {}
 
-  @MessagePattern(BRANCH_TOPICS.CREATE)
-  async createBranch(
-    @Payload() data: { restaurantId: string; dto: CreateBranchDto },
+  // ─── PHASE 1: INITIALIZE DRAFT ──────────────────────────────────────────
+  @MessagePattern(BRANCH_TOPICS.INITIALIZE)
+  async initializeBranch(
+    @Payload() data: { restaurantId: string; dto: InitializeBranchDto },
   ) {
-    return await this.svcBranchService.createBranch(
+    return await this.svcBranchService.initializeBranch(
       data.restaurantId,
       data.dto,
     );
   }
 
+  // ─── PHASE 2: SAVE WIZARD PROGRESS ──────────────────────────────────────
+  @MessagePattern(BRANCH_TOPICS.UPDATE_ONBOARDING)
+  async updateOnboardingProgress(
+    @Payload()
+    {
+      restaurantId,
+      branchId,
+      data,
+    }: {
+      restaurantId: string;
+      branchId: string;
+      data: UpdateOnboardingDto;
+    },
+  ) {
+    return await this.svcBranchService.updateOnboardingProgress(
+      restaurantId,
+      branchId,
+      data,
+    );
+  }
+
+  // ─── PHASE 3: COMPLETE SETUP ────────────────────────────────────────────
+  @MessagePattern(BRANCH_TOPICS.FINALIZE)
+  async finalizeBranch(
+    @Payload()
+    { restaurantId, branchId }: { restaurantId: string; branchId: string },
+  ) {
+    return await this.svcBranchService.finalizeBranch(restaurantId, branchId);
+  }
+
+  // ─── STANDARD OPERATIONS ────────────────────────────────────────────────
+  
   @MessagePattern(BRANCH_TOPICS.GET_ALL)
   async getBranches(@Payload() restaurantId: string) {
     return await this.svcBranchService.getBranches(restaurantId);

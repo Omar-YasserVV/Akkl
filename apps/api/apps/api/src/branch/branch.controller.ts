@@ -1,10 +1,11 @@
 import {
   BranchMenuItemDetailDto,
-  CreateBranchDto,
   CreateOrderDto,
+  InitializeBranchDto,
   UpdateBranchDto,
   UpdateBranchMenuItemDto,
-  UpdateOrderDto,
+  UpdateOnboardingDto,
+  UpdateOrderDto
 } from '@app/common';
 import { MenuPaginationDto } from '@app/common/dtos/MenuDto/list.menu.dto';
 import { OrdersPaginationDto } from '@app/common/dtos/OrderDto/list.order.dto';
@@ -56,25 +57,53 @@ export class BranchController implements OnModuleInit {
   }
 
   // ---------------- BRANCH ----------------
-
-  @Roles(UserRole.BUSINESS_OWNER)
-  @Post('restaurant/:restaurantId')
-  async createBranch(
-    @Body() dto: CreateBranchDto,
+@Roles(UserRole.BUSINESS_OWNER)
+  @Post('initialize/:restaurantId')
+  async initializeBranch(
+    @Body() dto: InitializeBranchDto,
     @Param('restaurantId') restaurantId: string,
     @Res() res: Response,
   ) {
-    const result = await lastValueFrom<{ message?: string }>(
-      this.branchClient.send(BRANCH_TOPICS.CREATE, {
+    const result = await lastValueFrom<any>(
+      this.branchClient.send(BRANCH_TOPICS.INITIALIZE, {
         restaurantId,
         dto,
       }),
     );
 
     return res.status(HttpStatus.CREATED).json({
-      message: result?.message || 'Branch created',
+      message: 'Branch draft created',
+      data: result,
     });
   }
+
+  @Roles(UserRole.BUSINESS_OWNER)
+  @Patch(':branchId/onboarding/:restaurantId')
+  async updateOnboardingProgress(
+    @Param('branchId') branchId: string,
+    @Param('restaurantId') restaurantId: string,
+    @Body() dto: UpdateOnboardingDto,
+  ) {
+    return this.branchClient.send(BRANCH_TOPICS.UPDATE_ONBOARDING, {
+      restaurantId,
+      branchId,
+      data: dto,
+    });
+  }
+
+  @Roles(UserRole.BUSINESS_OWNER)
+  @Post(':branchId/finalize/:restaurantId')
+  async finalizeBranch(
+    @Param('branchId') branchId: string,
+    @Param('restaurantId') restaurantId: string,
+  ) {
+    return this.branchClient.send(BRANCH_TOPICS.FINALIZE, {
+      restaurantId,
+      branchId,
+    });
+  }
+
+  // ---------------- STANDARD BRANCH OPERATIONS ----------------
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
   @Get('restaurant/:restaurantId')
