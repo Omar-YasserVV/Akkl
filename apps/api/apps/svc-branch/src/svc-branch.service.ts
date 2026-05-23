@@ -44,7 +44,6 @@ export class SvcBranchService {
 
   // ─── PHASE 2: SAVE WIZARD PROGRESS (STEPS 1 to 4) ────────────────────────
   async updateOnboardingProgress(
-    restaurantId: string,
     branchId: string,
     data: UpdateOnboardingDto,
   ) {
@@ -53,7 +52,7 @@ export class SvcBranchService {
     return await this.prisma.$transaction(async (tx) => {
       // 1. Update basic scalar fields (Name, Location, Hours, Flags)
       const branch = await tx.branch.update({
-        where: { id: branchId, restaurantId: restaurantId },
+        where: { id: branchId },
         data: basicUpdateData,
       });
 
@@ -135,9 +134,9 @@ export class SvcBranchService {
   }
 
   // ─── PHASE 3: COMPLETE SETUP ─────────────────────────────────────────────
-  async finalizeBranch(restaurantId: string, branchId: string) {
+  async finalizeBranch( branchId: string) {
     const branch = await this.prisma.branch.findFirst({
-      where: { id: branchId, restaurantId: restaurantId },
+      where: { id: branchId },
       include: { tables: true },
     });
 
@@ -183,10 +182,9 @@ export class SvcBranchService {
     });
   }
 
-  async getBranchById(restaurantId: string, branchId: string) {
+  async getBranchById(branchId: string) {
     return this.prisma.branch.findFirst({
       where: {
-        restaurantId: restaurantId,
         id: branchId,
       },
       include: {
@@ -198,14 +196,12 @@ export class SvcBranchService {
   }
 
   async updateBranch(
-    restaurantId: string,
     branchId: string,
     data: UpdateBranchDto,
   ) {
     const { hardware, ...updateData } = data;
     const branch = await this.prisma.branch.update({
       where: {
-        restaurantId: restaurantId,
         id: branchId,
       },
       data: {
@@ -249,7 +245,7 @@ export class SvcBranchService {
     return updatedBranch;
   }
 
-  async deleteBranch(restaurantId: string, branchId: string) {
+  async deleteBranch(branchId: string) {
     return await this.prisma.$transaction(async (tx) => {
       await tx.table.deleteMany({ where: { branchId: branchId } });
       await tx.warehouse.deleteMany({ where: { branchId: branchId } });
@@ -257,7 +253,6 @@ export class SvcBranchService {
 
       const result = await tx.branch.deleteMany({
         where: {
-          restaurantId: restaurantId,
           id: branchId,
         },
       });
@@ -269,7 +264,7 @@ export class SvcBranchService {
         });
       }
 
-      this.kafkaClient.emit('branch.deleted', { id: branchId, restaurantId });
+      this.kafkaClient.emit('branch.deleted', { id: branchId });
       return { deleted: true };
     });
   }

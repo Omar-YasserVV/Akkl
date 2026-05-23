@@ -78,27 +78,23 @@ export class BranchController implements OnModuleInit {
   }
 
   @Roles(UserRole.BUSINESS_OWNER)
-  @Patch(':branchId/onboarding/:restaurantId')
+  @Patch(':branchId/onboarding')
   async updateOnboardingProgress(
     @Param('branchId') branchId: string,
-    @Param('restaurantId') restaurantId: string,
     @Body() dto: UpdateOnboardingDto,
   ) {
     return this.branchClient.send(BRANCH_TOPICS.UPDATE_ONBOARDING, {
-      restaurantId,
       branchId,
       data: dto,
     });
   }
 
   @Roles(UserRole.BUSINESS_OWNER)
-  @Post(':branchId/finalize/:restaurantId')
+  @Post(':branchId/finalize')
   async finalizeBranch(
     @Param('branchId') branchId: string,
-    @Param('restaurantId') restaurantId: string,
   ) {
     return this.branchClient.send(BRANCH_TOPICS.FINALIZE, {
-      restaurantId,
       branchId,
     });
   }
@@ -115,36 +111,30 @@ export class BranchController implements OnModuleInit {
   @Get('details/:restaurantId')
   getBranchById(
     @GetBranchId() branchId: string,
-    @Param('restaurantId') restaurantId: string,
   ) {
     return this.branchClient.send(BRANCH_TOPICS.GET_BY_ID, {
-      restaurantId,
       branchId,
     });
   }
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
-  @Patch('details/:restaurantId')
+  @Patch('update')
   updateBranch(
     @GetBranchId() branchId: string,
-    @Param('restaurantId') restaurantId: string,
     @Body() dto: UpdateBranchDto,
   ) {
     return this.branchClient.send(BRANCH_TOPICS.UPDATE, {
-      restaurantId,
       branchId,
       data: dto,
     });
   }
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
-  @Delete('details/:restaurantId')
+  @Delete('delete')
   deleteBranch(
     @GetBranchId() branchId: string,
-    @Param('restaurantId') restaurantId: string,
   ) {
     return this.branchClient.send(BRANCH_TOPICS.DELETE, {
-      restaurantId,
       branchId,
     });
   }

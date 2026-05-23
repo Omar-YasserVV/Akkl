@@ -28,17 +28,14 @@ export class SvcBranchController {
   async updateOnboardingProgress(
     @Payload()
     {
-      restaurantId,
       branchId,
       data,
     }: {
-      restaurantId: string;
       branchId: string;
       data: UpdateOnboardingDto;
     },
   ) {
     return await this.svcBranchService.updateOnboardingProgress(
-      restaurantId,
       branchId,
       data,
     );
@@ -48,9 +45,9 @@ export class SvcBranchController {
   @MessagePattern(BRANCH_TOPICS.FINALIZE)
   async finalizeBranch(
     @Payload()
-    { restaurantId, branchId }: { restaurantId: string; branchId: string },
+    { branchId }: {branchId: string },
   ) {
-    return await this.svcBranchService.finalizeBranch(restaurantId, branchId);
+    return await this.svcBranchService.finalizeBranch(branchId);
   }
 
   // ─── STANDARD OPERATIONS ────────────────────────────────────────────────
@@ -63,26 +60,23 @@ export class SvcBranchController {
   @MessagePattern(BRANCH_TOPICS.GET_BY_ID)
   async getBranchById(
     @Payload()
-    { restaurantId, branchId }: { restaurantId: string; branchId: string },
+    { branchId }: {branchId: string },
   ) {
-    return await this.svcBranchService.getBranchById(restaurantId, branchId);
+    return await this.svcBranchService.getBranchById(branchId);
   }
 
   @MessagePattern(BRANCH_TOPICS.UPDATE)
   async updateBranch(
     @Payload()
     {
-      restaurantId,
       branchId,
       data,
     }: {
-      restaurantId: string;
       branchId: string;
       data: UpdateBranchDto;
     },
   ) {
     return await this.svcBranchService.updateBranch(
-      restaurantId,
       branchId,
       data,
     );
@@ -91,8 +85,8 @@ export class SvcBranchController {
   @MessagePattern(BRANCH_TOPICS.DELETE)
   async deleteBranch(
     @Payload()
-    { restaurantId, branchId }: { restaurantId: string; branchId: string },
+    { branchId }: { branchId: string },
   ) {
-    return await this.svcBranchService.deleteBranch(restaurantId, branchId);
+    return await this.svcBranchService.deleteBranch(branchId);
   }
 }
