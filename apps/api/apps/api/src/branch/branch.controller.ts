@@ -108,7 +108,7 @@ export class BranchController implements OnModuleInit {
   }
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
-  @Get('details/:restaurantId')
+  @Get('details/:branchId')
   getBranchById(
     @GetBranchId() branchId: string,
   ) {
