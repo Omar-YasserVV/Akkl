@@ -6,6 +6,7 @@ import FinancePage from "@/features/dashboard/finance-page";
 import LiveOrders from "@/features/dashboard/live-orders";
 import MenuManager from "@/features/dashboard/menu-manager";
 import Overview from "@/features/dashboard/overview";
+import Reservation from "@/features/dashboard/reservation";
 import Settings from "@/features/dashboard/settings";
 import Warehouse from "@/features/dashboard/warehouse";
 import { useAuthStore } from "@/store/AuthStore";
@@ -37,6 +38,7 @@ export const router = createBrowserRouter([
           { index: true, element: <Overview /> },
           { path: "live-orders", element: <LiveOrders /> },
           { path: "menu-manager", element: <MenuManager /> },
+          { path: "reservation", element: <Reservation /> },
           {
             path: "menu-manager/bulk-upload-menu-items",
             element: <BulkUploadMenuItems />,

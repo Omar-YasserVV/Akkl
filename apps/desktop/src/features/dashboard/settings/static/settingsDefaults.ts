@@ -116,21 +116,56 @@ export const defaultWeeklySchedule: WeekDaySchedule[] = [
 
 export const defaultDiningZones: DiningZone[] = [
   {
-    id: "indoor-dining",
-    name: "Indoor Dining",
+    id: "indoor-main-hall",
+    name: "Indoor Main Hall",
     type: "Indoor",
-    tables: [
-      { id: "table-1", name: "Table 1", capacity: 4, status: "Available" },
-      { id: "table-2", name: "Table 2", capacity: 2, status: "Available" },
-    ],
+    description: "Primary dining space with central bar access",
+    isActive: true,
+    tables: Array.from({ length: 80 }, (_, i) => ({
+      id: `indoor-${i + 1}`,
+      name: `T${i + 1}`,
+      capacity: 4,
+      status: "Available",
+    })),
   },
   {
-    id: "outdoor-patio",
-    name: "Outdoor Patio",
+    id: "outdoor-terrace",
+    name: "Outdoor Terrace",
     type: "Outdoor",
-    tables: [
-      { id: "patio-1", name: "Patio 1", capacity: 6, status: "Available" },
-    ],
+    description: "Street-side seating with seasonal heating",
+    isActive: true,
+    tables: Array.from({ length: 42 }, (_, i) => ({
+      id: `outdoor-${i + 1}`,
+      name: `O${i + 1}`,
+      capacity: 2,
+      status: "Available",
+    })),
+  },
+  {
+    id: "vip-lounge",
+    name: "VIP Lounge",
+    type: "Indoor",
+    description: "Private area for premium members and events",
+    isActive: true,
+    tables: Array.from({ length: 12 }, (_, i) => ({
+      id: `vip-${i + 1}`,
+      name: `V${i + 1}`,
+      capacity: 6,
+      status: "Available",
+    })),
+  },
+  {
+    id: "bar-seating",
+    name: "Bar Seating",
+    type: "Indoor",
+    description: "High-top seating around the main bar area",
+    isActive: false,
+    tables: Array.from({ length: 8 }, (_, i) => ({
+      id: `bar-${i + 1}`,
+      name: `B${i + 1}`,
+      capacity: 2,
+      status: "Available",
+    })),
   },
 ];
 

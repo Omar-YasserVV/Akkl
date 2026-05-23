@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useAuthStore } from "@/store/AuthStore";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  LuCalendarCheck,
   LuChartColumnIncreasing,
   LuChevronsLeftRight,
   LuHouse,
@@ -11,7 +12,7 @@ import {
   LuSettings,
   LuShoppingCart,
   LuUtensilsCrossed,
-  LuWarehouse,
+  LuWarehouse
 } from "react-icons/lu";
 import { NavLink, useLocation } from "react-router-dom";
 
@@ -34,6 +35,11 @@ const Sidebar = () => {
       name: "Menu Manager",
       path: "/dashboard/menu-manager",
       icon: <LuUtensilsCrossed size={22} />,
+    },
+    {
+      name: "Reservation",
+      path: "/dashboard/reservation",
+      icon: <LuCalendarCheck size={22} />,
     },
     {
       name: "Warehouse",
