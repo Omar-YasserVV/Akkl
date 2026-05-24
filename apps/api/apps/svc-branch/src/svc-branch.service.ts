@@ -43,17 +43,13 @@ export class SvcBranchService {
   }
 
   // ─── PHASE 2: SAVE WIZARD PROGRESS (STEPS 1 to 4) ────────────────────────
-  async updateOnboardingProgress(
-    restaurantId: string,
-    branchId: string,
-    data: UpdateOnboardingDto,
-  ) {
+  async updateOnboardingProgress(branchId: string, data: UpdateOnboardingDto) {
     const { zones, warehouseName, hardware, ...basicUpdateData } = data;
 
     return await this.prisma.$transaction(async (tx) => {
       // 1. Update basic scalar fields (Name, Location, Hours, Flags)
       const branch = await tx.branch.update({
-        where: { id: branchId, restaurantId: restaurantId },
+        where: { id: branchId },
         data: basicUpdateData,
       });
 
@@ -135,9 +131,9 @@ export class SvcBranchService {
   }
 
   // ─── PHASE 3: COMPLETE SETUP ─────────────────────────────────────────────
-  async finalizeBranch(restaurantId: string, branchId: string) {
+  async finalizeBranch(branchId: string) {
     const branch = await this.prisma.branch.findFirst({
-      where: { id: branchId, restaurantId: restaurantId },
+      where: { id: branchId },
       include: { tables: true },
     });
 
