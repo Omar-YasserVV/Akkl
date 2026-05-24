@@ -1,9 +1,9 @@
+import { useSettingsOnboarding } from "../hooks/useSettingsOnboarding";
 import BranchIdentityStep from "./branch-identity/BranchIdentityStep";
 import FloorPlanStep from "./floor-plan/FloorPlanStep";
 import HardwareConnectingStep from "./hardware-connecting/HardwareConnectingStep";
 import OperatingHoursStep from "./operating-hours/OperatingHoursStep";
 import SettingsFooter from "./SettingsFooter";
-import { useSettingsOnboarding } from "../hooks/useSettingsOnboarding";
 
 const SettingsOnboarding = () => {
   const {
@@ -19,7 +19,7 @@ const SettingsOnboarding = () => {
   } = useSettingsOnboarding();
 
   return (
-    <section className="mx-auto flex min-h-full max-w-[1320px] flex-col rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+    <section className="mx-auto flex min-h-full flex-col rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
       <div className="mb-8 space-y-4">
         <div className="flex items-end justify-between">
           <div>
