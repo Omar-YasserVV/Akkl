@@ -106,39 +106,26 @@ export class BranchController implements OnModuleInit {
   }
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
-  @Get('details/:restaurantId')
-  getBranchById(
-    @GetBranchId() branchId: string,
-    @Param('restaurantId') restaurantId: string,
-  ) {
+  @Get('details/:branchId')
+  getBranchById(@GetBranchId() branchId: string) {
     return this.branchClient.send(BRANCH_TOPICS.GET_BY_ID, {
-      restaurantId,
       branchId,
     });
   }
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
-  @Patch('details/:restaurantId')
-  updateBranch(
-    @GetBranchId() branchId: string,
-    @Param('restaurantId') restaurantId: string,
-    @Body() dto: UpdateBranchDto,
-  ) {
+  @Patch('update')
+  updateBranch(@GetBranchId() branchId: string, @Body() dto: UpdateBranchDto) {
     return this.branchClient.send(BRANCH_TOPICS.UPDATE, {
-      restaurantId,
       branchId,
       data: dto,
     });
   }
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
-  @Delete('details/:restaurantId')
-  deleteBranch(
-    @GetBranchId() branchId: string,
-    @Param('restaurantId') restaurantId: string,
-  ) {
+  @Delete('delete')
+  deleteBranch(@GetBranchId() branchId: string) {
     return this.branchClient.send(BRANCH_TOPICS.DELETE, {
-      restaurantId,
       branchId,
     });
   }

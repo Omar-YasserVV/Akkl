@@ -28,6 +28,7 @@ type SettingsStore = {
   ) => void;
   setSelectedZoneType: (zoneType: DiningZoneType) => void;
   addZone: (zone: DiningZone) => void;
+  updateZone: (zoneId: string, updates: Partial<DiningZone>) => void;
   removeZone: (zoneId: string) => void;
   addTable: (zoneId: string, table: DiningTable) => void;
   updateTable: (
@@ -105,6 +106,18 @@ export const useSettingsStore = create<SettingsStore>()(
             floorPlan: {
               ...state.data.floorPlan,
               zones: [...state.data.floorPlan.zones, zone],
+            },
+          },
+        })),
+      updateZone: (zoneId, updates) =>
+        set((state) => ({
+          data: {
+            ...state.data,
+            floorPlan: {
+              ...state.data.floorPlan,
+              zones: state.data.floorPlan.zones.map((zone) =>
+                zone.id === zoneId ? { ...zone, ...updates } : zone,
+              ),
             },
           },
         })),

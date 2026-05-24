@@ -179,10 +179,9 @@ export class SvcBranchService {
     });
   }
 
-  async getBranchById(restaurantId: string, branchId: string) {
+  async getBranchById(branchId: string) {
     return this.prisma.branch.findFirst({
       where: {
-        restaurantId: restaurantId,
         id: branchId,
       },
       include: {
@@ -193,15 +192,10 @@ export class SvcBranchService {
     });
   }
 
-  async updateBranch(
-    restaurantId: string,
-    branchId: string,
-    data: UpdateBranchDto,
-  ) {
+  async updateBranch(branchId: string, data: UpdateBranchDto) {
     const { hardware, ...updateData } = data;
     const branch = await this.prisma.branch.update({
       where: {
-        restaurantId: restaurantId,
         id: branchId,
       },
       data: {
@@ -245,7 +239,7 @@ export class SvcBranchService {
     return updatedBranch;
   }
 
-  async deleteBranch(restaurantId: string, branchId: string) {
+  async deleteBranch(branchId: string) {
     return await this.prisma.$transaction(async (tx) => {
       await tx.table.deleteMany({ where: { branchId: branchId } });
       await tx.warehouse.deleteMany({ where: { branchId: branchId } });
@@ -253,7 +247,6 @@ export class SvcBranchService {
 
       const result = await tx.branch.deleteMany({
         where: {
-          restaurantId: restaurantId,
           id: branchId,
         },
       });
@@ -265,7 +258,7 @@ export class SvcBranchService {
         });
       }
 
-      this.kafkaClient.emit('branch.deleted', { id: branchId, restaurantId });
+      this.kafkaClient.emit('branch.deleted', { id: branchId });
       return { deleted: true };
     });
   }

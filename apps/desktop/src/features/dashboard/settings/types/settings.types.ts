@@ -54,6 +54,8 @@ export type DiningZone = {
   id: string;
   name: string;
   type: DiningZoneType;
+  description?: string;
+  isActive?: boolean;
   tables: DiningTable[];
 };
 
