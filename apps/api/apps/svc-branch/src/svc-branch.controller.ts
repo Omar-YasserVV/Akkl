@@ -27,31 +27,22 @@ export class SvcBranchController {
   @MessagePattern(BRANCH_TOPICS.UPDATE_ONBOARDING)
   async updateOnboardingProgress(
     @Payload()
-    {
-      branchId,
-      data,
-    }: {
-      branchId: string;
-      data: UpdateOnboardingDto;
-    },
+    { branchId, data }: { branchId: string; data: UpdateOnboardingDto },
   ) {
-    return await this.svcBranchService.updateOnboardingProgress(
-      branchId,
-      data,
-    );
+    return await this.svcBranchService.updateOnboardingProgress(branchId, data);
   }
 
   // ─── PHASE 3: COMPLETE SETUP ────────────────────────────────────────────
   @MessagePattern(BRANCH_TOPICS.FINALIZE)
   async finalizeBranch(
     @Payload()
-    { branchId }: {branchId: string },
+    { branchId }: { branchId: string },
   ) {
     return await this.svcBranchService.finalizeBranch(branchId);
   }
 
   // ─── STANDARD OPERATIONS ────────────────────────────────────────────────
-  
+
   @MessagePattern(BRANCH_TOPICS.GET_ALL)
   async getBranches(@Payload() restaurantId: string) {
     return await this.svcBranchService.getBranches(restaurantId);
@@ -60,7 +51,7 @@ export class SvcBranchController {
   @MessagePattern(BRANCH_TOPICS.GET_BY_ID)
   async getBranchById(
     @Payload()
-    { branchId }: {branchId: string },
+    { branchId }: { branchId: string },
   ) {
     return await this.svcBranchService.getBranchById(branchId);
   }
@@ -68,18 +59,9 @@ export class SvcBranchController {
   @MessagePattern(BRANCH_TOPICS.UPDATE)
   async updateBranch(
     @Payload()
-    {
-      branchId,
-      data,
-    }: {
-      branchId: string;
-      data: UpdateBranchDto;
-    },
+    { branchId, data }: { branchId: string; data: UpdateBranchDto },
   ) {
-    return await this.svcBranchService.updateBranch(
-      branchId,
-      data,
-    );
+    return await this.svcBranchService.updateBranch(branchId, data);
   }
 
   @MessagePattern(BRANCH_TOPICS.DELETE)

@@ -40,12 +40,18 @@ export class SvcBranchService {
     return { ...newDraft, activeStep: 1 };
   }
 
+<<<<<<< HEAD
   // ─── PHASE 2: SAVE WIZARD PROGRESS ──────────────────────────────────────
   async updateOnboardingProgress(
     branchId: string,
     data: UpdateOnboardingDto,
   ) {
     const { zones, warehouseName, hardware, busyModeSettings, ...basicUpdateData } = data;
+=======
+  // ─── PHASE 2: SAVE WIZARD PROGRESS (STEPS 1 to 4) ────────────────────────
+  async updateOnboardingProgress(branchId: string, data: UpdateOnboardingDto) {
+    const { zones, warehouseName, hardware, ...basicUpdateData } = data;
+>>>>>>> 77310f02058a4bb43bfa731444174b0626ae61c3
 
     return await this.prisma.$transaction(async (tx) => {
       // Fetch existing branch to merge JSON settings (preserves holidayClosure if it exists)
@@ -158,6 +164,7 @@ export class SvcBranchService {
   }
 
   async updateBranch(branchId: string, data: UpdateBranchDto) {
+<<<<<<< HEAD
     const { hardware, busyModeSettings, ...updateData } = data;
     
     // Merge logic for busyModeSettings in standard updates as well
@@ -166,6 +173,13 @@ export class SvcBranchService {
 
     const updatedBranch = await this.prisma.branch.update({
       where: { id: branchId },
+=======
+    const { hardware, ...updateData } = data;
+    const branch = await this.prisma.branch.update({
+      where: {
+        id: branchId,
+      },
+>>>>>>> 77310f02058a4bb43bfa731444174b0626ae61c3
       data: {
         ...updateData,
         ...(busyModeSettings && { busyModeSettings: { ...currentBusySettings, ...busyModeSettings } }),
@@ -202,6 +216,7 @@ export class SvcBranchService {
       return { deleted: true };
     });
   }
+<<<<<<< HEAD
 
   private calculateStep(branch: any): number {
     if (!branch) return 1;
@@ -215,3 +230,6 @@ export class SvcBranchService {
     return 4;
   }
 }
+=======
+}
+>>>>>>> 77310f02058a4bb43bfa731444174b0626ae61c3

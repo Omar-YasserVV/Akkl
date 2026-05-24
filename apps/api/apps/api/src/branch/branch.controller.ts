@@ -5,7 +5,7 @@ import {
   UpdateBranchDto,
   UpdateBranchMenuItemDto,
   UpdateOnboardingDto,
-  UpdateOrderDto
+  UpdateOrderDto,
 } from '@app/common';
 import { MenuPaginationDto } from '@app/common/dtos/MenuDto/list.menu.dto';
 import { OrdersPaginationDto } from '@app/common/dtos/OrderDto/list.order.dto';
@@ -57,7 +57,7 @@ export class BranchController implements OnModuleInit {
   }
 
   // ---------------- BRANCH ----------------
-@Roles(UserRole.BUSINESS_OWNER)
+  @Roles(UserRole.BUSINESS_OWNER)
   @Post('initialize/:restaurantId')
   async initializeBranch(
     @Body() dto: InitializeBranchDto,
@@ -78,9 +78,9 @@ export class BranchController implements OnModuleInit {
   }
 
   @Roles(UserRole.BUSINESS_OWNER)
-  @Patch(':branchId/onboarding')
+  @Patch('onboarding')
   async updateOnboardingProgress(
-    @Param('branchId') branchId: string,
+    @GetBranchId() branchId: string,
     @Body() dto: UpdateOnboardingDto,
   ) {
     return this.branchClient.send(BRANCH_TOPICS.UPDATE_ONBOARDING, {
@@ -90,10 +90,8 @@ export class BranchController implements OnModuleInit {
   }
 
   @Roles(UserRole.BUSINESS_OWNER)
-  @Post(':branchId/finalize')
-  async finalizeBranch(
-    @Param('branchId') branchId: string,
-  ) {
+  @Post('finalize')
+  async finalizeBranch(@GetBranchId() branchId: string) {
     return this.branchClient.send(BRANCH_TOPICS.FINALIZE, {
       branchId,
     });
@@ -109,9 +107,7 @@ export class BranchController implements OnModuleInit {
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
   @Get('details/:branchId')
-  getBranchById(
-    @GetBranchId() branchId: string,
-  ) {
+  getBranchById(@GetBranchId() branchId: string) {
     return this.branchClient.send(BRANCH_TOPICS.GET_BY_ID, {
       branchId,
     });
@@ -119,10 +115,7 @@ export class BranchController implements OnModuleInit {
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
   @Patch('update')
-  updateBranch(
-    @GetBranchId() branchId: string,
-    @Body() dto: UpdateBranchDto,
-  ) {
+  updateBranch(@GetBranchId() branchId: string, @Body() dto: UpdateBranchDto) {
     return this.branchClient.send(BRANCH_TOPICS.UPDATE, {
       branchId,
       data: dto,
@@ -131,9 +124,7 @@ export class BranchController implements OnModuleInit {
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
   @Delete('delete')
-  deleteBranch(
-    @GetBranchId() branchId: string,
-  ) {
+  deleteBranch(@GetBranchId() branchId: string) {
     return this.branchClient.send(BRANCH_TOPICS.DELETE, {
       branchId,
     });
@@ -187,36 +178,38 @@ export class BranchController implements OnModuleInit {
     });
   }
 
-@Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
-@Post('menu/upload')
-@ApiConsumes('multipart/form-data')
-@UseInterceptors(FileInterceptor('file'))
-async uploadMenuExcel(
-  @GetBranchId() branchId: string,
-  @UploadedFile() file: Express.Multer.File,
-  @Res() res: Response,
-) {
-  if (!file) {
-    return res.status(HttpStatus.BAD_REQUEST).json({ message: 'No file uploaded' });
-  }
+  @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
+  @Post('menu/upload')
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadMenuExcel(
+    @GetBranchId() branchId: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Res() res: Response,
+  ) {
+    if (!file) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: 'No file uploaded' });
+    }
 
-  try {
-    const result = await lastValueFrom(
-      this.branchClient
-        .send(BRANCH_TOPICS.UPLOAD_MENU, {
+    try {
+      const result = await lastValueFrom(
+        this.branchClient.send(BRANCH_TOPICS.UPLOAD_MENU, {
           branchId,
           fileBuffer: file.buffer,
-        })
-    );
+        }),
+      );
 
-    return res.status(HttpStatus.CREATED).json(result);
-  } catch (error) {
-    const status = (error as any)?.statusCode || HttpStatus.INTERNAL_SERVER_ERROR;
-    return res.status(status).json({
-      message: (error as any)?.message || 'Gateway Timeout or Internal Error',
-    });
+      return res.status(HttpStatus.CREATED).json(result);
+    } catch (error) {
+      const status =
+        (error as any)?.statusCode || HttpStatus.INTERNAL_SERVER_ERROR;
+      return res.status(status).json({
+        message: (error as any)?.message || 'Gateway Timeout or Internal Error',
+      });
+    }
   }
-}
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
   @Patch('menu/:menuItemId')
@@ -310,4 +303,3 @@ async uploadMenuExcel(
     return this.branchClient.send(BRANCH_TOPICS.DELETE_ORDER, { orderId });
   }
 }
-
