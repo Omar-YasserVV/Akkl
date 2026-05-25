@@ -10,6 +10,58 @@ export type ServiceMode = "Dine in" | "Pickup" | "Delivery";
 
 export type OrderChannel = "POS" | "QR menu" | "Website" | "Delivery apps";
 
+export type GetBranchDetailsResponse = {
+  id: string;
+  status: "ACTIVE" | "INACTIVE";
+  branchNumber: string;
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  phone: string;
+  weeklyHours: {
+    monday: string;
+    tuesday: string;
+    wednesday: string;
+    thursday: string;
+    friday: string;
+    saturday: string;
+    sunday: string;
+  };
+  busyModeSettings: {
+    orderThreshold: number;
+    autoBusyEnabled: boolean;
+    extraPrepTimeMinutes: number;
+  };
+  haveTables: boolean;
+  haveReservations: boolean;
+  haveWarehouses: boolean;
+  createdAt: string;
+  updatedAt: string;
+  restaurantId: string;
+  tables: {
+    id: string;
+    tableNumber: string;
+    capacity: number;
+    zoneName: string;
+    branchId: string;
+  }[];
+  warehouses: {
+    id: string;
+    name: string;
+    branchId: string;
+  };
+  hardware: {
+    id: string;
+    branchId: string;
+    type: "KDS" | "PRINTER";
+    name: string;
+    ipAddress: string;
+    createdAt: string;
+  }[];
+  activeStep: number;
+};
+
 export type BranchIdentitySettings = {
   branchName: string;
   branchCode: string;

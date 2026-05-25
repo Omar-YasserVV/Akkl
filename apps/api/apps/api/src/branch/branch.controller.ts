@@ -106,7 +106,7 @@ export class BranchController implements OnModuleInit {
   }
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
-  @Get('details/:branchId')
+  @Get('details')
   getBranchById(@GetBranchId() branchId: string) {
     return this.branchClient.send(BRANCH_TOPICS.GET_BY_ID, {
       branchId,
