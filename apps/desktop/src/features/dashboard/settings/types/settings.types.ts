@@ -144,3 +144,60 @@ export type SettingsStep = {
   description: string;
   icon: IconType;
 };
+export type WeekDayHours = {
+  open: string;
+  close: string;
+};
+
+export type OnboardingHardware = {
+  type: "KDS" | "PRINTER";
+  name: string;
+  ipAddress: string;
+};
+
+export type OnboardingZone = {
+  name: string;
+  tables: {
+    tableNumber: string;
+    capacity: number;
+  }[];
+};
+
+export type OnboardingBusyModeSettings = {
+  autoBusyEnabled: boolean;
+  orderThreshold: number;
+  extraPrepTimeMinutes: number;
+  holidayClosure: {
+    enabled: boolean;
+    reason: string;
+  };
+};
+
+export type OnboardingBranchPayload = {
+  name: string;
+  address: string;
+  phone: string;
+  weeklyHours: Partial<
+    Record<
+      | "monday"
+      | "tuesday"
+      | "wednesday"
+      | "thursday"
+      | "friday"
+      | "saturday"
+      | "sunday",
+      WeekDayHours
+    >
+  >;
+  busyModeSettings: OnboardingBusyModeSettings;
+  haveTables: boolean;
+  zones: OnboardingZone[];
+  haveReservations: boolean;
+  haveWarehouses: boolean;
+  warehouseName: string;
+  hardware: OnboardingHardware[];
+};
+
+export type OnboardingBranchResponse = GetBranchDetailsResponse;
+export type UpdateBranchPayload = OnboardingBranchPayload;
+export type UpdateBranchResponse = OnboardingBranchResponse;
