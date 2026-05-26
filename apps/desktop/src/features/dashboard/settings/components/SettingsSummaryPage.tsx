@@ -39,13 +39,10 @@ const SettingsSummaryPage = () => {
     <div className="mx-auto max-w-[1320px] space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
-            Settings
-          </p>
-          <h1 className="mt-2 text-4xl font-bold text-slate-950">
+          <h1 className="font-cherry text-primary text-5xl leading-tight">
             Branch setup
           </h1>
-          <p className="mt-2 max-w-2xl text-slate-500">
+          <p className="text-muted-foreground">
             Review and adjust the onboarding information in one vertically
             scrollable settings page.
           </p>

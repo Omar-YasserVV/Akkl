@@ -1,5 +1,6 @@
 import { Button, Input } from "@heroui/react";
-import { LuInfo, LuPlus, LuSearch } from "react-icons/lu";
+import { BsPlusCircle } from "react-icons/bs";
+import { LuInfo, LuSearch } from "react-icons/lu";
 import { useSettingsStore } from "../../settings/store/useSettingsStore";
 import AreaListRow from "./AreaListRow";
 
@@ -27,7 +28,7 @@ const DefineAreasView = ({ onSelectArea }: DefineAreasViewProps) => {
           </p>
         </div>
         <Button color="primary" className="font-bold text-white shadow-sm">
-          <LuPlus size={18} />
+          <BsPlusCircle size={18} />
           Add New Area
         </Button>
       </div>
