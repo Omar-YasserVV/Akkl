@@ -1,6 +1,7 @@
 import { Button, Input } from "@heroui/react";
 import { BsPlusCircle } from "react-icons/bs";
 import { LuInfo, LuSearch } from "react-icons/lu";
+import { Link } from "react-router-dom";
 import { useSettingsStore } from "../../settings/store/useSettingsStore";
 import AreaListRow from "./AreaListRow";
 
@@ -27,7 +28,7 @@ const DefineAreasView = ({ onSelectArea }: DefineAreasViewProps) => {
             Organize your restaurant into logical zones for easier management.
           </p>
         </div>
-        <Button color="primary" className="font-bold text-white shadow-sm">
+        <Button color="primary" as={Link} to="/dashboard/settings" className="font-bold text-white shadow-sm">
           <BsPlusCircle size={18} />
           Add New Area
         </Button>
