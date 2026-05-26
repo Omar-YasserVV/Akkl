@@ -178,12 +178,12 @@ const Sidebar = () => {
       {/* Bottom spacer/Optional Footer */}
       <div className="mt-auto p-4">
         <Button
-          className="w-full justify-between text-red-500"
+          className={`w-full text-red-500 ${isCollapsed ? "justify-center min-w-0 px-2" : "justify-between"}`}
           variant="bordered"
           onPress={logout}
-          endContent={<LuLogOut />}
+          endContent={!isCollapsed ? <LuLogOut /> : null}
         >
-          Logout
+          {isCollapsed ? <LuLogOut /> : "Logout"}
         </Button>
       </div>
     </motion.div>
