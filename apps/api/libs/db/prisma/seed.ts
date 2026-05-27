@@ -324,29 +324,29 @@ async function main() {
   // 8. TABLES & RESERVATIONS (UPDATED WITH ZONES)
   // -------------------------------------------------------
   const table1 = await prisma.table.create({
-    data: { 
-      tableNumber: 'Table 1', 
-      capacity: 4, 
-      zoneName: 'Indoor Dining', 
-      branchId: branch.id 
+    data: {
+      tableNumber: 'Table 1',
+      capacity: 4,
+      zoneName: 'Indoor Dining',
+      branchId: branch.id,
     },
   });
 
   const table2 = await prisma.table.create({
-    data: { 
-      tableNumber: 'Table 2', 
-      capacity: 2, 
-      zoneName: 'Indoor Dining', 
-      branchId: branch.id 
+    data: {
+      tableNumber: 'Table 2',
+      capacity: 2,
+      zoneName: 'Indoor Dining',
+      branchId: branch.id,
     },
   });
 
   const table3 = await prisma.table.create({
-    data: { 
-      tableNumber: 'Patio 1', 
-      capacity: 6, 
-      zoneName: 'Outdoor Patio', 
-      branchId: branch.id 
+    data: {
+      tableNumber: 'Patio 1',
+      capacity: 6,
+      zoneName: 'Outdoor Patio',
+      branchId: branch.id,
     },
   });
 
@@ -932,7 +932,8 @@ async function main() {
     totalPrice: quantity * price,
   });
 
-  await prisma.order.create({
+  // Use captures to store created order objects for possible further use
+  const order1 = await prisma.order.create({
     data: {
       totalPrice: 27.97,
       itemCount: 3,
@@ -950,7 +951,7 @@ async function main() {
     },
   });
 
-  await prisma.order.create({
+  const order2 = await prisma.order.create({
     data: {
       totalPrice: 19.98,
       itemCount: 2,
@@ -968,7 +969,7 @@ async function main() {
     },
   });
 
-  await prisma.order.create({
+  const order3 = await prisma.order.create({
     data: {
       totalPrice: 9.99,
       itemCount: 1,
@@ -983,7 +984,7 @@ async function main() {
     },
   });
 
-  await prisma.order.create({
+  const order4 = await prisma.order.create({
     data: {
       totalPrice: 12.99,
       itemCount: 1,
@@ -999,7 +1000,7 @@ async function main() {
   });
 
   // --- Additional 20 diverse orders for seeding ---
-  await prisma.order.create({
+  const order5 = await prisma.order.create({
     data: {
       totalPrice: 24.97,
       itemCount: 2,
@@ -1017,7 +1018,7 @@ async function main() {
     },
   });
 
-  await prisma.order.create({
+  const order6 = await prisma.order.create({
     data: {
       totalPrice: 13.99,
       itemCount: 1,
@@ -1032,7 +1033,7 @@ async function main() {
     },
   });
 
-  await prisma.order.create({
+  const order7 = await prisma.order.create({
     data: {
       totalPrice: 21.99,
       itemCount: 2,
@@ -1047,7 +1048,7 @@ async function main() {
     },
   });
 
-  await prisma.order.create({
+  const order8 = await prisma.order.create({
     data: {
       totalPrice: 14.98,
       itemCount: 2,
@@ -1062,7 +1063,7 @@ async function main() {
     },
   });
 
-  await prisma.order.create({
+  const order9 = await prisma.order.create({
     data: {
       totalPrice: 7.49,
       itemCount: 1,
@@ -1077,7 +1078,7 @@ async function main() {
     },
   });
 
-  await prisma.order.create({
+  const order10 = await prisma.order.create({
     data: {
       totalPrice: 18.98,
       itemCount: 2,
@@ -1095,7 +1096,7 @@ async function main() {
     },
   });
 
-  await prisma.order.create({
+  const order11 = await prisma.order.create({
     data: {
       totalPrice: 10.98,
       itemCount: 2,
@@ -1110,7 +1111,7 @@ async function main() {
     },
   });
 
-  await prisma.order.create({
+  const order12 = await prisma.order.create({
     data: {
       totalPrice: 25.98,
       itemCount: 2,
@@ -1128,7 +1129,7 @@ async function main() {
     },
   });
 
-  await prisma.order.create({
+  const order13 = await prisma.order.create({
     data: {
       totalPrice: 12.49,
       itemCount: 1,
@@ -1147,7 +1148,7 @@ async function main() {
     },
   });
 
-  await prisma.order.create({
+  const order14 = await prisma.order.create({
     data: {
       totalPrice: 17.99,
       itemCount: 1,
@@ -1162,7 +1163,7 @@ async function main() {
     },
   });
 
-  await prisma.order.create({
+  const order15 = await prisma.order.create({
     data: {
       totalPrice: 22.48,
       itemCount: 3,
@@ -1180,7 +1181,7 @@ async function main() {
     },
   });
 
-  await prisma.order.create({
+  const order16 = await prisma.order.create({
     data: {
       totalPrice: 11.99,
       itemCount: 2,
@@ -1198,7 +1199,7 @@ async function main() {
     },
   });
 
-  await prisma.order.create({
+  const order17 = await prisma.order.create({
     data: {
       totalPrice: 36.97,
       itemCount: 3,
@@ -1216,7 +1217,7 @@ async function main() {
     },
   });
 
-  await prisma.order.create({
+  const order18 = await prisma.order.create({
     data: {
       totalPrice: 10.98,
       itemCount: 2,
@@ -1231,7 +1232,7 @@ async function main() {
     },
   });
 
-  await prisma.order.create({
+  const order19 = await prisma.order.create({
     data: {
       totalPrice: 29.98,
       itemCount: 2,
@@ -1249,7 +1250,7 @@ async function main() {
     },
   });
 
-  await prisma.order.create({
+  const order20 = await prisma.order.create({
     data: {
       totalPrice: 7.98,
       itemCount: 2,
@@ -1267,7 +1268,7 @@ async function main() {
     },
   });
 
-  await prisma.order.create({
+  const order21 = await prisma.order.create({
     data: {
       totalPrice: 12.98,
       itemCount: 2,
@@ -1285,7 +1286,7 @@ async function main() {
     },
   });
 
-  await prisma.order.create({
+  const order22 = await prisma.order.create({
     data: {
       totalPrice: 10.98,
       itemCount: 2,
@@ -1303,7 +1304,7 @@ async function main() {
     },
   });
 
-  await prisma.order.create({
+  const order23 = await prisma.order.create({
     data: {
       totalPrice: 31.98,
       itemCount: 4,
@@ -1321,7 +1322,7 @@ async function main() {
     },
   });
 
-  await prisma.order.create({
+  const order24 = await prisma.order.create({
     data: {
       totalPrice: 19.97,
       itemCount: 3,
@@ -1340,7 +1341,7 @@ async function main() {
     },
   });
 
-  await prisma.order.create({
+  const order25 = await prisma.order.create({
     data: {
       totalPrice: 15.99,
       itemCount: 2,
@@ -1363,52 +1364,261 @@ async function main() {
   // -------------------------------------------------------
   // 16. INVENTORY USAGE LOGS
   // -------------------------------------------------------
+  // Inventory Usage Logs referencing seeded orders
+
+  // Create one inventory usage log per order (matching all 25 orders)
   await prisma.inventoryUsageLog.createMany({
     data: [
+      // Manually written example logs for demonstration; adjust the inventoryItemId, notes, and values accordingly.
       {
         inventoryItemId: beefItem.id,
+        orderId: order1.id,
         action: InventoryLogAction.CONSUME,
-        notes: 'Used for 2 double cheeseburgers',
+        notes: 'Used for 2 double cheeseburgers (order1)',
         previousQuantity: 10,
         newQuantity: 8,
         quantityChange: -2,
-        createdAt: new Date(),
+        createdAt: new Date(order1.createdAt ?? Date.now()),
       },
       {
         inventoryItemId: cheeseItem.id,
+        orderId: order2.id,
         action: InventoryLogAction.CONSUME,
-        notes: 'Used for 2 double cheeseburgers',
-        previousQuantity: 12,
-        newQuantity: 10,
-        quantityChange: -2,
-        createdAt: new Date(),
-      },
-      {
-        inventoryItemId: lettuceItem.id,
-        action: InventoryLogAction.UPDATE,
-        notes: 'Wilted lettuce discarded',
-        previousQuantity: 5,
-        newQuantity: 4,
+        notes: 'Used cheese in crispy chicken sandwich (order2)',
+        previousQuantity: 20,
+        newQuantity: 19,
         quantityChange: -1,
-        createdAt: new Date(),
+        createdAt: new Date(order2.createdAt ?? Date.now()),
       },
       {
         inventoryItemId: friesItem.id,
+        orderId: order3.id,
         action: InventoryLogAction.CONSUME,
-        notes: 'Daily fries prep',
-        previousQuantity: 7,
-        newQuantity: 5,
+        notes: 'Used for fries order (order3)',
+        previousQuantity: 30,
+        newQuantity: 28,
         quantityChange: -2,
-        createdAt: new Date(Date.now() - 86400000),
+        createdAt: new Date(order3.createdAt ?? Date.now()),
       },
       {
-        inventoryItemId: chickenItem.id,
+        inventoryItemId: lettuceItem.id,
+        orderId: order4.id,
         action: InventoryLogAction.CONSUME,
-        notes: 'Used for 1 crispy chicken sandwich',
+        notes: 'Lettuce for veggie burger (order4)',
         previousQuantity: 10,
         newQuantity: 9,
         quantityChange: -1,
-        createdAt: new Date(),
+        createdAt: new Date(order4.createdAt ?? Date.now()),
+      },
+      {
+        inventoryItemId: chickenItem.id,
+        orderId: order5.id,
+        action: InventoryLogAction.CONSUME,
+        notes: 'Chicken used in sandwich (order5)',
+        previousQuantity: 8,
+        newQuantity: 7,
+        quantityChange: -1,
+        createdAt: new Date(order5.createdAt ?? Date.now()),
+      },
+      {
+        inventoryItemId: friesItem.id,
+        orderId: order6.id,
+        action: InventoryLogAction.CONSUME,
+        notes: 'Daily fries prep (order6)',
+        previousQuantity: 7,
+        newQuantity: 5,
+        quantityChange: -2,
+        createdAt: new Date(order6.createdAt ?? Date.now() - 86400000),
+      },
+      {
+        inventoryItemId: beefItem.id,
+        orderId: order7.id,
+        action: InventoryLogAction.CONSUME,
+        notes: 'Used for beef burger (order7)',
+        previousQuantity: 8,
+        newQuantity: 7,
+        quantityChange: -1,
+        createdAt: new Date(order7.createdAt ?? Date.now()),
+      },
+      {
+        inventoryItemId: cheeseItem.id,
+        orderId: order8.id,
+        action: InventoryLogAction.CONSUME,
+        notes: 'Cheese slice for cheeseburger (order8)',
+        previousQuantity: 19,
+        newQuantity: 18,
+        quantityChange: -1,
+        createdAt: new Date(order8.createdAt ?? Date.now()),
+      },
+      {
+        inventoryItemId: lettuceItem.id,
+        orderId: order9.id,
+        action: InventoryLogAction.CONSUME,
+        notes: 'Lettuce in taco (order9)',
+        previousQuantity: 9,
+        newQuantity: 8,
+        quantityChange: -1,
+        createdAt: new Date(order9.createdAt ?? Date.now()),
+      },
+      {
+        inventoryItemId: chickenItem.id,
+        orderId: order10.id,
+        action: InventoryLogAction.CONSUME,
+        notes: 'Chicken for wrap (order10)',
+        previousQuantity: 7,
+        newQuantity: 5,
+        quantityChange: -2,
+        createdAt: new Date(order10.createdAt ?? Date.now()),
+      },
+      {
+        inventoryItemId: beefItem.id,
+        orderId: order11.id,
+        action: InventoryLogAction.CONSUME,
+        notes: 'Beef for nachos (order11)',
+        previousQuantity: 7,
+        newQuantity: 6,
+        quantityChange: -1,
+        createdAt: new Date(order11.createdAt ?? Date.now()),
+      },
+      {
+        inventoryItemId: cheeseItem.id,
+        orderId: order12.id,
+        action: InventoryLogAction.CONSUME,
+        notes: 'Melted cheese on fries (order12)',
+        previousQuantity: 18,
+        newQuantity: 16,
+        quantityChange: -2,
+        createdAt: new Date(order12.createdAt ?? Date.now()),
+      },
+      {
+        inventoryItemId: lettuceItem.id,
+        orderId: order13.id,
+        action: InventoryLogAction.UPDATE,
+        notes: 'Wilted lettuce discarded (order13)',
+        previousQuantity: 5,
+        newQuantity: 4,
+        quantityChange: -1,
+        createdAt: new Date(order13.createdAt ?? Date.now()),
+      },
+      {
+        inventoryItemId: friesItem.id,
+        orderId: order14.id,
+        action: InventoryLogAction.CONSUME,
+        notes: 'Loaded fries special (order14)',
+        previousQuantity: 5,
+        newQuantity: 4,
+        quantityChange: -1,
+        createdAt: new Date(order14.createdAt ?? Date.now()),
+      },
+      {
+        inventoryItemId: chickenItem.id,
+        orderId: order15.id,
+        action: InventoryLogAction.CONSUME,
+        notes: 'Chicken for burrito (order15)',
+        previousQuantity: 5,
+        newQuantity: 4,
+        quantityChange: -1,
+        createdAt: new Date(order15.createdAt ?? Date.now()),
+      },
+      {
+        inventoryItemId: beefItem.id,
+        orderId: order16.id,
+        action: InventoryLogAction.CONSUME,
+        notes: 'Used for signature burger (order16)',
+        previousQuantity: 6,
+        newQuantity: 4,
+        quantityChange: -2,
+        createdAt: new Date(order16.createdAt ?? Date.now()),
+      },
+      {
+        inventoryItemId: cheeseItem.id,
+        orderId: order17.id,
+        action: InventoryLogAction.CONSUME,
+        notes: 'Extra cheese pizza (order17)',
+        previousQuantity: 16,
+        newQuantity: 15,
+        quantityChange: -1,
+        createdAt: new Date(order17.createdAt ?? Date.now()),
+      },
+      {
+        inventoryItemId: lettuceItem.id,
+        orderId: order18.id,
+        action: InventoryLogAction.CONSUME,
+        notes: 'Lettuce for salad (order18)',
+        previousQuantity: 4,
+        newQuantity: 2,
+        quantityChange: -2,
+        createdAt: new Date(order18.createdAt ?? Date.now()),
+      },
+      {
+        inventoryItemId: friesItem.id,
+        orderId: order19.id,
+        action: InventoryLogAction.CONSUME,
+        notes: 'Fries consumed (order19)',
+        previousQuantity: 4,
+        newQuantity: 2,
+        quantityChange: -2,
+        createdAt: new Date(order19.createdAt ?? Date.now()),
+      },
+      {
+        inventoryItemId: chickenItem.id,
+        orderId: order20.id,
+        action: InventoryLogAction.CONSUME,
+        notes: 'Chicken for nuggets (order20)',
+        previousQuantity: 4,
+        newQuantity: 3,
+        quantityChange: -1,
+        createdAt: new Date(order20.createdAt ?? Date.now()),
+      },
+      {
+        inventoryItemId: beefItem.id,
+        orderId: order21.id,
+        action: InventoryLogAction.CONSUME,
+        notes: 'Beef for sliders (order21)',
+        previousQuantity: 4,
+        newQuantity: 2,
+        quantityChange: -2,
+        createdAt: new Date(order21.createdAt ?? Date.now()),
+      },
+      {
+        inventoryItemId: cheeseItem.id,
+        orderId: order22.id,
+        action: InventoryLogAction.CONSUME,
+        notes: 'Cheese for quesadilla (order22)',
+        previousQuantity: 15,
+        newQuantity: 13,
+        quantityChange: -2,
+        createdAt: new Date(order22.createdAt ?? Date.now()),
+      },
+      {
+        inventoryItemId: lettuceItem.id,
+        orderId: order23.id,
+        action: InventoryLogAction.CONSUME,
+        notes: 'Lettuce for wrap (order23)',
+        previousQuantity: 2,
+        newQuantity: 1,
+        quantityChange: -1,
+        createdAt: new Date(order23.createdAt ?? Date.now()),
+      },
+      {
+        inventoryItemId: friesItem.id,
+        orderId: order24.id,
+        action: InventoryLogAction.CONSUME,
+        notes: 'Fries for large combo (order24)',
+        previousQuantity: 2,
+        newQuantity: 0,
+        quantityChange: -2,
+        createdAt: new Date(order24.createdAt ?? Date.now()),
+      },
+      {
+        inventoryItemId: chickenItem.id,
+        orderId: order25.id,
+        action: InventoryLogAction.CONSUME,
+        notes: 'Chicken in club sandwich (order25)',
+        previousQuantity: 3,
+        newQuantity: 2,
+        quantityChange: -1,
+        createdAt: new Date(order25.createdAt ?? Date.now()),
       },
     ],
   });
