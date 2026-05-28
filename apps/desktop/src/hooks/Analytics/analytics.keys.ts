@@ -16,6 +16,11 @@ export const analyticsKeys = {
   branchOrder: (daysAgo: AnalyticsDaysAgo) =>
     [...analyticsKeys.branchOrders(), daysAgo] as const,
 
+  // Expenses Keys
+  expenses: () => [...analyticsKeys.all, "expenses"] as const,
+  expense: (daysAgo: AnalyticsDaysAgo) =>
+    [...analyticsKeys.expenses(), daysAgo] as const,
+
   // Top Selling Items Keys
   topSellings: () => [...analyticsKeys.all, "top-selling"] as const,
   topSelling: (params: GetTopSellingItemsParams) =>

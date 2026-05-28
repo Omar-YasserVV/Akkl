@@ -17,6 +17,11 @@ export const useBranchOrdersQuery = (daysAgo: AnalyticsDaysAgo) =>
     queryKey: analyticsKeys.branchOrder(daysAgo),
     queryFn: () => analyticsApis.getBranchOrders(daysAgo),
   });
+export const useBranchExpensesQuery = (daysAgo: AnalyticsDaysAgo) =>
+  useQuery({
+    queryKey: analyticsKeys.expense(daysAgo),
+    queryFn: () => analyticsApis.getBranchExpenses(daysAgo),
+  });
 
 export const useTopSellingItemsQuery = (
   params: GetTopSellingItemsParams = {},

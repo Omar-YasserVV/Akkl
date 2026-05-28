@@ -31,4 +31,11 @@ export const analyticsApis = {
       { params: { daysAgo } },
     );
   },
+
+  getBranchExpenses: async (daysAgo: AnalyticsDaysAgo) => {
+    return apiClient.get<LineChartAnalyticsResponseDto>(
+      `${BASE_URL}/branch/expenses`,
+      { params: { daysAgo } },
+    );
+  },
 };
