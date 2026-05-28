@@ -107,6 +107,8 @@ model Branch {
   tables           Table[]
   employees        User[]
   warehouses       Warehouse?
+  inventoryUsageLogs  InventoryUsageLog[]  @relation("BranchInventoryUsageLogs")
+
 }
 
 /// Tracks device hardware for a branch (Step 4 wizard).
@@ -257,7 +259,9 @@ model InventoryUsageLog {
   inventoryItem    InventoryItem       @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade) /// Inventory item relation.
   order            Order?              @relation("OrderInventoryUsageLog", fields: [orderId], references: [id])
   orderId          String?                                                               /// Optional reference to related order.
-  
+  branchId         String
+  branch   Branch                      @relation("BranchInventoryUsageLogs", fields: [branchId], references: [id], onDelete: Cascade)
+
   @@index([inventoryItemId])                                                             /// Indexes for quick queries.
   @@index([inventoryItemId, createdAt])
   @@index([action])

@@ -237,31 +237,6 @@ async function main() {
     },
   });
 
-  const branch2 = await prisma.branch.create({
-    data: {
-      name: 'Uptown Branch',
-      branchNumber: 'BR-002',
-      address: '456 Main Avenue, New Cairo',
-      phone: '01222987654',
-      latitude: 30.0055,
-      longitude: 31.4741,
-      status: BranchStatus.ACTIVE,
-      restaurantId: restaurant.id,
-      haveTables: false,
-      haveReservations: false,
-      haveWarehouses: true,
-      weeklyHours: {
-        monday: '10:00 AM - 08:00 PM',
-        tuesday: '10:00 AM - 08:00 PM',
-        wednesday: '10:00 AM - 08:00 PM',
-        thursday: '10:00 AM - 08:00 PM',
-        friday: '10:00 AM - 10:00 PM',
-        saturday: '10:00 AM - 10:00 PM',
-        sunday: '10:00 AM - 08:00 PM',
-      },
-    },
-  });
-
   await prisma.user.updateMany({
     where: { id: { in: [manager.id, cashier.id, chief.id, waiter.id] } },
     data: { branchId: branch.id },
@@ -291,12 +266,6 @@ async function main() {
         type: HardwareType.PRINTER,
         name: 'Main Bar Thermal',
         ipAddress: '192.168.1.150',
-      },
-      {
-        branchId: branch2.id,
-        type: HardwareType.PRINTER,
-        name: 'Takeaway Counter Printer',
-        ipAddress: '10.0.0.50',
       },
     ],
   });
@@ -386,10 +355,6 @@ async function main() {
   // -------------------------------------------------------
   const warehouse = await prisma.warehouse.create({
     data: { name: 'Main Cold Storage', branchId: branch.id },
-  });
-
-  const warehouse2 = await prisma.warehouse.create({
-    data: { name: 'Uptown Dry Storage', branchId: branch2.id },
   });
 
   console.log('✅ Warehouses created');
@@ -552,16 +517,6 @@ async function main() {
     },
   });
 
-  const sesameOilItem = await prisma.inventoryItem.create({
-    data: {
-      ingredientId: sesameOil.id,
-      warehouseId: warehouse2.id,
-      quantity: 0,
-      minimumQuantity: 3,
-      stockStatus: stockStatus.OUT_OF_STOCK,
-    },
-  });
-
   console.log('✅ Inventory items created');
 
   // -------------------------------------------------------
@@ -646,17 +601,6 @@ async function main() {
         expiresAt: new Date(Date.now() + 20 * 86400000),
         status: BatchStatus.ACTIVE,
       },
-      {
-        inventoryItemId: sesameOilItem.id,
-        initialQuantity: 10.0,
-        remainingQuantity: 10.0,
-        numberOfUnits: 2,
-        unitSize: 5,
-        costPerUnit: 6.5,
-        receivedAt: new Date(),
-        expiresAt: new Date(Date.now() + 365 * 86400000),
-        status: BatchStatus.ACTIVE,
-      },
     ],
   });
 
@@ -688,10 +632,6 @@ async function main() {
     prisma.inventoryItem.update({
       where: { id: friesItem.id },
       data: { quantity: 5.0, stockStatus: stockStatus.LOW_STOCK },
-    }),
-    prisma.inventoryItem.update({
-      where: { id: sesameOilItem.id },
-      data: { quantity: 10.0, stockStatus: stockStatus.IN_STOCK },
     }),
   ]);
 
@@ -1371,6 +1311,7 @@ async function main() {
     data: [
       // Manually written example logs for demonstration; adjust the inventoryItemId, notes, and values accordingly.
       {
+        branchId: branch.id,
         inventoryItemId: beefItem.id,
         orderId: order1.id,
         action: InventoryLogAction.CONSUME,
@@ -1381,6 +1322,7 @@ async function main() {
         createdAt: new Date(order1.createdAt ?? Date.now()),
       },
       {
+        branchId: branch.id,
         inventoryItemId: cheeseItem.id,
         orderId: order2.id,
         action: InventoryLogAction.CONSUME,
@@ -1391,6 +1333,7 @@ async function main() {
         createdAt: new Date(order2.createdAt ?? Date.now()),
       },
       {
+        branchId: branch.id,
         inventoryItemId: friesItem.id,
         orderId: order3.id,
         action: InventoryLogAction.CONSUME,
@@ -1401,6 +1344,7 @@ async function main() {
         createdAt: new Date(order3.createdAt ?? Date.now()),
       },
       {
+        branchId: branch.id,
         inventoryItemId: lettuceItem.id,
         orderId: order4.id,
         action: InventoryLogAction.CONSUME,
@@ -1411,6 +1355,7 @@ async function main() {
         createdAt: new Date(order4.createdAt ?? Date.now()),
       },
       {
+        branchId: branch.id,
         inventoryItemId: chickenItem.id,
         orderId: order5.id,
         action: InventoryLogAction.CONSUME,
@@ -1421,6 +1366,7 @@ async function main() {
         createdAt: new Date(order5.createdAt ?? Date.now()),
       },
       {
+        branchId: branch.id,
         inventoryItemId: friesItem.id,
         orderId: order6.id,
         action: InventoryLogAction.CONSUME,
@@ -1431,6 +1377,7 @@ async function main() {
         createdAt: new Date(order6.createdAt ?? Date.now() - 86400000),
       },
       {
+        branchId: branch.id,
         inventoryItemId: beefItem.id,
         orderId: order7.id,
         action: InventoryLogAction.CONSUME,
@@ -1441,6 +1388,7 @@ async function main() {
         createdAt: new Date(order7.createdAt ?? Date.now()),
       },
       {
+        branchId: branch.id,
         inventoryItemId: cheeseItem.id,
         orderId: order8.id,
         action: InventoryLogAction.CONSUME,
@@ -1451,6 +1399,7 @@ async function main() {
         createdAt: new Date(order8.createdAt ?? Date.now()),
       },
       {
+        branchId: branch.id,
         inventoryItemId: lettuceItem.id,
         orderId: order9.id,
         action: InventoryLogAction.CONSUME,
@@ -1461,6 +1410,7 @@ async function main() {
         createdAt: new Date(order9.createdAt ?? Date.now()),
       },
       {
+        branchId: branch.id,
         inventoryItemId: chickenItem.id,
         orderId: order10.id,
         action: InventoryLogAction.CONSUME,
@@ -1471,6 +1421,7 @@ async function main() {
         createdAt: new Date(order10.createdAt ?? Date.now()),
       },
       {
+        branchId: branch.id,
         inventoryItemId: beefItem.id,
         orderId: order11.id,
         action: InventoryLogAction.CONSUME,
@@ -1481,6 +1432,7 @@ async function main() {
         createdAt: new Date(order11.createdAt ?? Date.now()),
       },
       {
+        branchId: branch.id,
         inventoryItemId: cheeseItem.id,
         orderId: order12.id,
         action: InventoryLogAction.CONSUME,
@@ -1491,6 +1443,7 @@ async function main() {
         createdAt: new Date(order12.createdAt ?? Date.now()),
       },
       {
+        branchId: branch.id,
         inventoryItemId: lettuceItem.id,
         orderId: order13.id,
         action: InventoryLogAction.UPDATE,
@@ -1501,6 +1454,7 @@ async function main() {
         createdAt: new Date(order13.createdAt ?? Date.now()),
       },
       {
+        branchId: branch.id,
         inventoryItemId: friesItem.id,
         orderId: order14.id,
         action: InventoryLogAction.CONSUME,
@@ -1511,6 +1465,7 @@ async function main() {
         createdAt: new Date(order14.createdAt ?? Date.now()),
       },
       {
+        branchId: branch.id,
         inventoryItemId: chickenItem.id,
         orderId: order15.id,
         action: InventoryLogAction.CONSUME,
@@ -1521,6 +1476,7 @@ async function main() {
         createdAt: new Date(order15.createdAt ?? Date.now()),
       },
       {
+        branchId: branch.id,
         inventoryItemId: beefItem.id,
         orderId: order16.id,
         action: InventoryLogAction.CONSUME,
@@ -1531,6 +1487,7 @@ async function main() {
         createdAt: new Date(order16.createdAt ?? Date.now()),
       },
       {
+        branchId: branch.id,
         inventoryItemId: cheeseItem.id,
         orderId: order17.id,
         action: InventoryLogAction.CONSUME,
@@ -1541,6 +1498,7 @@ async function main() {
         createdAt: new Date(order17.createdAt ?? Date.now()),
       },
       {
+        branchId: branch.id,
         inventoryItemId: lettuceItem.id,
         orderId: order18.id,
         action: InventoryLogAction.CONSUME,
@@ -1551,6 +1509,7 @@ async function main() {
         createdAt: new Date(order18.createdAt ?? Date.now()),
       },
       {
+        branchId: branch.id,
         inventoryItemId: friesItem.id,
         orderId: order19.id,
         action: InventoryLogAction.CONSUME,
@@ -1561,6 +1520,7 @@ async function main() {
         createdAt: new Date(order19.createdAt ?? Date.now()),
       },
       {
+        branchId: branch.id,
         inventoryItemId: chickenItem.id,
         orderId: order20.id,
         action: InventoryLogAction.CONSUME,
@@ -1571,6 +1531,7 @@ async function main() {
         createdAt: new Date(order20.createdAt ?? Date.now()),
       },
       {
+        branchId: branch.id,
         inventoryItemId: beefItem.id,
         orderId: order21.id,
         action: InventoryLogAction.CONSUME,
@@ -1581,6 +1542,7 @@ async function main() {
         createdAt: new Date(order21.createdAt ?? Date.now()),
       },
       {
+        branchId: branch.id,
         inventoryItemId: cheeseItem.id,
         orderId: order22.id,
         action: InventoryLogAction.CONSUME,
@@ -1591,6 +1553,7 @@ async function main() {
         createdAt: new Date(order22.createdAt ?? Date.now()),
       },
       {
+        branchId: branch.id,
         inventoryItemId: lettuceItem.id,
         orderId: order23.id,
         action: InventoryLogAction.CONSUME,
@@ -1601,6 +1564,7 @@ async function main() {
         createdAt: new Date(order23.createdAt ?? Date.now()),
       },
       {
+        branchId: branch.id,
         inventoryItemId: friesItem.id,
         orderId: order24.id,
         action: InventoryLogAction.CONSUME,
@@ -1611,6 +1575,7 @@ async function main() {
         createdAt: new Date(order24.createdAt ?? Date.now()),
       },
       {
+        branchId: branch.id,
         inventoryItemId: chickenItem.id,
         orderId: order25.id,
         action: InventoryLogAction.CONSUME,
