@@ -82,4 +82,41 @@ export class AnalyticsRepository {
       select: { id: true, name: true },
     });
   }
+
+  async getInventoryExpenses(branchId: string, start: Date, end: Date) {
+    const logs = await this.prisma.inventoryUsageLog.findMany({
+      where: {
+        action: 'CONSUME',
+        createdAt: { gte: start, lte: end },
+        branchId,
+      },
+      select: {
+        id: true,
+        quantityChange: true,
+        createdAt: true,
+        inventoryItem: {
+          select: {
+            ingredient: {
+              select: { name: true, unit: true },
+            },
+            batches: {
+              where: { costPerUnit: { not: null }, receivedAt: { lte: end } },
+              orderBy: { receivedAt: 'desc' },
+              select: { costPerUnit: true, receivedAt: true },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // Now we have access to log.createdAt, so we can find the correct batch
+    return logs.map((log) => ({
+      id: log.id,
+      quantityChange: log.quantityChange,
+      createdAt: log.createdAt,
+      ingredient: log.inventoryItem.ingredient,
+      costPerUnit: log.inventoryItem.batches[0]?.costPerUnit ?? null,
+    }));
+  }
 }

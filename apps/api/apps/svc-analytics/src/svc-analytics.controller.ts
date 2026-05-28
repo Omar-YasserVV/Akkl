@@ -34,12 +34,23 @@ export class SvcAnalyticsController {
 
   @MessagePattern(ANALYTICS_TOPICS.BRANCH_TOP_SELLING)
   async branchTopSelling(
-    @Payload() payload: {
+    @Payload()
+    payload: {
       branchID: string;
       dto: TopSellingAnalyticsRequestDto;
     },
   ): Promise<TopSellingAnalyticsResponseDto> {
     return this.svcAnalyticsService.branchTopSelling(
+      payload.branchID,
+      payload.dto,
+    );
+  }
+
+  @MessagePattern(ANALYTICS_TOPICS.BRANCH_EXPENSES)
+  async branchExpenses(
+    @Payload() payload: { branchID: string; dto: LineChartAnalyticsRequestDto },
+  ): Promise<any> {
+    return this.svcAnalyticsService.branchExpenses(
       payload.branchID,
       payload.dto,
     );

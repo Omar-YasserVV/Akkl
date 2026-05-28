@@ -41,10 +41,12 @@ export class SvcAnalyticsService extends SvcAnalyticsBase {
     return {
       totalCount: currentVal,
       percentageChange: this.calcPercentageChange(currentVal, previousVal),
-      records: orders.map((o) => ({
-        timestamp: o.createdAt.toISOString(),
-        value: o.totalPrice.toNumber(),
-      })),
+      records: this.buildRecords(
+        orders.map((order) => ({
+          timestamp: order.createdAt.toISOString(),
+          value: Number(order.totalPrice),
+        })),
+      ),
     };
   }
 
@@ -66,10 +68,12 @@ export class SvcAnalyticsService extends SvcAnalyticsBase {
     return {
       totalCount: currentCount,
       percentageChange: this.calcPercentageChange(currentCount, previousCount),
-      records: orders.map((o) => ({
-        timestamp: o.createdAt.toISOString(),
-        value: 1,
-      })),
+      records: this.buildRecords(
+        orders.map((o) => ({
+          timestamp: o.createdAt.toISOString(),
+          value: 1,
+        })),
+      ),
     };
   }
 
@@ -123,5 +127,57 @@ export class SvcAnalyticsService extends SvcAnalyticsBase {
     });
 
     return { totalCount: totalSold, items };
+  }
+
+  async branchExpenses(
+    branchID: string,
+    dto: LineChartAnalyticsRequestDto,
+  ): Promise<LineChartAnalyticsResponseDto> {
+    await this.assertBranchExists(branchID);
+    const days = dto.daysAgo ?? 7;
+
+    const { currentStart, now, previousStart } = this.buildPeriods(days);
+
+    // Due to type mismatch issues, we need to coerce costPerUnit values from Decimal | null to number
+    const prevExpensesRaw = await this.repo.getInventoryExpenses(
+      branchID,
+      previousStart,
+      currentStart,
+    );
+    const prevExpenses = this.CountExpenses(
+      prevExpensesRaw.map((expense) => ({
+        id: expense.id,
+        quantityChange: expense.quantityChange,
+        createdAt: expense.createdAt,
+        costPerUnit: expense.costPerUnit ? Number(expense.costPerUnit) : 0,
+      })),
+    );
+
+    const currExpensesRaw = await this.repo.getInventoryExpenses(
+      branchID,
+      currentStart,
+      now,
+    );
+    const currExpenses = this.CountExpenses(
+      currExpensesRaw.map((expense) => ({
+        id: expense.id,
+        quantityChange: expense.quantityChange,
+        createdAt: expense.createdAt,
+        costPerUnit: expense.costPerUnit ? Number(expense.costPerUnit) : 0,
+      })),
+    );
+
+    return {
+      percentageChange: this.calcPercentageChange(currExpenses, prevExpenses),
+      records: this.buildExpensesRecords(
+        currExpensesRaw.map((expense) => ({
+          id: expense.id,
+          quantityChange: expense.quantityChange,
+          createdAt: expense.createdAt,
+          costPerUnit: expense.costPerUnit ? Number(expense.costPerUnit) : 0,
+        })),
+      ),
+      totalCount: currExpenses,
+    };
   }
 }

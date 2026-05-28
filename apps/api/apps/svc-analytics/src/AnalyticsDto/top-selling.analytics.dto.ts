@@ -35,7 +35,10 @@ export class TopSellingItemDto {
   @IsString()
   menuItemId: string;
 
-  @ApiProperty({ example: 'Classic Cheeseburger', description: 'Menu item name' })
+  @ApiProperty({
+    example: 'Classic Cheeseburger',
+    description: 'Menu item name',
+  })
   @IsString()
   name: string;
 

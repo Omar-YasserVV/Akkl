@@ -74,4 +74,17 @@ export class AnalyticsController implements OnModuleInit {
       }),
     );
   }
+
+  @Get('branch/expenses')
+  async branchExpenses(
+    @Query() dto: LineChartAnalyticsRequestDto,
+    @GetBranchId() branchID: string,
+  ): Promise<any> {
+    return lastValueFrom(
+      this.analyticsClient.send(ANALYTICS_TOPICS.BRANCH_EXPENSES, {
+        branchID,
+        dto,
+      }),
+    );
+  }
 }
