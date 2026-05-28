@@ -19,6 +19,12 @@ export class ConsumeInventoryItemReqDto extends PickType(BaseInventoryItemDto, [
       'Total quantity to consume — deducted across batches using FEFO (soonest expiry first)',
   })
   consumedQuantity: number;
+
+  @ApiProperty({
+    example: 'uuid-here',
+    description: 'Branch to associate with this inventory item',
+  })
+  branchId: string;
 }
 
 export class ConsumeInventoryItemResDto extends BaseInventoryItemDto {}
@@ -56,6 +62,12 @@ export class RestockInventoryItemReqDto extends PickType(BaseInventoryItemDto, [
     description: 'Expiry date for this specific batch',
   })
   expiresAt?: Date;
+
+  @ApiProperty({
+    example: 'uuid-here',
+    description: 'Branch to associate with this inventory item',
+  })
+  branchId: string;
 }
 
 export class RestockInventoryItemResDto extends BaseInventoryItemDto {}
@@ -67,6 +79,12 @@ export class UpdateInventoryItemReqDto extends IntersectionType(
     PickType(BaseInventoryItemDto, ['minimumQuantity', 'ingredientId']),
   ),
   PickType(BaseInventoryItemDto, ['id']),
-) {}
+) {
+  @ApiProperty({
+    example: 'uuid-here',
+    description: 'Branch to associate with this inventory item',
+  })
+  branchId: string;
+}
 
 export class UpdateInventoryItemResDto extends BaseInventoryItemDto {}

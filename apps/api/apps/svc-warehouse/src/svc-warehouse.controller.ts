@@ -5,17 +5,13 @@ import { MessagePattern, Payload } from '@nestjs/microservices';
 import { IngredientDto } from './dto/inventory/Inventory.base.dto';
 import { CreateIngredientReqDto } from './dto/inventory/ingredient.create.dto';
 import {
-  CreateInventoryItemReqDto,
-  CreateInventoryItemResDto,
-} from './dto/inventory/inventory.create.dto';
-import {
   GetStockAlertsReqDto,
   GetStockAlertsResDto,
 } from './dto/inventory/inventory.alerts.dto';
 import {
-  GetInventoryLogsReqDto,
-  GetInventoryLogsResDto,
-} from './dto/inventory/inventory.logs.dto';
+  CreateInventoryItemReqDto,
+  CreateInventoryItemResDto,
+} from './dto/inventory/inventory.create.dto';
 import {
   DeductForOrderReqDto,
   DeductForOrderResDto,
@@ -32,6 +28,10 @@ import {
   ListInventoryItemsReqDto,
   ListInventoryItemsResDto,
 } from './dto/inventory/inventory.list.dto';
+import {
+  GetInventoryLogsReqDto,
+  GetInventoryLogsResDto,
+} from './dto/inventory/inventory.logs.dto';
 import {
   ConsumeInventoryItemReqDto,
   ConsumeInventoryItemResDto,

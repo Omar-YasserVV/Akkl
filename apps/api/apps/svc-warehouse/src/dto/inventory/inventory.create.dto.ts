@@ -19,6 +19,12 @@ export class CreateInventoryItemReqDto {
       'Minimum quantity threshold — triggers low stock alert below this',
   })
   minimumQuantity: number;
+
+  @ApiProperty({
+    example: 'uuid-here',
+    description: 'Branch to associate with this inventory item',
+  })
+  branchId: string;
 }
 
 export class CreateInventoryItemResDto extends BaseInventoryItemDto {}

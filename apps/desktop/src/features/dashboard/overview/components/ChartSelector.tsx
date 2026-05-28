@@ -1,8 +1,8 @@
-import { AnalyticsRecord } from "@/types/analytics";
 import { Button, cn, Skeleton } from "@heroui/react";
 import { NumberFormatter } from "@repo/utils";
 import { FaDollarSign } from "react-icons/fa";
 import { LuShoppingCart } from "react-icons/lu";
+import { AnalyticsRecord } from "../types/analytics";
 
 interface ChartItem {
   title: string;

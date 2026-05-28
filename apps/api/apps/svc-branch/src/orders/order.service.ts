@@ -1,7 +1,8 @@
 import { CreateOrderDto, UpdateOrderDto, WAREHOUSE_TOPICS } from '@app/common';
 import { ListOrdersReqDto } from '@app/common/dtos/OrderDto/list.order.dto';
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common'; // 👈 added OnModuleInit
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { DeductForOrderReqDto } from 'apps/svc-warehouse/src/dto/inventory/inventory.deduct.dto';
 import { Prisma } from 'libs/db/generated/client/client';
 import { OrderState } from 'libs/db/generated/client/enums';
 import { firstValueFrom } from 'rxjs';
@@ -10,8 +11,18 @@ import { OrderCalculator } from './order.calculator';
 import { OrderRepository } from './order.repository';
 import { OrderValidator } from './order.validator';
 
+/**
+ * Service for handling Orders business logic.
+ *
+ * Coordinates with warehouse (inventory) service via Kafka for inventory deduction,
+ * handles CRUD operations for Orders, recalculates order totals, and performs
+ * input validation and error handling.
+ */
 @Injectable()
 export class OrderService implements OnModuleInit {
+  /**
+   * Constructor for dependency injection of repositories, services, and Kafka clients.
+   */
   constructor(
     private readonly repo: OrderRepository,
     private readonly validator: OrderValidator,
@@ -20,6 +31,9 @@ export class OrderService implements OnModuleInit {
     @Inject('WAREHOUSE_SERVICE') private readonly warehouseKafka: ClientKafka,
   ) {}
 
+  /**
+   * Subscribes to inventory deduction responses on module init.
+   */
   async onModuleInit() {
     this.warehouseKafka.subscribeToResponseOf(
       WAREHOUSE_TOPICS.DEDUCT_FOR_ORDER,
@@ -27,6 +41,15 @@ export class OrderService implements OnModuleInit {
     await this.warehouseKafka.connect();
   }
 
+  /**
+   * Creates a new order after validating inputs, deducting inventory, and calculating totals.
+   * Emits `order.created` to the BRANCH_SERVICE Kafka topic.
+   *
+   * @param branchId - The branch where the order is placed
+   * @param data - Order creation DTO
+   * @param userId - The user placing the order
+   * @returns The created order
+   */
   async createOrder(branchId: string, data: CreateOrderDto, userId: string) {
     try {
       if (!data) {
@@ -54,23 +77,9 @@ export class OrderService implements OnModuleInit {
         menuItems,
       );
 
-      const deductionResult = await firstValueFrom(
-        this.warehouseKafka.send(WAREHOUSE_TOPICS.DEDUCT_FOR_ORDER, {
-          branchId,
-          items: items.map((i) => ({
-            menuItemId: i.menuItemId,
-            quantity: i.quantity,
-          })),
-        }),
-      );
-
-      if (!deductionResult.success) {
-        throw new RpcException({
-          statusCode: 422,
-          message: deductionResult.message ?? 'Inventory deduction failed',
-        });
-      }
-
+      /**
+       * Creates the order in the database via repository.
+       */
       const order = await this.repo.create({
         totalPrice: total,
         userId,
@@ -80,7 +89,31 @@ export class OrderService implements OnModuleInit {
         CustomerName: CustomerName || user.fullName,
         items: { create: orderItemsData },
       });
+      console.log(order.id);
 
+      /**
+       * Deduct inventory for ordered items by sending a message to the warehouse service.
+       * Fails if deductionResult is not successful.
+       */
+      const deductionResult = await firstValueFrom(
+        this.warehouseKafka.send(WAREHOUSE_TOPICS.DEDUCT_FOR_ORDER, {
+          branchId,
+          orderId: order.id,
+          items: items.map((i) => ({
+            menuItemId: i.menuItemId,
+            quantity: i.quantity,
+          })),
+        } as DeductForOrderReqDto),
+      );
+
+      if (!deductionResult.success) {
+        throw new RpcException({
+          statusCode: 422,
+          message: deductionResult.message ?? 'Inventory deduction failed',
+        });
+      }
+
+      // Emit event to notify other services of the creation
       this.kafka.emit('order.created', order);
       return order;
     } catch (error) {
@@ -88,6 +121,14 @@ export class OrderService implements OnModuleInit {
     }
   }
 
+  /**
+   * Updates an order, recalculating all costs if items have changed.
+   * Emits `order.updated` to the BRANCH_SERVICE Kafka topic.
+   *
+   * @param orderId - The ID of the order to update
+   * @param data - DTO for updating the order
+   * @returns The updated order object
+   */
   async updateOrder(orderId: string, data: UpdateOrderDto) {
     try {
       const existing = await this.repo.findById(orderId);
@@ -109,32 +150,33 @@ export class OrderService implements OnModuleInit {
       if (items && items.length > 0) {
         this.validator.validateItems(items);
 
-        // 1. Get menu items to get their current prices
+        // Get latest menu items information for pricing
         const menuItems = await this.repo.getMenuItems(
           existing.branchId,
           items.map((i) => i.menuItemId),
         );
 
-        // 2. Use your calculator to get the price and formatted data
+        // Calculate new totals and structure for order items
         const { total, itemCount, orderItemsData } = this.calculator.calculate(
           items,
           menuItems,
         );
 
-        // 3. Update the payload with new totals and the correct item structure
+        // Update payload with recalculated totals and items
         updatePayload = {
           ...updatePayload,
           totalPrice: total,
           itemCount: itemCount,
           items: {
             deleteMany: {},
-            create: orderItemsData, // This now includes the 'price' field!
+            create: orderItemsData, // Includes price field
           },
         };
       }
 
       const updated = await this.repo.update(orderId, updatePayload);
 
+      // Emit event indicating order was updated
       this.kafka.emit('order.updated', updated);
       return updated;
     } catch (error) {
@@ -142,6 +184,13 @@ export class OrderService implements OnModuleInit {
     }
   }
 
+  /**
+   * Deletes an order by ID.
+   * Emits `order.deleted` to the BRANCH_SERVICE Kafka topic.
+   *
+   * @param orderId - Order identifier
+   * @returns Object with success message
+   */
   async deleteOrder(orderId: string) {
     try {
       await this.repo.delete(orderId);
@@ -152,6 +201,12 @@ export class OrderService implements OnModuleInit {
     }
   }
 
+  /**
+   * Retrieves a paginated list of orders for a branch, filtered by status/source if provided.
+   *
+   * @param dto - Filtering and pagination options
+   * @returns Paginated result of orders
+   */
   async getOrdersByBranch(dto: ListOrdersReqDto) {
     const {
       pagination: { limit, page, source, status },
@@ -178,6 +233,12 @@ export class OrderService implements OnModuleInit {
     }
   }
 
+  /**
+   * Retrieves an order by its ID. If a user is attached, only essential fields are returned in the user object.
+   *
+   * @param orderId - The primary key of the order
+   * @returns Order object with user info (if any)
+   */
   async getOrderById(orderId: string) {
     try {
       const order = await this.repo.findById(orderId);
@@ -198,6 +259,12 @@ export class OrderService implements OnModuleInit {
     }
   }
 
+  /**
+   * Returns a count of orders per possible order status for a branch.
+   *
+   * @param branchId - Identifier for the branch
+   * @returns Record mapping each OrderState to a number (count)
+   */
   async getOrderStatuses(branchId: string) {
     try {
       const stats = await this.repo.groupByStatus(branchId);
@@ -220,6 +287,12 @@ export class OrderService implements OnModuleInit {
     }
   }
 
+  /**
+   * Handles and throws formatted exceptions for known Prisma/RPC errors or generic errors.
+   *
+   * @param error - Error object thrown by an operation
+   * @throws RpcException - with proper status code and details
+   */
   private handleError(error: unknown): never {
     if (error instanceof RpcException) throw error;
 

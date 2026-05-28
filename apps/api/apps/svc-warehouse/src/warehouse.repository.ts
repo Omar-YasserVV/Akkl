@@ -150,15 +150,15 @@ export class WarehouseRepository {
     await this.prisma.inventoryItem.delete({ where: { id } });
   }
 
-  async createInventoryItem(data: CreateInventoryItemReqDto) {
+  async createInventoryItem(dto: CreateInventoryItemReqDto) {
     // Used an interactive transaction to get the ID of the newly created item for the log
     return this.prisma.$transaction(async (tx) => {
       const item = await tx.inventoryItem.create({
         data: {
           quantity: 0,
-          minimumQuantity: data.minimumQuantity,
-          warehouseId: data.warehouseId,
-          ingredientId: data.ingredientId,
+          minimumQuantity: dto.minimumQuantity,
+          warehouseId: dto.warehouseId,
+          ingredientId: dto.ingredientId,
           stockStatus: stockStatus.OUT_OF_STOCK,
         },
         include: {
@@ -169,6 +169,7 @@ export class WarehouseRepository {
 
       await tx.inventoryUsageLog.create({
         data: {
+          branchId: dto.branchId,
           inventoryItemId: item.id,
           action: InventoryLogAction.CREATE,
           quantityChange: 0,
@@ -225,6 +226,7 @@ export class WarehouseRepository {
       // 3. Log the restock action
       this.prisma.inventoryUsageLog.create({
         data: {
+          branchId: dto.branchId,
           inventoryItemId: item.id,
           action: InventoryLogAction.RESTOCK,
           quantityChange: dto.addedQuantity,
@@ -274,6 +276,7 @@ export class WarehouseRepository {
       const deductFromBatch = Math.min(batch.remainingQuantity, remaining);
       const newBatchRemaining = batch.remainingQuantity - deductFromBatch;
       remaining -= deductFromBatch;
+
       batchUpdates.push(
         this.prisma.stockBatch.update({
           where: { id: batch.id },
@@ -306,6 +309,7 @@ export class WarehouseRepository {
       // Log consumption
       this.prisma.inventoryUsageLog.create({
         data: {
+          branchId: dto.branchId,
           inventoryItemId: item.id,
           action: InventoryLogAction.CONSUME,
           quantityChange: -dto.consumedQuantity,
@@ -361,6 +365,7 @@ export class WarehouseRepository {
       // Log metadata update
       await tx.inventoryUsageLog.create({
         data: {
+          branchId: dto.branchId,
           inventoryItemId: item.id,
           action: InventoryLogAction.UPDATE,
           quantityChange: 0,
@@ -380,6 +385,8 @@ export class WarehouseRepository {
     tx: Prisma.TransactionClient,
     inventoryItemId: string,
     consumedQuantity: number,
+    branchId: string,
+    orderId?: string,
   ) {
     const item = await tx.inventoryItem.findUnique({
       where: { id: inventoryItemId },
@@ -434,6 +441,8 @@ export class WarehouseRepository {
     // Add log creation inside the external transaction
     await tx.inventoryUsageLog.create({
       data: {
+        branchId,
+        orderId,
         inventoryItemId: item.id,
         action: InventoryLogAction.CONSUME,
         quantityChange: -consumedQuantity,
@@ -468,6 +477,8 @@ export class WarehouseRepository {
   async deductBatch(
     consumptionMap: Map<string, number>,
     inventoryMap: Map<string, { id: string }>,
+    branchId: string,
+    orderId?: string,
   ) {
     await this.prisma.$transaction(async (tx) => {
       for (const [ingredientId, totalConsumed] of consumptionMap) {
@@ -475,7 +486,13 @@ export class WarehouseRepository {
         if (!invItem) {
           throw new Error(`No inventory item for ingredient ${ingredientId}`);
         }
-        await this.consumeInventoryItemWithTx(tx, invItem.id, totalConsumed);
+        await this.consumeInventoryItemWithTx(
+          tx,
+          invItem.id,
+          totalConsumed,
+          branchId,
+          orderId ?? '',
+        );
       }
     });
   }
