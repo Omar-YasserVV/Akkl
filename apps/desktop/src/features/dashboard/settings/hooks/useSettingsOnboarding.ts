@@ -1,13 +1,25 @@
 import { useMemo, useState } from "react";
-import { saveSettingsOnboarding } from "../api/settingsApi";
+import {
+  useFinalizeBranch,
+  useOnboardBranch,
+} from "./useSettings";
 import { settingsSteps } from "../static/settingsDefaults";
 import { useSettingsStore } from "../store/useSettingsStore";
+import { mapSettingsDataToBranchPayload } from "../utils/settingsMappers";
 
 export const useSettingsOnboarding = () => {
   const activeStepId = useSettingsStore((state) => state.activeStepId);
   const setActiveStepId = useSettingsStore((state) => state.setActiveStepId);
   const completeOnboarding = useSettingsStore((state) => state.completeOnboarding);
+  const hydrateFromBranchDetails = useSettingsStore(
+    (state) => state.hydrateFromBranchDetails,
+  );
+  const isEditingExistingBranch = useSettingsStore(
+    (state) => state.isEditingExistingBranch,
+  );
   const data = useSettingsStore((state) => state.data);
+  const onboardBranch = useOnboardBranch();
+  const finalizeBranch = useFinalizeBranch();
   const [isSaving, setIsSaving] = useState(false);
 
   const activeStepIndex = settingsSteps.findIndex(
@@ -30,6 +42,25 @@ export const useSettingsOnboarding = () => {
     }
   };
 
+  const saveSettings = async (shouldComplete: boolean) => {
+    setIsSaving(true);
+    try {
+      const payload = mapSettingsDataToBranchPayload(data);
+      const savedBranchDetails = await onboardBranch.mutateAsync(payload);
+      const branchDetails =
+        shouldComplete && !isEditingExistingBranch
+          ? await finalizeBranch.mutateAsync()
+          : savedBranchDetails;
+
+      hydrateFromBranchDetails(branchDetails);
+      if (shouldComplete) {
+        completeOnboarding();
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const goNext = async () => {
     if (!isLastStep) {
       const nextStep = settingsSteps[activeStepIndex + 1];
@@ -39,22 +70,11 @@ export const useSettingsOnboarding = () => {
       return;
     }
 
-    setIsSaving(true);
-    try {
-      await saveSettingsOnboarding(data);
-      completeOnboarding();
-    } finally {
-      setIsSaving(false);
-    }
+    await saveSettings(true);
   };
 
   const saveDraft = async () => {
-    setIsSaving(true);
-    try {
-      await saveSettingsOnboarding(data);
-    } finally {
-      setIsSaving(false);
-    }
+    await saveSettings(false);
   };
 
   return {
@@ -63,7 +83,10 @@ export const useSettingsOnboarding = () => {
     progress,
     isFirstStep,
     isLastStep,
-    isSaving,
+    isSaving:
+      isSaving ||
+      onboardBranch.isPending ||
+      finalizeBranch.isPending,
     goBack,
     goNext,
     saveDraft,

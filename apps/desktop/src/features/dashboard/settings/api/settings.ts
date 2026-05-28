@@ -3,6 +3,7 @@ import type {
   GetBranchDetailsResponse,
   OnboardingBranchPayload,
   OnboardingBranchResponse,
+  FinalizeBranchResponse,
   UpdateBranchPayload,
   UpdateBranchResponse,
 } from "../types/settings.types";
@@ -19,6 +20,10 @@ export const SettingsApis = {
       `${BASE_URL}/onboarding`,
       payload,
     );
+  },
+
+  finalizeBranch: async () => {
+    return apiClient.post<FinalizeBranchResponse>(`${BASE_URL}/finalize`);
   },
 
   updateBranch: async (payload: UpdateBranchPayload) => {

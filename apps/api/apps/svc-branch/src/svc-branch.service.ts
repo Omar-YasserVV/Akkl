@@ -72,25 +72,92 @@ export class SvcBranchService {
 
       // Handle Zones & Tables Sync
       if (zones !== undefined) {
-        await tx.table.deleteMany({ where: { branchId } });
-        if (zones.length > 0) {
-          const tablesToCreate = zones.flatMap((zone) =>
-            zone.tables.map((table) => ({
-              branchId,
-              zoneName: zone.name,
-              tableNumber: table.tableNumber,
-              capacity: table.capacity,
-            }))
-          );
-          if (tablesToCreate.length > 0) await tx.table.createMany({ data: tablesToCreate });
+        const existingTables = await tx.table.findMany({
+          where: { branchId },
+          include: { _count: { select: { reservations: true } } },
+        });
+
+        const tableKey = (zoneName: string | null, tableNumber: string) =>
+          `${zoneName ?? ''}::${tableNumber}`;
+
+        const existingByKey = new Map(
+          existingTables.map((table) => [
+            tableKey(table.zoneName, table.tableNumber),
+            table,
+          ]),
+        );
+
+        const desiredKeys = new Set<string>();
+
+        for (const zone of zones) {
+          for (const table of zone.tables) {
+            const key = tableKey(zone.name, table.tableNumber);
+            desiredKeys.add(key);
+
+            const existingTable = existingByKey.get(key);
+            if (existingTable) {
+              await tx.table.update({
+                where: { id: existingTable.id },
+                data: {
+                  capacity: table.capacity,
+                  zoneName: zone.name,
+                  tableNumber: table.tableNumber,
+                },
+              });
+            } else {
+              await tx.table.create({
+                data: {
+                  branchId,
+                  zoneName: zone.name,
+                  tableNumber: table.tableNumber,
+                  capacity: table.capacity,
+                },
+              });
+            }
+          }
+        }
+
+        const staleTableIds = existingTables
+          .filter(
+            (table) =>
+              !desiredKeys.has(tableKey(table.zoneName, table.tableNumber)) &&
+              table._count.reservations === 0,
+          )
+          .map((table) => table.id);
+
+        if (staleTableIds.length > 0) {
+          await tx.table.deleteMany({ where: { id: { in: staleTableIds } } });
         }
       }
 
       // Handle Warehouse Sync
       if (data.haveWarehouses !== undefined) {
-        await tx.warehouse.deleteMany({ where: { branchId } });
-        if (data.haveWarehouses && warehouseName) {
-          await tx.warehouse.create({ data: { branchId, name: warehouseName } });
+        const existingWarehouse = await tx.warehouse.findUnique({
+          where: { branchId },
+          include: { _count: { select: { items: true } } },
+        });
+
+        if (data.haveWarehouses) {
+          const name = warehouseName?.trim() || existingWarehouse?.name || 'Main Warehouse';
+
+          if (existingWarehouse) {
+            await tx.warehouse.update({
+              where: { id: existingWarehouse.id },
+              data: { name },
+            });
+          } else {
+            await tx.warehouse.create({ data: { branchId, name } });
+          }
+        } else if (existingWarehouse) {
+          if (existingWarehouse._count.items > 0) {
+            throw new RpcException({
+              status: HttpStatus.CONFLICT,
+              message:
+                'Warehouse has inventory items and cannot be disabled.',
+            });
+          }
+
+          await tx.warehouse.delete({ where: { id: existingWarehouse.id } });
         }
       }
 
@@ -191,6 +258,28 @@ export class SvcBranchService {
 
   async deleteBranch(branchId: string) {
     return await this.prisma.$transaction(async (tx) => {
+      const reservationCount = await tx.reservation.count({
+        where: { branchId },
+      });
+
+      if (reservationCount > 0) {
+        throw new RpcException({
+          status: HttpStatus.CONFLICT,
+          message: 'Branch has reservations and cannot be deleted.',
+        });
+      }
+
+      const inventoryItemCount = await tx.inventoryItem.count({
+        where: { warehouse: { branchId } },
+      });
+
+      if (inventoryItemCount > 0) {
+        throw new RpcException({
+          status: HttpStatus.CONFLICT,
+          message: 'Branch has inventory items and cannot be deleted.',
+        });
+      }
+
       await tx.table.deleteMany({ where: { branchId } });
       await tx.warehouse.deleteMany({ where: { branchId } });
       await tx.hardware.deleteMany({ where: { branchId } });

@@ -11,12 +11,20 @@ import type {
   SettingsOnboardingData,
   SettingsStepId,
   WeekDaySchedule,
+  GetBranchDetailsResponse,
 } from "../types/settings.types";
+import {
+  getStepIdFromActiveStep,
+  mapBranchDetailsToSettingsData,
+} from "../utils/settingsMappers";
 
 type SettingsStore = {
   activeStepId: SettingsStepId;
   isOnboardingComplete: boolean;
+  isEditingExistingBranch: boolean;
+  branchDetails: GetBranchDetailsResponse | null;
   data: SettingsOnboardingData;
+  hydrateFromBranchDetails: (branchDetails: GetBranchDetailsResponse) => void;
   setActiveStepId: (stepId: SettingsStepId) => void;
   completeOnboarding: () => void;
   reopenOnboarding: () => void;
@@ -48,13 +56,28 @@ export const useSettingsStore = create<SettingsStore>()(
     (set) => ({
       activeStepId: "branch-identity",
       isOnboardingComplete: false,
+      isEditingExistingBranch: false,
+      branchDetails: null,
       data: defaultSettingsData,
+      hydrateFromBranchDetails: (branchDetails) =>
+        set({
+          branchDetails,
+          activeStepId: getStepIdFromActiveStep(branchDetails.activeStep),
+          isOnboardingComplete: branchDetails.activeStep >= 4,
+          isEditingExistingBranch: false,
+          data: mapBranchDetailsToSettingsData(branchDetails),
+        }),
       setActiveStepId: (activeStepId) => set({ activeStepId }),
-      completeOnboarding: () => set({ isOnboardingComplete: true }),
+      completeOnboarding: () =>
+        set({
+          isOnboardingComplete: true,
+          isEditingExistingBranch: false,
+        }),
       reopenOnboarding: () =>
         set({
           activeStepId: "branch-identity",
           isOnboardingComplete: false,
+          isEditingExistingBranch: true,
         }),
       updateBranchIdentity: (updates) =>
         set((state) => ({
@@ -202,6 +225,8 @@ export const useSettingsStore = create<SettingsStore>()(
       partialize: (state) => ({
         activeStepId: state.activeStepId,
         isOnboardingComplete: state.isOnboardingComplete,
+        isEditingExistingBranch: state.isEditingExistingBranch,
+        branchDetails: state.branchDetails,
         data: state.data,
       }),
     },

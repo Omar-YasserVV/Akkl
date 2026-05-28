@@ -7,26 +7,16 @@ import {
   LuPrinter,
   LuWarehouse,
 } from "react-icons/lu";
-import { useBranchDetails } from "../hooks/useSettings";
 import { settingsSteps } from "../static/settingsDefaults";
 import { useSettingsStore } from "../store/useSettingsStore";
 import type { SettingsStepId } from "../types/settings.types";
 import SectionCard from "./SectionCard";
 
-const DAY_ORDER = [
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
-  "sunday",
-] as const;
-
 const SettingsSummaryPage = () => {
   const setActiveStepId = useSettingsStore((state) => state.setActiveStepId);
   const reopenOnboarding = useSettingsStore((state) => state.reopenOnboarding);
-  const { data: branchDetails } = useBranchDetails();
+  const branchDetails = useSettingsStore((state) => state.branchDetails);
+  const settingsData = useSettingsStore((state) => state.data);
 
   const editStep = (stepId: SettingsStepId) => {
     reopenOnboarding();
@@ -69,11 +59,11 @@ const SettingsSummaryPage = () => {
             label="Branch number"
             value={branchDetails.branchNumber}
           />
-          <SummaryItem label="Phone" value={branchDetails.phone} />
+          <SummaryItem label="Phone" value={branchDetails.phone ?? "Not set"} />
           <SummaryItem label="Status" value={branchDetails.status} />
           <SummaryItem
             label="Address"
-            value={branchDetails.address}
+            value={branchDetails.address ?? "Not set"}
             className="md:col-span-2"
           />
         </div>
@@ -97,17 +87,17 @@ const SettingsSummaryPage = () => {
         right={<LuCalendarClock className="h-6 w-6 text-primary" />}
       >
         <div className="grid gap-3">
-          {DAY_ORDER.map((day) => {
-            const hours = branchDetails.weeklyHours[day];
-            const isClosed = hours === "CLOSED";
+          {settingsData.operatingHours.weeklySchedule.map((day) => {
             return (
               <div
-                key={day}
+                key={day.id}
                 className="grid gap-3 rounded-xl bg-slate-50 px-4 py-3 md:grid-cols-[170px_1fr]"
               >
-                <p className="font-bold capitalize text-slate-700">{day}</p>
-                <p className={isClosed ? "text-red-400" : "text-slate-500"}>
-                  {hours}
+                <p className="font-bold text-slate-700">{day.label}</p>
+                <p className={day.isOpen ? "text-slate-500" : "text-red-400"}>
+                  {day.isOpen
+                    ? `${day.openTime} to ${day.closeTime}`
+                    : "Closed"}
                 </p>
               </div>
             );
@@ -185,11 +175,13 @@ const SettingsSummaryPage = () => {
       >
         <div className="rounded-xl bg-slate-50 p-4">
           <p className="font-bold text-slate-950">
-            {branchDetails.warehouses.name}
+            {branchDetails.warehouses?.name ?? "No warehouse configured"}
           </p>
-          <p className="mt-1 text-sm text-slate-500">
-            ID: {branchDetails.warehouses.id}
-          </p>
+          {branchDetails.warehouses && (
+            <p className="mt-1 text-sm text-slate-500">
+              ID: {branchDetails.warehouses.id}
+            </p>
+          )}
         </div>
       </SectionCard>
 

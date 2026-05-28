@@ -12,22 +12,25 @@ export type OrderChannel = "POS" | "QR menu" | "Website" | "Delivery apps";
 
 export type GetBranchDetailsResponse = {
   id: string;
-  status: "ACTIVE" | "INACTIVE";
+  status: "DRAFT" | "ACTIVE" | "INACTIVE";
   branchNumber: string;
   name: string;
-  address: string;
-  latitude: number;
-  longitude: number;
-  phone: string;
-  weeklyHours: {
-    monday: string;
-    tuesday: string;
-    wednesday: string;
-    thursday: string;
-    friday: string;
-    saturday: string;
-    sunday: string;
-  };
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  phone: string | null;
+  weeklyHours: Partial<
+    Record<
+      | "monday"
+      | "tuesday"
+      | "wednesday"
+      | "thursday"
+      | "friday"
+      | "saturday"
+      | "sunday",
+      string | WeekDayHours
+    >
+  > | null;
   busyModeSettings: {
     orderThreshold: number;
     autoBusyEnabled: boolean;
@@ -50,7 +53,7 @@ export type GetBranchDetailsResponse = {
     id: string;
     name: string;
     branchId: string;
-  };
+  } | null;
   hardware: {
     id: string;
     branchId: string;
@@ -199,5 +202,6 @@ export type OnboardingBranchPayload = {
 };
 
 export type OnboardingBranchResponse = GetBranchDetailsResponse;
+export type FinalizeBranchResponse = GetBranchDetailsResponse;
 export type UpdateBranchPayload = OnboardingBranchPayload;
 export type UpdateBranchResponse = OnboardingBranchResponse;
