@@ -24,7 +24,7 @@ export const CustomTooltip = ({
   let formattedLabel = null;
   if (label) {
     const date = new Date(label);
-    formattedLabel = `${date.toLocaleString("default", { month: "short" })} ${date.getDate().toString().padStart(2, "0")}`;
+    formattedLabel = `${date.toLocaleString("default", { month: "short" })} ${date.getDate().toString()}`;
   }
 
   return (
