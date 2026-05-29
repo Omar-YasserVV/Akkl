@@ -5,6 +5,7 @@ import { ClientsModule } from '@nestjs/microservices';
 import { createKafkaClient } from 'utils/kafka-client.factory';
 import { MenuModule } from './menu/menu.module';
 import { OrderModule } from './orders/order.module';
+import { ReservationModule } from './reservation/reservation.module';
 import { SvcBranchController } from './svc-branch.controller';
 import { SvcBranchService } from './svc-branch.service';
 
@@ -17,6 +18,7 @@ import { SvcBranchService } from './svc-branch.service';
     DbModule,
     MenuModule,
     OrderModule,
+    ReservationModule,
     ClientsModule.registerAsync([
       createKafkaClient(
         'BRANCH_SERVICE',

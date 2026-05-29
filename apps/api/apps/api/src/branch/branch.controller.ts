@@ -1,6 +1,8 @@
 import {
   BranchMenuItemDetailDto,
   CreateOrderDto,
+  CreateReservationDto,
+  CreateTableDto,
   InitializeBranchDto,
   UpdateBranchDto,
   UpdateBranchMenuItemDto,
@@ -38,7 +40,7 @@ import { ClientKafka } from '@nestjs/microservices';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiConsumes, ApiQuery } from '@nestjs/swagger';
 import { Response } from 'express';
-import { OrderState, source, UserRole } from 'libs/db/generated/client/enums';
+import { OrderSource, OrderState, TableStatus, UserRole } from 'libs/db/generated/client/client';
 import { lastValueFrom } from 'rxjs';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -265,7 +267,7 @@ export class BranchController implements OnModuleInit {
   @Get('orders')
   @ApiQuery({ name: 'page', type: Number, required: true })
   @ApiQuery({ name: 'limit', type: Number, required: true })
-  @ApiQuery({ name: 'source', enum: source, required: false })
+  @ApiQuery({ name: 'source', enum: OrderSource, required: false })
   @ApiQuery({ name: 'status', enum: OrderState, required: false })
   getOrdersByBranch(
     @GetBranchId() branchId: string,
@@ -301,5 +303,97 @@ export class BranchController implements OnModuleInit {
   @Delete('orders/:orderId')
   deleteOrder(@Param('orderId') orderId: string) {
     return this.branchClient.send(BRANCH_TOPICS.DELETE_ORDER, { orderId });
+  }
+
+  // ---------------- TABLES / FLOOR PLAN ----------------
+
+  @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
+  @Post('tables')
+  createTable(
+    @GetBranchId() branchId: string,
+    @Body() data: CreateTableDto,
+  ) {
+    return this.branchClient.send(BRANCH_TOPICS.CREATE_TABLE, {
+      branchId,
+      data,
+    });
+  }
+
+  @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER, UserRole.WAITER, UserRole.CASHIER)
+  @Get('tables')
+  @ApiQuery({ name: 'zoneName', type: String, required: false })
+  getBranchTables(
+    @GetBranchId() branchId: string,
+    @Query('zoneName') zoneName?: string,
+  ) {
+    return this.branchClient.send(BRANCH_TOPICS.GET_BRANCH_TABLES, {
+      branchId,
+      zoneName,
+    });
+  }
+
+  @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER, UserRole.WAITER)
+  @Patch('tables/:tableId/status')
+  updateTableStatus(
+    @GetBranchId() branchId: string,
+    @Param('tableId') tableId: string,
+    @Body('status') status: TableStatus,
+  ) {
+    return this.branchClient.send(BRANCH_TOPICS.UPDATE_TABLE_STATUS, {
+      branchId,
+      tableId,
+      status,
+    });
+  }
+
+  @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
+  @Delete('tables/:tableId')
+  deleteTable(
+    @GetBranchId() branchId: string,
+    @Param('tableId') tableId: string,
+  ) {
+    return this.branchClient.send(BRANCH_TOPICS.DELETE_TABLE, {
+      branchId,
+      tableId,
+    });
+  }
+
+  // ---------------- RESERVATIONS ----------------
+
+  @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER, UserRole.CASHIER)
+  @Post('reservations')
+  createReservation(
+    @GetBranchId() branchId: string,
+    @Body() data: CreateReservationDto,
+  ) {
+    return this.branchClient.send(BRANCH_TOPICS.CREATE_RESERVATION, {
+      branchId,
+      data,
+    });
+  }
+
+  @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER, UserRole.CASHIER, UserRole.WAITER)
+  @Get('reservations/daily')
+  @ApiQuery({ name: 'date', type: String, required: false, description: 'ISO Date string YYYY-MM-DD' })
+  getDailyReservations(
+    @GetBranchId() branchId: string,
+    @Query('date') date?: string,
+  ) {
+    return this.branchClient.send(BRANCH_TOPICS.GET_DAILY_RESERVATIONS, {
+      branchId,
+      date,
+    });
+  }
+
+  @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
+  @Patch('reservations/:reservationId/cancel')
+  cancelReservation(
+    @GetBranchId() branchId: string,
+    @Param('reservationId') reservationId: string,
+  ) {
+    return this.branchClient.send(BRANCH_TOPICS.CANCEL_RESERVATION, {
+      branchId,
+      reservationId,
+    });
   }
 }

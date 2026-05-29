@@ -23,6 +23,12 @@ export * from './dtos/MenuDto/update.menu.dto';
 // Order DTOs
 export * from './dtos/OrderDto/create.order.dto';
 export * from './dtos/OrderDto/update.order.dto';
+// reservation DTOs
+export * from './dtos/reservationDto/create-reservation.dto';
+export * from './dtos/reservationDto/create-table.dto';
+export * from './dtos/reservationDto/update-reservation.dto';
+export * from './dtos/reservationDto/update-table.dto';
 // -------------------------------- Filters -------------------------------
 
 export * from './rpc-exception.filter';
+

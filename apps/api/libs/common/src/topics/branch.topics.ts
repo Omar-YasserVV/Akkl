@@ -22,4 +22,13 @@ export const BRANCH_TOPICS = {
   UPDATE_ORDER: 'update_order',
   DELETE_ORDER: 'delete_order',
   GET_ORDER_STATUSES: 'get_order_statuses',
+  // Tables / Floor Layout Management
+  CREATE_TABLE: 'create_table',
+  GET_BRANCH_TABLES: 'get_tables_by_branch',
+  UPDATE_TABLE_STATUS: 'update_table_status',
+  DELETE_TABLE: 'delete_table',
+  // Core Booking Flows
+  CREATE_RESERVATION: 'create_reservation',
+  GET_DAILY_RESERVATIONS: 'get_daily_reservations_by_branch',
+  CANCEL_RESERVATION: 'cancel_reservation',
 } as const;

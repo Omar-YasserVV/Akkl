@@ -5,6 +5,7 @@ import {
 } from '@app/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { ReservationStatus, TableStatus, } from 'libs/db/generated/client/client';
 import { Server } from 'socket.io';
 
 @WebSocketGateway({
@@ -70,5 +71,51 @@ export class BranchGateway {
   handleOrderDeleted(@Payload() orderId: number) {
     console.log('Pushing deleted order ID to UI:', orderId);
     this.server.emit('order_deleted', { id: orderId });
+  }
+  // ---------------- TABLES / FLOOR PLAN EVENTS ----------------
+  
+  @EventPattern('table.created')
+  handleTableCreated(@Payload() data: any) {
+    console.log(`Pushing new physical table [${data?.tableNumber}] configuration map to UI`);
+    // Scope events to specific branch channels so other branches don't receive unrelated floor mutations
+    this.server.emit(`branch.${data.branchId}.table_created`, data);
+  }
+
+  @EventPattern('table.status_updated')
+  handleTableStatusUpdated(
+    @Payload() payload: { tableId: string; branchId: string; status: TableStatus },
+  ) {
+    console.log(`Pushing real-time floor status shift for table ${payload.tableId} to ${payload.status}`);
+    this.server.emit(`branch.${payload.branchId}.table_status_updated`, {
+      tableId: payload.tableId,
+      status: payload.status,
+    });
+  }
+
+  @EventPattern('table.deleted')
+  handleTableDeleted(@Payload() payload: { tableId: string; branchId: string }) {
+    console.log(`Pushing floor deletion signal for table ${payload.tableId}`);
+    this.server.emit(`branch.${payload.branchId}.table_deleted`, {
+      tableId: payload.tableId,
+    });
+  }
+
+  // ---------------- RESERVATIONS EVENTS ----------------
+
+  @EventPattern('reservation.created')
+  handleReservationCreated(@Payload() data: any) {
+    console.log(`Pushing new secured reservation slot to branch lineup dashboard`);
+    this.server.emit(`branch.${data.branchId}.reservation_created`, data);
+  }
+
+  @EventPattern('reservation.cancelled')
+  handleReservationCancelled(
+    @Payload() payload: { reservationId: string; branchId: string },
+  ) {
+    console.log(`Pushing cancellation drop signal for reservation entry ${payload.reservationId}`);
+    this.server.emit(`branch.${payload.branchId}.reservation_cancelled`, {
+      reservationId: payload.reservationId,
+      status: ReservationStatus.CANCELLED,
+    });
   }
 }
