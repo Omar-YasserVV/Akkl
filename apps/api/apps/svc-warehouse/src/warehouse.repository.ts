@@ -7,7 +7,7 @@ import {
   IngredientCategory,
   InventoryLogAction,
   MeasurementUnit,
-  stockStatus,
+  StockStatus,
 } from 'libs/db/generated/client/enums';
 import { CreateInventoryItemReqDto } from './dto/inventory/inventory.create.dto';
 import { ListInventoryItemsReqDto } from './dto/inventory/inventory.list.dto';
@@ -90,7 +90,7 @@ export class WarehouseRepository {
       where: {
         warehouseId,
         stockStatus: {
-          in: [stockStatus.LOW_STOCK, stockStatus.OUT_OF_STOCK],
+          in: [StockStatus.LOW_STOCK, StockStatus.OUT_OF_STOCK],
         },
       },
       include: {
@@ -159,7 +159,7 @@ export class WarehouseRepository {
           minimumQuantity: dto.minimumQuantity,
           warehouseId: dto.warehouseId,
           ingredientId: dto.ingredientId,
-          stockStatus: stockStatus.OUT_OF_STOCK,
+          stockStatus: StockStatus.OUT_OF_STOCK,
         },
         include: {
           ingredient: true,
@@ -502,9 +502,9 @@ export class WarehouseRepository {
   private resolveStockStatus(
     quantity: number,
     minimumQuantity: number,
-  ): stockStatus {
-    if (quantity <= 0) return stockStatus.OUT_OF_STOCK;
-    if (quantity <= minimumQuantity) return stockStatus.LOW_STOCK;
-    return stockStatus.IN_STOCK;
+  ): StockStatus {
+    if (quantity <= 0) return StockStatus.OUT_OF_STOCK;
+    if (quantity <= minimumQuantity) return StockStatus.LOW_STOCK;
+    return StockStatus.IN_STOCK;
   }
 }

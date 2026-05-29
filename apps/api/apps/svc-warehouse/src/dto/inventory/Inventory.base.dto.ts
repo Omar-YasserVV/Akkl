@@ -5,7 +5,7 @@ import {
   IngredientCategory,
   InventoryLogAction,
   MeasurementUnit,
-  stockStatus,
+  StockStatus,
 } from 'libs/db/generated/client/enums';
 
 export class IngredientDto {
@@ -71,8 +71,8 @@ export class BaseInventoryItemDto {
   @ApiProperty({ example: 10 })
   minimumQuantity: number;
 
-  @ApiProperty({ enum: stockStatus, example: stockStatus.IN_STOCK })
-  stockStatus: stockStatus;
+  @ApiProperty({ enum: StockStatus, example: StockStatus.IN_STOCK })
+  stockStatus: StockStatus;
 
   @ApiProperty({ example: 'uuid-here' })
   ingredientId: string;
