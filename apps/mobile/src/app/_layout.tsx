@@ -36,6 +36,7 @@ function NavigationTree() {
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="search" />
           <Stack.Screen name="pickup" />
+          <Stack.Screen name="dine-in" />
           <Stack.Screen name="restaurant/[id]" />
           <Stack.Screen name="item/[id]" />
         </Stack>
