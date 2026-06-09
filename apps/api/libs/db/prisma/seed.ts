@@ -1671,14 +1671,254 @@ async function main() {
 
   console.log('✅ Expenses created');
 
+  // -------------------------------------------------------
+  // DISCOVERY: ADDITIONAL RESTAURANTS & BRANCHES
+  // -------------------------------------------------------
+  const napoliPizza = await prisma.restaurant.create({
+    data: {
+      name: 'Napoli Pizza House',
+      logoUrl: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=200',
+      ownerId: owner.id,
+    },
+  });
+
+  const napoliCentral = await prisma.branch.create({
+    data: {
+      name: 'Central Hub',
+      branchNumber: 'BR-002',
+      address: '45 Central St, Downtown',
+      phone: '01555123457',
+      latitude: 30.312,
+      longitude: 31.738,
+      status: BranchStatus.ACTIVE,
+      restaurantId: napoliPizza.id,
+      weeklyHours: {
+        monday: '10:00 AM - 10:00 PM',
+        tuesday: '10:00 AM - 10:00 PM',
+        wednesday: '10:00 AM - 10:00 PM',
+        thursday: '10:00 AM - 11:00 PM',
+        friday: '10:00 AM - 12:00 AM',
+        saturday: '10:00 AM - 12:00 AM',
+        sunday: '12:00 PM - 09:00 PM',
+      },
+    },
+  });
+
+  const napoliNorth = await prisma.branch.create({
+    data: {
+      name: 'North Plaza',
+      branchNumber: 'BR-003',
+      address: '88 North Ave, Heliopolis',
+      phone: '01555123458',
+      latitude: 30.318,
+      longitude: 31.752,
+      status: BranchStatus.ACTIVE,
+      restaurantId: napoliPizza.id,
+      weeklyHours: {
+        monday: '09:00 AM - 09:00 PM',
+        tuesday: '09:00 AM - 09:00 PM',
+        wednesday: '09:00 AM - 09:00 PM',
+        thursday: '09:00 AM - 10:00 PM',
+        friday: '09:00 AM - 10:00 PM',
+        saturday: '10:00 AM - 10:00 PM',
+        sunday: 'CLOSED',
+      },
+    },
+  });
+
+  const sakuraSushi = await prisma.restaurant.create({
+    data: {
+      name: 'Sakura Sushi',
+      logoUrl: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=200',
+      ownerId: owner.id,
+    },
+  });
+
+  const sakuraBranch = await prisma.branch.create({
+    data: {
+      name: 'Maadi Branch',
+      branchNumber: 'BR-004',
+      address: '12 Nile Corniche, Maadi',
+      phone: '01555123459',
+      latitude: 30.295,
+      longitude: 31.728,
+      status: BranchStatus.ACTIVE,
+      restaurantId: sakuraSushi.id,
+      weeklyHours: {
+        monday: '11:00 AM - 11:00 PM',
+        tuesday: '11:00 AM - 11:00 PM',
+        wednesday: '11:00 AM - 11:00 PM',
+        thursday: '11:00 AM - 11:00 PM',
+        friday: '11:00 AM - 12:00 AM',
+        saturday: '11:00 AM - 12:00 AM',
+        sunday: '01:00 PM - 10:00 PM',
+      },
+    },
+  });
+
+  const greenBowl = await prisma.restaurant.create({
+    data: {
+      name: 'Green Bowl Salads',
+      logoUrl: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=200',
+      ownerId: owner.id,
+    },
+  });
+
+  const greenBowlBranch = await prisma.branch.create({
+    data: {
+      name: 'Zamalek Branch',
+      branchNumber: 'BR-005',
+      address: '3 Hassan Sabry St, Zamalek',
+      phone: '01555123460',
+      latitude: 30.305,
+      longitude: 31.715,
+      status: BranchStatus.ACTIVE,
+      restaurantId: greenBowl.id,
+      weeklyHours: {
+        monday: '08:00 AM - 09:00 PM',
+        tuesday: '08:00 AM - 09:00 PM',
+        wednesday: '08:00 AM - 09:00 PM',
+        thursday: '08:00 AM - 09:00 PM',
+        friday: '08:00 AM - 10:00 PM',
+        saturday: '09:00 AM - 10:00 PM',
+        sunday: '09:00 AM - 08:00 PM',
+      },
+    },
+  });
+
+  await prisma.branchMenuItem.createMany({
+    data: [
+      {
+        branchId: napoliCentral.id,
+        menuItemId: 'pizza-001',
+        name: 'Margherita Pizza',
+        description: 'Classic tomato, mozzarella, and fresh basil',
+        category: category.MAIN_COURSE,
+        price: 145,
+        discountPrice: 120,
+        preparationTime: 20,
+        isAvailable: true,
+        image:
+          'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400',
+      },
+      {
+        branchId: napoliCentral.id,
+        menuItemId: 'pizza-002',
+        name: 'Pepperoni Feast',
+        description: 'Loaded pepperoni with mozzarella',
+        category: category.MAIN_COURSE,
+        price: 165,
+        preparationTime: 22,
+        isAvailable: true,
+        image:
+          'https://images.unsplash.com/photo-1628840042765-356cda07504e?w=400',
+      },
+      {
+        branchId: napoliNorth.id,
+        menuItemId: 'pizza-003',
+        name: 'Four Cheese Pizza',
+        description: 'Mozzarella, gorgonzola, parmesan, and ricotta',
+        category: category.MAIN_COURSE,
+        price: 175,
+        discountPrice: 149,
+        preparationTime: 20,
+        isAvailable: true,
+      },
+      {
+        branchId: sakuraBranch.id,
+        menuItemId: 'sushi-001',
+        name: 'Salmon Nigiri Set',
+        description: 'Fresh salmon nigiri with wasabi and ginger',
+        category: category.MAIN_COURSE,
+        price: 220,
+        discountPrice: 189,
+        preparationTime: 15,
+        isAvailable: true,
+        image:
+          'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400',
+      },
+      {
+        branchId: sakuraBranch.id,
+        menuItemId: 'sushi-002',
+        name: 'Dragon Roll',
+        description: 'Eel, avocado, and cucumber roll',
+        category: category.MAIN_COURSE,
+        price: 195,
+        preparationTime: 18,
+        isAvailable: true,
+      },
+      {
+        branchId: greenBowlBranch.id,
+        menuItemId: 'salad-001',
+        name: 'Quinoa Avocado Salad',
+        description: 'Quinoa, avocado, cherry tomatoes, and lemon dressing',
+        category: category.MAIN_COURSE,
+        price: 95,
+        discountPrice: 79,
+        preparationTime: 10,
+        isAvailable: true,
+        image:
+          'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400',
+      },
+      {
+        branchId: greenBowlBranch.id,
+        menuItemId: 'salad-002',
+        name: 'Vegan Power Bowl',
+        description: 'Roasted chickpeas, kale, and tahini sauce',
+        category: category.MAIN_COURSE,
+        price: 88,
+        preparationTime: 12,
+        isAvailable: true,
+      },
+    ],
+  });
+
+  const margherita = await prisma.branchMenuItem.findFirst({
+    where: { branchId: napoliCentral.id, menuItemId: 'pizza-001' },
+  });
+
+  if (margherita) {
+    await prisma.menuItemVariation.createMany({
+      data: [
+        {
+          branchMenuItemId: margherita.id,
+          size: 'Medium',
+          price: 145,
+          discountPrice: 120,
+        },
+        {
+          branchMenuItemId: margherita.id,
+          size: 'Large',
+          price: 185,
+          discountPrice: 155,
+        },
+      ],
+    });
+  }
+
+  const salmonSet = await prisma.branchMenuItem.findFirst({
+    where: { branchId: sakuraBranch.id, menuItemId: 'sushi-001' },
+  });
+
+  if (salmonSet) {
+    await prisma.menuItemVariation.createMany({
+      data: [
+        { branchMenuItemId: salmonSet.id, size: '8 Pieces', price: 220, discountPrice: 189 },
+        { branchMenuItemId: salmonSet.id, size: '12 Pieces', price: 295 },
+      ],
+    });
+  }
+
+  console.log('✅ Discovery restaurants & menus created');
+
   console.log(`
 ✅ Seeding completed successfully!
 
 📊 Summary:
 ├── 1  System Admin
 ├── 7  Users  (owner · manager · cashier · chief · waiter · 2 customers)
-├── 1  Restaurant
-├── 2  Branches (ACTIVE with Location Data & Schedules)
+├── 4  Restaurants
+├── 5  Branches (ACTIVE with Location Data & Schedules)
 ├── 4  Hardware Devices (KDS & Printers)
 ├── 3  Dietary Tags
 ├── 3  Tables  +  3 Reservations

@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ClientsModule } from '@nestjs/microservices';
 import { createKafkaClient } from 'utils/kafka-client.factory';
+import { DiscoveryModule } from './discovery/discovery.module';
 import { MenuModule } from './menu/menu.module';
 import { OrderModule } from './orders/order.module';
 import { ReservationModule } from './reservation/reservation.module';
@@ -16,6 +17,7 @@ import { SvcBranchService } from './svc-branch.service';
       envFilePath: './.env',
     }),
     DbModule,
+    DiscoveryModule,
     MenuModule,
     OrderModule,
     ReservationModule,

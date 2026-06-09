@@ -3,6 +3,7 @@ export * from './topics/auth.topics';
 export * from './topics/branch.topics';
 export * from './topics/restaurant.topics';
 export * from './topics/warehouse.topics';
+export * from './topics/discovery.topics';
 
 // -------------------------------- DTOs -------------------------------
 // User DTOs
