@@ -86,7 +86,7 @@ export class OrderService implements OnModuleInit {
         branchId,
         itemCount,
         status: OrderState.IN_PROGRESS,
-        CustomerName: CustomerName || user.fullName,
+        customerName: CustomerName || user.fullName,
         items: { create: orderItemsData },
       });
       console.log(order.id);

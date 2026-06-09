@@ -2,7 +2,8 @@ import { BranchMenuItemDetailDto, UpdateBranchMenuItemDto } from '@app/common';
 import { PrismaService } from '@app/db';
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
-import { Prisma, category } from 'libs/db/generated/client/client';
+import { Prisma } from 'libs/db/generated/client/client';
+import { MenuCategory } from 'libs/db/generated/client/enums';
 import { createPagination } from 'utils/pagination.util';
 import * as XLSX from 'xlsx';
 
@@ -78,7 +79,7 @@ export class MenuService {
     pagination: {
       page?: number;
       limit?: number;
-      category?: category;
+      category?: MenuCategory;
       isAvailable?: boolean;
     },
   ) {

@@ -35,14 +35,47 @@ export function haversineKm(
 }
 
 function parseTimeToMinutes(value: string): number | null {
-  const match = value.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  const trimmed = value.trim();
+  const match = trimmed.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  const twentyFourHourMatch = trimmed.match(/^(\d{1,2}):(\d{2})$/);
+
+  if (twentyFourHourMatch) {
+    const hours = Number(twentyFourHourMatch[1]);
+    const minutes = Number(twentyFourHourMatch[2]);
+    if (hours > 23 || minutes > 59) return null;
+    return hours * 60 + minutes;
+  }
+
   if (!match) return null;
   let hours = Number(match[1]);
   const minutes = Number(match[2]);
   const meridiem = match[3]!.toUpperCase();
+  if (hours > 12 || minutes > 59) return null;
   if (meridiem === 'PM' && hours !== 12) hours += 12;
   if (meridiem === 'AM' && hours === 12) hours = 0;
   return hours * 60 + minutes;
+}
+
+function normalizeDayHours(value: unknown): string | null {
+  if (typeof value === 'string') return value;
+  if (!value || typeof value !== 'object') return null;
+
+  const dayHours = value as {
+    open?: unknown;
+    close?: unknown;
+    isClosed?: unknown;
+    closed?: unknown;
+  };
+
+  if (dayHours.isClosed === true || dayHours.closed === true) {
+    return 'CLOSED';
+  }
+
+  if (typeof dayHours.open === 'string' && typeof dayHours.close === 'string') {
+    return `${dayHours.open} - ${dayHours.close}`;
+  }
+
+  return null;
 }
 
 export function getBranchOpenStatus(weeklyHours: unknown): {
@@ -53,9 +86,9 @@ export function getBranchOpenStatus(weeklyHours: unknown): {
     return { status: 'OPEN' };
   }
 
-  const hours = weeklyHours as Record<string, string>;
+  const hours = weeklyHours as Record<string, unknown>;
   const dayKey = DAY_KEYS[new Date().getDay()] ?? 'monday';
-  const todayHours = hours[dayKey];
+  const todayHours = normalizeDayHours(hours[dayKey]);
 
   if (!todayHours || todayHours.toUpperCase() === 'CLOSED') {
     return { status: 'CLOSED' };
@@ -73,12 +106,18 @@ export function getBranchOpenStatus(weeklyHours: unknown): {
 
   const now = new Date();
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  const closeMinutesToday =
+    closeMinutes <= openMinutes ? closeMinutes + 24 * 60 : closeMinutes;
+  const nowMinutesToday =
+    closeMinutes <= openMinutes && nowMinutes < openMinutes
+      ? nowMinutes + 24 * 60
+      : nowMinutes;
 
-  if (nowMinutes < openMinutes || nowMinutes > closeMinutes) {
+  if (nowMinutesToday < openMinutes || nowMinutesToday > closeMinutesToday) {
     return { status: 'CLOSED' };
   }
 
-  if (closeMinutes - nowMinutes <= 60) {
+  if (closeMinutesToday - nowMinutesToday <= 60) {
     return { status: 'CLOSING_SOON', until: closeRaw };
   }
 

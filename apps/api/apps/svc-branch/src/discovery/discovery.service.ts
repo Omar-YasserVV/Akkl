@@ -131,7 +131,7 @@ export class DiscoveryService {
     restaurantId?: string;
     openNow?: boolean;
     q?: string;
-  }) {
+  } = {}) {
     const { lat, lng, radiusKm = 50, restaurantId, openNow, q } = params;
 
     // Build base where condition
@@ -272,7 +272,7 @@ export class DiscoveryService {
     };
   }
 
-  async discoverHome(params: { lat?: number; lng?: number }) {
+  async discoverHome(params: { lat?: number; lng?: number } = {}) {
     const { lat, lng } = params;
 
     const restaurants = await this.prisma.restaurant.findMany({

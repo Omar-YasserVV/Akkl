@@ -8,7 +8,7 @@ export class DiscoveryController {
   constructor(private readonly discoveryService: DiscoveryService) {}
 
   @MessagePattern(DISCOVERY_TOPICS.HOME)
-  discoverHome(@Payload() params: { lat?: number; lng?: number }) {
+  discoverHome(@Payload() params: { lat?: number; lng?: number } = {}) {
     return this.discoveryService.discoverHome(params);
   }
 
@@ -22,7 +22,7 @@ export class DiscoveryController {
       restaurantId?: string;
       openNow?: boolean;
       q?: string;
-    },
+    } = {},
   ) {
     return this.discoveryService.discoverBranchesNearby(params);
   }
@@ -38,7 +38,7 @@ export class DiscoveryController {
   }
 
   @MessagePattern(DISCOVERY_TOPICS.SEARCH_DISHES)
-  searchDishes(@Payload() params: { q: string; limit?: number }) {
-    return this.discoveryService.searchDishes(params.q, params.limit);
+  searchDishes(@Payload() params: { q?: string; limit?: number } = {}) {
+    return this.discoveryService.searchDishes(params.q ?? '', params.limit);
   }
 }
