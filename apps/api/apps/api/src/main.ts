@@ -22,10 +22,21 @@ async function bootstrap(): Promise<void> {
   app.useGlobalFilters(new RpcExceptionFilter());
 
   app.enableCors({
-    origin: ['http://localhost:5173', 'app://-', '*'],
+    origin: [
+      'http://localhost:5173',
+      'app://-',
+      '*',
+      'http://localhost:8081',
+      'exp://192.168.100.2:8081',
+    ],
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], // Added OPTIONS
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'Accept',
+    ],
   });
 
   app.use(cookieParser());
