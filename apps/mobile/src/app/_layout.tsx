@@ -1,4 +1,6 @@
 import { AuthProvider, useAuth } from "@/context/auth-context";
+import { CartProvider } from "@/context/cart-context";
+import { LocationProvider } from "@/context/location-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import {
   DarkTheme,
@@ -32,6 +34,10 @@ function NavigationTree() {
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="search" />
+          <Stack.Screen name="pickup" />
+          <Stack.Screen name="restaurant/[id]" />
+          <Stack.Screen name="item/[id]" />
         </Stack>
         <StatusBar style="auto" />
       </SafeAreaProvider>
@@ -42,8 +48,12 @@ function NavigationTree() {
 // 3. Keep your top-level RootLayout strictly for the context providers
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <NavigationTree />
-    </AuthProvider>
+    <LocationProvider>
+      <CartProvider>
+        <AuthProvider>
+          <NavigationTree />
+        </AuthProvider>
+      </CartProvider>
+    </LocationProvider>
   );
 }

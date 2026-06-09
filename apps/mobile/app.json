@@ -26,6 +26,12 @@
     "plugins": [
       "expo-router",
       [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow Akkl to use your location to find nearby restaurants."
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "backgroundColor": "#208AEF",
