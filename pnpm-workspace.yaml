@@ -1,4 +1,17 @@
 packages:
   - "apps/*"
   - "packages/*"
+allowBuilds:
+  '@heroui/shared-utils': true
+  '@nestjs/core': true
+  '@prisma/engines': true
+  '@scarf/scarf': true
+  argon2: true
+  better-sqlite3: true
+  electron: true
+  esbuild: true
+  msw: true
+  prisma: true
+  sharp: true
+  unrs-resolver: true
 nodeLinker: hoisted
