@@ -1,13 +1,13 @@
 import { apiClient } from "../api";
 
 export interface User {
-  id: number;
+  id: string;
   fullName: string;
   username: string;
-  branchId: number;
+  branchId?: string | null;
   role: string;
   email: string;
-  image: string;
+  image?: string | null;
 }
 
 export const authApis = {
