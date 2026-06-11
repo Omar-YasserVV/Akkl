@@ -1,5 +1,5 @@
 import { BottomTabInset } from "@/constants/theme";
-import { useCart } from "@/context/cart-context";
+import { useCartStore } from "@/stores/cart-store";
 import { useLocation } from "@/context/location-context";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -93,7 +93,7 @@ export default function DailyDealsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { lat, lng } = useLocation();
-  const { addItem } = useCart();
+  const addItem = useCartStore((state) => state.addItem);
   const [home, setHome] = useState<DiscoveryHome | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 

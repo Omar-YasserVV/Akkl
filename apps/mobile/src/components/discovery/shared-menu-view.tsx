@@ -1,10 +1,11 @@
 import { FilterChips } from "@/components/discovery/filter-chips";
-import { useCart } from "@/context/cart-context";
+import { useMenu } from "@/hooks/useMenu";
+import { useCartStore } from "@/stores/cart-store";
 import { Ionicons } from "@expo/vector-icons";
-import { discoveryApis, type DiscoveryMenuItem } from "@repo/utils";
+import { type DiscoveryMenuItem } from "@repo/utils";
 import { Image } from "expo-image";
 import { type Href, useRouter } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -23,7 +24,7 @@ interface SharedMenuViewProps {
   branchId: string;
   fallbackMenu: DiscoveryMenuItem[];
   cartRoute: string;
-  defaultTableNumber?: string; // only used in dine-in
+  defaultTableNumber?: string;
   defaultBranchContext?: {
     branchId: string;
     restaurantId: string;
@@ -35,75 +36,33 @@ interface SharedMenuViewProps {
 export function SharedMenuView({
   mode,
   branchId,
-  fallbackMenu,
   cartRoute,
   defaultTableNumber,
   defaultBranchContext,
 }: SharedMenuViewProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
-  const cardWidth = (width - 44) / 2;
+  const branchLabel = defaultBranchContext?.branchName ?? "Restaurant";
 
-  const {
-    addItem,
-    itemCount,
-    total,
-    branchName,
-    setBranchContext,
-    setDineInSession,
-    tableNumber,
-  } = useCart();
-
-  const [menuItems, setMenuItems] = useState<DiscoveryMenuItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState(ALL_CATEGORY);
-  const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize session/context based on mode
-  useEffect(() => {
-    if (mode === "dine-in" && defaultBranchContext && defaultTableNumber) {
-      if (!tableNumber) {
-        setDineInSession({
-          ...defaultBranchContext,
-          tableNumber: defaultTableNumber,
-        });
-      }
-    }
-  }, [mode, defaultBranchContext, defaultTableNumber, setDineInSession, tableNumber]);
-
-  // Load menu for selected branch
-  const loadMenu = useCallback(async () => {
-    if (!branchId) return;
-    setIsLoading(true);
-    try {
-      const data = await discoveryApis.getBranchMenu(branchId);
-      const items = data.categories.flatMap((section) => section.items);
-      setMenuItems(items.length ? items : fallbackMenu);
-
-      if (mode === "pickup") {
-        setBranchContext({
-          branchId: data.branch.id,
-          restaurantId: data.branch.restaurant.id,
-          restaurantName: data.branch.restaurant.name,
-          branchName: data.branch.name,
-        });
-      }
-    } catch (error) {
-      console.warn("Failed to load menu, using fallback data", error);
-      
-      // Fallback behavior when API fails
-      if (mode === "pickup" && defaultBranchContext) {
-        setBranchContext(defaultBranchContext);
-      }
-      setMenuItems(fallbackMenu);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [branchId, fallbackMenu, mode, setBranchContext, defaultBranchContext]);
+  // Fetch menu items via the new React Query hook
+  const { data, isLoading } = useMenu(branchId);
+  const menuItems = data?.items ?? [];
 
   useEffect(() => {
-    loadMenu();
-  }, [loadMenu]);
+    if (mode !== "dine-in" || !defaultBranchContext || !defaultTableNumber) {
+      return;
+    }
+
+    const { tableNumber, setDineInSession } = useCartStore.getState();
+    if (!tableNumber) {
+      setDineInSession({
+        ...defaultBranchContext,
+        tableNumber: defaultTableNumber,
+      });
+    }
+  }, [mode, defaultBranchContext, defaultTableNumber]);
 
   const categories = useMemo(() => {
     const unique = Array.from(new Set(menuItems.map((item) => item.category)));
@@ -112,24 +71,6 @@ export function SharedMenuView({
       ...unique.map((category) => ({ id: category, label: category })),
     ];
   }, [menuItems]);
-
-  const filteredItems = useMemo(() => {
-    if (selectedCategory === ALL_CATEGORY) return menuItems;
-    return menuItems.filter((item) => item.category === selectedCategory);
-  }, [menuItems, selectedCategory]);
-
-  const handleQuickAdd = (item: DiscoveryMenuItem) => {
-    addItem({
-      itemId: item.id,
-      name: item.name,
-      branchId: item.branchId,
-      restaurantId: item.restaurantId ?? (defaultBranchContext?.restaurantId || "akkl"),
-      restaurantName: item.restaurantName ?? (defaultBranchContext?.restaurantName || "Smart Restaurant"),
-      quantity: 1,
-      unitPrice: item.discountPrice ?? item.price,
-      image: item.image,
-    });
-  };
 
   return (
     <View className="flex-1 bg-[#F7F8FA]">
@@ -141,14 +82,15 @@ export function SharedMenuView({
           <TouchableOpacity onPress={() => router.back()} className="p-1">
             <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
           </TouchableOpacity>
-          <View className="flex-1 items-center justify-center">
-            <Text className="text-[20px] font-bold text-[#1A1A1A]" numberOfLines={1}>
+          <View className="flex-1 items-center justify-center py-3">
+            <Text
+              className="text-[20px] font-bold text-[#1A1A1A]"
+              numberOfLines={1}
+            >
               Menu
             </Text>
             <Text className="text-[13px] font-semibold text-[#6E7682]">
-              {mode === "dine-in" 
-                ? (defaultBranchContext?.branchName || "Smart Restaurant") 
-                : (branchName || "Smart Restaurant")}
+              {branchLabel}
             </Text>
           </View>
           <TouchableOpacity onPress={() => router.push("/search")}>
@@ -162,64 +104,158 @@ export function SharedMenuView({
         />
       </View>
 
-      {isLoading ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#065FCC" />
-        </View>
-      ) : (
-        <FlatList
-          data={filteredItems}
-          keyExtractor={(item) => item.id}
-          numColumns={2}
-          contentContainerStyle={{
-            paddingHorizontal: 16,
-            paddingTop: 16,
-            paddingBottom: itemCount > 0 ? 120 : 32,
-          }}
-          columnWrapperStyle={{ gap: 12 }}
-          ItemSeparatorComponent={() => <View className="h-3" />}
-          renderItem={({ item }) => (
-            <MenuGridItem
-              item={item}
-              width={cardWidth}
-              onAdd={() => handleQuickAdd(item)}
-            />
-          )}
-        />
-      )}
-
-      {itemCount > 0 ? (
-        <View
-          className="absolute left-4 right-4"
-          style={{ bottom: insets.bottom + 16 }}
-        >
-          <TouchableOpacity
-            onPress={() => router.push(cartRoute as Href)}
-            activeOpacity={0.9}
-            className="h-[56px] rounded-[12px] bg-[#065FCC] px-5 flex-row items-center justify-between"
-          >
-            <Text className="text-[17px] font-bold text-white">
-              View Cart ({itemCount} {itemCount === 1 ? "item" : "items"})
-            </Text>
-            <Text className="text-[17px] font-bold text-white">
-              {formatPrice(total)}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      ) : null}
+      <MenuList
+        mode={mode}
+        branchId={branchId}
+        defaultBranchContext={defaultBranchContext}
+        menuItems={menuItems}
+        selectedCategory={selectedCategory}
+        isLoading={isLoading}
+      />
+      <MenuCartBar cartRoute={cartRoute} />
     </View>
   );
 }
 
-function MenuGridItem({
+function MenuList({
+  mode,
+  branchId,
+  defaultBranchContext,
+  menuItems,
+  selectedCategory,
+  isLoading,
+}: {
+  mode: "pickup" | "dine-in";
+  branchId: string;
+  defaultBranchContext?: SharedMenuViewProps["defaultBranchContext"];
+  menuItems: DiscoveryMenuItem[];
+  selectedCategory: string;
+  isLoading: boolean;
+}) {
+  const { width } = useWindowDimensions();
+  const cardWidth = (width - 44) / 2;
+  const addItem = useCartStore((state) => state.addItem);
+
+  // Sync with your cart storage side-effects upon a successful data fetch
+  useEffect(() => {
+    if (!isLoading && menuItems.length > 0 && mode === "pickup") {
+      // Assuming your api context gives you access to data fields if needed,
+      // fallback to default context or calculate what's needed for the cart store.
+      if (defaultBranchContext) {
+        useCartStore.getState().setBranchContext(defaultBranchContext);
+      }
+    }
+  }, [isLoading, menuItems, mode, defaultBranchContext]);
+
+  const filteredItems = useMemo(() => {
+    if (selectedCategory === ALL_CATEGORY) return menuItems;
+    return menuItems.filter((item) => item.category === selectedCategory);
+  }, [menuItems, selectedCategory]);
+
+  const handleQuickAdd = useCallback(
+    (item: DiscoveryMenuItem) => {
+      addItem({
+        itemId: item.id,
+        name: item.name,
+        branchId: item.branchId,
+        restaurantId:
+          item.restaurantId ?? defaultBranchContext?.restaurantId ?? "akkl",
+        restaurantName:
+          item.restaurantName ??
+          defaultBranchContext?.restaurantName ??
+          "Smart Restaurant",
+        quantity: 1,
+        unitPrice: item.discountPrice ?? item.price,
+        image: item.image,
+      });
+    },
+    [addItem, defaultBranchContext],
+  );
+
+  const renderItem = useCallback(
+    ({ item }: { item: DiscoveryMenuItem }) => (
+      <MenuGridItem item={item} width={cardWidth} onAdd={handleQuickAdd} />
+    ),
+    [cardWidth, handleQuickAdd],
+  );
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" color="#065FCC" />
+      </View>
+    );
+  }
+
+  return (
+    <FlatList
+      data={filteredItems}
+      keyExtractor={(item) => item.id}
+      numColumns={2}
+      contentContainerStyle={{
+        paddingHorizontal: 16,
+        paddingTop: 16,
+        paddingBottom: 120,
+      }}
+      columnWrapperStyle={{ gap: 12 }}
+      ItemSeparatorComponent={MenuItemSeparator}
+      renderItem={renderItem}
+      removeClippedSubviews
+      initialNumToRender={8}
+      maxToRenderPerBatch={8}
+      windowSize={7}
+    />
+  );
+}
+
+function MenuCartBar({ cartRoute }: { cartRoute: string }) {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const itemCount = useCartStore((state) => state.itemCount);
+  const total = useCartStore((state) => state.total);
+
+  if (itemCount <= 0) {
+    return null;
+  }
+
+  return (
+    <View
+      className="absolute left-4 right-4"
+      style={{ bottom: insets.bottom + 16 }}
+    >
+      <TouchableOpacity
+        onPress={() => router.push(cartRoute as Href)}
+        activeOpacity={0.9}
+        className="h-[56px] rounded-[12px] bg-[#065FCC] px-5 flex-row items-center justify-between"
+      >
+        <Text className="text-[17px] font-bold text-white">
+          View Cart ({itemCount} {itemCount === 1 ? "item" : "items"})
+        </Text>
+        <Text className="text-[17px] font-bold text-white">
+          {formatPrice(total)}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const MenuItemSeparator = memo(function MenuItemSeparator() {
+  return <View className="h-3" />;
+});
+
+const MenuGridItem = memo(function MenuGridItem({
   item,
   width,
   onAdd,
 }: {
   item: DiscoveryMenuItem;
   width: number;
-  onAdd: () => void;
+  onAdd: (item: DiscoveryMenuItem) => void;
 }) {
+  const handleAdd = useCallback(() => {
+    onAdd(item);
+  }, [item, onAdd]);
+
   return (
     <View
       className="bg-white rounded-[12px] overflow-hidden border border-[#E8EBF0]"
@@ -236,7 +272,7 @@ function MenuGridItem({
           contentFit="cover"
         />
         <TouchableOpacity
-          onPress={onAdd}
+          onPress={handleAdd}
           activeOpacity={0.9}
           className="absolute bottom-2 right-2 w-9 h-9 rounded-full bg-[#065FCC] items-center justify-center"
         >
@@ -256,4 +292,4 @@ function MenuGridItem({
       </View>
     </View>
   );
-}
+});

@@ -8,8 +8,8 @@ import {
   useEffect,
   useState,
 } from "react";
+import { useCartStore } from "@/stores/cart-store";
 import { useAuth } from "./auth-context";
-import { useCart } from "./cart-context";
 
 const RESTAURANT_KEY = "akkl:session:restaurant";
 const BRANCH_KEY = "akkl:session:branch";
@@ -40,7 +40,6 @@ export const SessionContext = createContext<SessionContextType | undefined>(
 
 export function SessionProvider({ children }: PropsWithChildren) {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
-  const { setBranchContext } = useCart();
   const router = useRouter();
   const segments = useSegments();
 
@@ -116,7 +115,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
       await AsyncStorage.setItem(BRANCH_KEY, JSON.stringify(next));
 
       if (restaurant) {
-        setBranchContext({
+        useCartStore.getState().setBranchContext({
           branchId: next.id,
           restaurantId: restaurant.id,
           restaurantName: restaurant.name,
@@ -124,7 +123,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
         });
       }
     },
-    [restaurant, setBranchContext],
+    [restaurant],
   );
 
   const clearSession = useCallback(async () => {

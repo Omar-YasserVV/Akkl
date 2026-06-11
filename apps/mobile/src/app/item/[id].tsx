@@ -1,6 +1,6 @@
 import { PairingCarousel } from "@/components/discovery/pairing-carousel";
 import { QuantityStepper } from "@/components/discovery/quantity-stepper";
-import { useCart } from "@/context/cart-context";
+import { useCartStore } from "@/stores/cart-store";
 import { Ionicons } from "@expo/vector-icons";
 import {
   discoveryApis,
@@ -25,7 +25,7 @@ export default function ItemCustomizeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id, branchId } = useLocalSearchParams<{ id: string; branchId?: string }>();
-  const { addItem } = useCart();
+  const addItem = useCartStore((state) => state.addItem);
   const [detail, setDetail] = useState<DiscoveryMenuItemDetail | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedVariationId, setSelectedVariationId] = useState<string | null>(null);
