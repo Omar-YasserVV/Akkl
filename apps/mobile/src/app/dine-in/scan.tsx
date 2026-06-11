@@ -1,6 +1,7 @@
 import { QrScannerView } from "@/components/dine-in/qr-scanner-view";
 import { DINE_IN_BRANCH, parseTableQr } from "@/constants/dine-in";
 import { useCart } from "@/context/cart-context";
+import { useSession } from "@/context/session-context";
 import { Ionicons } from "@expo/vector-icons";
 import { type Href, useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
@@ -10,6 +11,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function DineInScanScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { restaurant, branch } = useSession();
   const { setDineInSession } = useCart();
   const [scanned, setScanned] = useState(false);
 
@@ -18,12 +20,15 @@ export default function DineInScanScreen() {
       if (scanned) return;
       setScanned(true);
       setDineInSession({
-        ...DINE_IN_BRANCH,
+        branchId: branch?.id ?? DINE_IN_BRANCH.branchId,
+        restaurantId: restaurant?.id ?? DINE_IN_BRANCH.restaurantId,
+        restaurantName: restaurant?.name ?? DINE_IN_BRANCH.restaurantName,
+        branchName: branch?.name ?? DINE_IN_BRANCH.branchName,
         tableNumber,
       });
       router.replace("/dine-in/menu" as Href);
     },
-    [router, scanned, setDineInSession],
+    [branch, restaurant, router, scanned, setDineInSession],
   );
 
   const simulateScan = () => handleTableDetected("5");

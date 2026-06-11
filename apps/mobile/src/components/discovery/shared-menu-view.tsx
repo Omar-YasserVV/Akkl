@@ -36,6 +36,7 @@ interface SharedMenuViewProps {
 export function SharedMenuView({
   mode,
   branchId,
+  fallbackMenu,
   cartRoute,
   defaultTableNumber,
   defaultBranchContext,
@@ -46,9 +47,15 @@ export function SharedMenuView({
 
   const [selectedCategory, setSelectedCategory] = useState(ALL_CATEGORY);
 
-  // Fetch menu items via the new React Query hook
-  const { data, isLoading } = useMenu(branchId);
-  const menuItems = data?.items ?? [];
+  const { data, isLoading, isError } = useMenu(branchId);
+  const menuItems = useMemo(() => {
+    const apiItems = data?.items ?? [];
+    if (apiItems.length > 0) return apiItems;
+    if (!isLoading && (isError || !branchId)) {
+      return fallbackMenu;
+    }
+    return apiItems;
+  }, [branchId, data?.items, fallbackMenu, isError, isLoading]);
 
   useEffect(() => {
     if (mode !== "dine-in" || !defaultBranchContext || !defaultTableNumber) {
