@@ -43,11 +43,15 @@ export default function DineInScanScreen() {
           <TouchableOpacity
             onPress={() => router.back()}
             activeOpacity={0.85}
-            className="flex-row items-center flex-1"
+            className="flex-row items-center gap-1 flex-1"
           >
-            <Ionicons name="location-sharp" size={28} color="#065FCC" />
+            <Ionicons
+              name="location-sharp"
+              size={22}
+              className="text-[#0057C0]"
+            />
             <Text
-              className="ml-3 text-[26px] font-bold text-[#065FCC]"
+              className="text-[22px] font-bold text-[#0057C0]"
               numberOfLines={1}
             >
               Downtown Branch
@@ -56,7 +60,7 @@ export default function DineInScanScreen() {
               name="chevron-down"
               size={18}
               color="#7B8495"
-              style={{ marginLeft: 8, marginTop: 2 }}
+              style={{ marginTop: 2 }}
             />
           </TouchableOpacity>
           <TouchableOpacity
@@ -84,7 +88,7 @@ export default function DineInScanScreen() {
             activeOpacity={0.88}
             className="h-[56px] rounded-[8px] bg-white items-center justify-center mb-3"
           >
-            <Text className="text-[17px] font-bold text-[#065FCC]">
+            <Text className="text-[17px] font-bold text-[#0057C0]">
               Demo: Use Table #5
             </Text>
           </TouchableOpacity>

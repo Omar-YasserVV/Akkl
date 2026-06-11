@@ -41,10 +41,10 @@ function CustomTabBar() {
                 size={24}
                 color={active ? ACTIVE_COLOR : INACTIVE_COLOR}
               />
+              <Text style={[styles.label, active && styles.labelActive]}>
+                {tab.label}
+              </Text>
             </View>
-            <Text style={[styles.label, active && styles.labelActive]}>
-              {tab.label}
-            </Text>
           </Pressable>
         );
       })}
@@ -69,32 +69,32 @@ export default function AppTabs() {
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
+    paddingHorizontal: 16,
     backgroundColor: "#ffffff",
     paddingTop: 8,
     paddingBottom: Platform.OS === "ios" ? 24 : 12,
-    paddingHorizontal: 8,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: "#e5e7eb",
   },
   tab: {
     flex: 1,
     alignItems: "center",
-    gap: 2,
+    justifyContent: "center",
   },
   pill: {
-    paddingHorizontal: 20,
-    paddingVertical: 4,
-    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "transparent",
   },
   pillActive: {
     backgroundColor: PILL_BG,
+    borderRadius: 16,
   },
   label: {
     fontSize: 11,
-    fontWeight: "800",
+    fontWeight: "600",
     color: INACTIVE_COLOR,
   },
   labelActive: {

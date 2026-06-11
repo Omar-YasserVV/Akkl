@@ -75,7 +75,7 @@ export default function SearchScreen() {
   };
 
   return (
-    <View className="flex-1 bg-[#F8F9FB]">
+    <View className="flex-1 bg-white py-5">
       <View
         style={{ paddingTop: insets.top }}
         className="bg-white px-4 pb-4 border-b border-gray-100"

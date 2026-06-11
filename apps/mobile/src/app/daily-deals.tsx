@@ -177,16 +177,18 @@ export default function DailyDealsScreen() {
             elevation: 5,
           }}
         >
-          <View>
-            <Text className="text-[16px] leading-5 font-bold uppercase text-white/80">
-              Hurry Up!
-            </Text>
-            <Text className="mt-1 text-[24px] leading-8 font-bold text-white">
-              Flash Sales Ending Soon
-            </Text>
+          <View className="flex justify-between items-center">
+            <View>
+              <Text className="text-[12px] font-semibold uppercase text-white/80">
+                Hurry Up!
+              </Text>
+              <Text className="mt-1 text-[14px] font-semibold text-white">
+                Flash Sales Ending Soon
+              </Text>
+            </View>
           </View>
           <View className="rounded-full bg-white/20 px-4 py-2">
-            <Text className="text-[18px] font-extrabold text-white">
+            <Text className="text-[13px] font-extrabold text-white">
               02:45:12
             </Text>
           </View>
@@ -240,18 +242,24 @@ function DealCard({
         elevation: 3,
       }}
     >
-      <View className="h-[244px] bg-[#E9EDF3]">
+      <View className="h-61 bg-[#E9EDF3]">
         {item.image ? (
           <Image
             source={{ uri: item.image }}
             style={{ width: "100%", height: "100%" }}
             contentFit="cover"
           />
-        ) : null}
+        ) : (
+          <Image
+            source={{
+              uri: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=900&q=85",
+            }}
+            style={{ width: "100%", height: "100%" }}
+            contentFit="cover"
+          />
+        )}
         <View className="absolute left-4 top-4 rounded-[8px] bg-[#D61F26] px-4 py-2">
-          <Text className="text-[17px] font-extrabold text-white">
-            {label}
-          </Text>
+          <Text className="text-[14px] font-bold text-white">{label}</Text>
         </View>
       </View>
 
@@ -259,28 +267,28 @@ function DealCard({
         <View className="flex-row items-start">
           <View className="flex-1 pr-3">
             <Text
-              className="text-[25px] leading-8 font-extrabold text-[#20242A]"
+              className="text-[18px] font-semibold text-[#20242A]"
               numberOfLines={2}
             >
               {item.name}
             </Text>
             {item.description ? (
-              <Text className="mt-2 text-[18px] leading-6 text-[#5D6675]">
+              <Text className="mt-2 text-[14px] text-[#414755]">
                 {item.description}
               </Text>
             ) : null}
           </View>
-          <Ionicons name="star-outline" size={30} color="#065FCC" />
+          <Ionicons name="star-outline" size={20} color="#065FCC" />
         </View>
 
-        <View className="mt-5 flex-row items-center">
-          <Ionicons name="time-outline" size={18} color="#065FCC" />
-          <Text className="ml-2 text-[16px] font-extrabold text-[#065FCC]">
+        <View className="mt-3 gap-1 flex-row items-center">
+          <Ionicons name="time-outline" size={15} color="#065FCC" />
+          <Text className="text-[12px] font-semibold text-[#065FCC]">
             {item.subtitle ?? "Ends in 45:10"}
           </Text>
         </View>
 
-        <View className="mt-7 flex-row items-end justify-between">
+        <View className="mt-6 flex-row items-center justify-between">
           <View>
             {item.discountPrice ? (
               <Text className="text-[15px] leading-5 text-[#606A78] line-through">
@@ -291,7 +299,7 @@ function DealCard({
                 Starting at
               </Text>
             )}
-            <Text className="text-[27px] leading-9 font-extrabold text-[#065FCC]">
+            <Text className="text-[20px] font-bold text-[#065FCC]">
               {formatPrice(price)}
             </Text>
           </View>
@@ -299,9 +307,9 @@ function DealCard({
           <TouchableOpacity
             onPress={onAdd}
             activeOpacity={0.88}
-            className="h-[52px] min-w-[172px] rounded-[8px] bg-[#065FCC] items-center justify-center px-6"
+            className="rounded-[8px] bg-[#065FCC] items-center justify-center px-6"
           >
-            <Text className="text-[20px] font-extrabold text-white">
+            <Text className="text-[16px] px-2 py-3 font-extrabold text-white">
               Add to Cart
             </Text>
           </TouchableOpacity>
