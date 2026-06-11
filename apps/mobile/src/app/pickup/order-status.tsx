@@ -96,7 +96,7 @@ export default function PickupOrderStatusScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Card 1: Preparing Status */}
-        <View className="bg-white rounded-[16px] border border-[#E8EBF0] p-5 items-center mb-4">
+        <View className="bg-white rounded-2xl border border-[#E8EBF0] p-5 items-center mb-4">
           <Text className="text-[12px] font-bold text-[#065FCC] uppercase tracking-wider">
             Order Status
           </Text>
@@ -116,7 +116,7 @@ export default function PickupOrderStatusScreen() {
         </View>
 
         {/* Card 2: Progress Timeline */}
-        <View className="bg-white rounded-[16px] border border-[#E8EBF0] p-5 mb-4">
+        <View className="bg-white rounded-2xl border border-[#E8EBF0] p-5 mb-4">
           <View className="flex-row items-center justify-between px-3">
             {/* Confirmed Stage */}
             <View className="items-center">
@@ -185,7 +185,7 @@ export default function PickupOrderStatusScreen() {
         </View>
 
         {/* Card 3: QR Verification Code */}
-        <View className="bg-white rounded-[16px] border border-[#E8EBF0] p-6 items-center mb-4">
+        <View className="bg-white rounded-2xl border border-[#E8EBF0] p-6 items-center mb-4">
           <Text className="text-[14px] font-bold text-[#6E7682] mb-4 text-center">
             Show this code at pick-up counter
           </Text>
@@ -201,7 +201,7 @@ export default function PickupOrderStatusScreen() {
         </View>
 
         {/* Card 4: Restaurant details & expander */}
-        <View className="bg-white rounded-[16px] border border-[#E8EBF0] overflow-hidden mb-6">
+        <View className="bg-white rounded-2xl border border-[#E8EBF0] overflow-hidden mb-6">
           <View className="p-4 flex-row items-center justify-between border-b border-[#F4F6F9]">
             <View className="flex-row items-center flex-1 pr-2">
               <View className="w-12 h-12 rounded-[10px] bg-[#065FCC]/10 items-center justify-center mr-3">
@@ -223,7 +223,7 @@ export default function PickupOrderStatusScreen() {
               </View>
             </View>
 
-            <TouchableOpacity className="bg-[#EBF2FF] px-4 py-2 rounded-[8px] flex-row items-center">
+            <TouchableOpacity className="bg-[#EBF2FF] px-4 py-2 rounded-xl flex-row items-center">
               <Text className="text-[13px] font-extrabold text-[#065FCC]">
                 Directions
               </Text>
@@ -310,7 +310,7 @@ export default function PickupOrderStatusScreen() {
         <TouchableOpacity
           onPress={handleReturnHome}
           activeOpacity={0.9}
-          className="h-[56px] rounded-[12px] bg-[#065FCC] items-center justify-center shadow-md shadow-blue-500/25 mt-2"
+          className="h-14 rounded-[12px] bg-[#065FCC] items-center justify-center shadow-md shadow-blue-500/25 mt-2"
         >
           <Text className="text-[17px] font-bold text-white">Back to Home</Text>
         </TouchableOpacity>
