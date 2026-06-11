@@ -7,6 +7,7 @@ import {
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { ActivityIndicator, View } from "react-native";
@@ -14,12 +15,19 @@ import "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "../global.css";
 
-// 1. Create a sub-layout to consume the auth context safely
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
 function NavigationTree() {
   const { isLoading } = useAuth();
   const colorScheme = useColorScheme();
 
-  // 2. Intercept app bootup here to show a clean, full-screen loading state on the phone
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-white dark:bg-zinc-900">
@@ -46,15 +54,18 @@ function NavigationTree() {
   );
 }
 
-// 3. Keep your top-level RootLayout strictly for the context providers
 export default function RootLayout() {
   return (
-    <LocationProvider>
-      <CartProvider>
-        <AuthProvider>
-          <NavigationTree />
-        </AuthProvider>
-      </CartProvider>
-    </LocationProvider>
+    // 3. Place QueryClientProvider at the absolute root wrapper.
+    // This allows Location, Cart, and Auth contexts to use React Query hooks if needed!
+    <QueryClientProvider client={queryClient}>
+      <LocationProvider>
+        <CartProvider>
+          <AuthProvider>
+            <NavigationTree />
+          </AuthProvider>
+        </CartProvider>
+      </LocationProvider>
+    </QueryClientProvider>
   );
 }
