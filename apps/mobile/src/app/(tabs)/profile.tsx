@@ -1,6 +1,7 @@
 import { ProfileMenuItem } from "@/components/profile-menu-item";
 import { BottomTabInset } from "@/constants/theme";
 import { useAuth } from "@/context/auth-context";
+import { useSession } from "@/context/session-context";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -44,6 +45,7 @@ function getInitials(fullName: string) {
 
 export default function ProfileScreen() {
   const { user, logout, isLoading } = useAuth();
+  const { clearSession } = useSession();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
@@ -57,6 +59,7 @@ export default function ProfileScreen() {
 
   const handleLogout = async () => {
     try {
+      await clearSession();
       await logout();
     } catch {
       // logout clears local state even on API failure
@@ -145,6 +148,21 @@ export default function ProfileScreen() {
         {/* Quick actions */}
         <ProfileSection title="QUICK ACTIONS">
           <ProfileMenuItem icon="receipt-outline" label="My Orders" />
+          <ProfileMenuItem
+            icon="restaurant-outline"
+            label="Change Restaurant"
+            onPress={() => router.push("/select-restaurant")}
+          />
+          <ProfileMenuItem
+            icon="location-outline"
+            label="Change Branch"
+            onPress={() =>
+              router.push({
+                pathname: "/select-branch",
+                params: { change: "true" },
+              })
+            }
+          />
           <ProfileMenuItem icon="card-outline" label="Payment Methods" />
           <ProfileMenuItem
             icon="location-outline"

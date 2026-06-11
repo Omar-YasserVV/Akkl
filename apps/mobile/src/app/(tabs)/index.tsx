@@ -1,5 +1,6 @@
 import { BottomTabInset } from "@/constants/theme";
 import { useLocation } from "@/context/location-context";
+import { useSession } from "@/context/session-context";
 import { Ionicons } from "@expo/vector-icons";
 import {
   discoveryApis,
@@ -43,6 +44,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { lat, lng } = useLocation();
+  const { restaurant, branch } = useSession();
   const [home, setHome] = useState<DiscoveryHome | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -107,14 +109,30 @@ export default function HomeScreen() {
           <TouchableOpacity
             activeOpacity={0.85}
             className="flex-row gap-1 items-center flex-1"
+            onPress={() =>
+              router.push({
+                pathname: "/select-branch",
+                params: { change: "true" },
+              })
+            }
           >
             <Ionicons name="location-sharp" size={23} color="#0057C0" />
-            <Text
-              className="text-[18px] leading-9 font-semibold text-[#0057C0]"
-              numberOfLines={1}
-            >
-              Downtown Branch
-            </Text>
+            <View className="flex-1">
+              <Text
+                className="text-[18px] leading-7 font-semibold text-[#0057C0]"
+                numberOfLines={1}
+              >
+                {branch?.name ?? "Select branch"}
+              </Text>
+              {restaurant ? (
+                <Text
+                  className="text-[12px] text-[#7B8495]"
+                  numberOfLines={1}
+                >
+                  {restaurant.name}
+                </Text>
+              ) : null}
+            </View>
             <Ionicons
               name="chevron-down"
               size={20}
@@ -148,12 +166,16 @@ export default function HomeScreen() {
             icon="bag-handle"
             title="Pick Up"
             subtitle="Order ahead"
-            onPress={() =>
-              router.push({
-                pathname: "/pickup",
-                params: { mode: "pickup" },
-              })
-            }
+            onPress={() => {
+              if (branch?.id) {
+                router.push({
+                  pathname: "/pickup/menu",
+                  params: { branchId: branch.id },
+                });
+              } else {
+                router.push("/select-branch");
+              }
+            }}
           />
           <ActionTile
             icon="qr-code"

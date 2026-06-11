@@ -1,7 +1,6 @@
 import { useCart } from "@/context/cart-context";
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
-import { type Href, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   LayoutAnimation,
@@ -27,7 +26,9 @@ export default function PickupOrderStatusScreen() {
   const insets = useSafeAreaInsets();
   const { lastOrder, items, subtotal, branchName, clearCart } = useCart();
   const [showDetails, setShowDetails] = useState(false);
-  const [stage, setStage] = useState<"confirmed" | "preparing" | "ready">("preparing");
+  const [stage, setStage] = useState<"confirmed" | "preparing" | "ready">(
+    "preparing",
+  );
   const [countdown, setCountdown] = useState(12);
 
   // Simulation: Countdown timer and status update
@@ -49,7 +50,7 @@ export default function PickupOrderStatusScreen() {
   const paymentMethod = lastOrder?.paymentMethod ?? "Apple Pay";
   const placedAt = lastOrder?.placedAt ?? new Date();
 
-  const serviceFee = 2.50;
+  const serviceFee = 2.5;
   const tax = subtotal * 0.08;
   const totalWithTax = subtotal > 0 ? subtotal + serviceFee + tax : 29.84; // Fallback total matching design
 
@@ -63,11 +64,12 @@ export default function PickupOrderStatusScreen() {
     router.replace("/(tabs)");
   };
 
-  const branchAddress = branchName === "Uptown Hub" 
-    ? "42 Garden Street, Uptown" 
-    : branchName === "East Side Kitchen" 
-    ? "88 Market Road, East Side" 
-    : "Smart Dining HQ, 5th Ave";
+  const branchAddress =
+    branchName === "Uptown Hub"
+      ? "42 Garden Street, Uptown"
+      : branchName === "East Side Kitchen"
+        ? "88 Market Road, East Side"
+        : "Smart Dining HQ, 5th Ave";
 
   return (
     <View className="flex-1 bg-[#F7F8FA]">
@@ -103,7 +105,8 @@ export default function PickupOrderStatusScreen() {
           </Text>
           {stage !== "ready" ? (
             <Text className="text-[14px] font-semibold text-[#5A6270] mt-1 text-center">
-              Estimated pick-up in <Text className="text-[#065FCC]">{countdown} mins</Text>
+              Estimated pick-up in{" "}
+              <Text className="text-[#065FCC]">{countdown} mins</Text>
             </Text>
           ) : (
             <Text className="text-[14px] font-semibold text-[#128A4D] mt-1 text-center">
@@ -120,7 +123,9 @@ export default function PickupOrderStatusScreen() {
               <View className="w-8 h-8 rounded-full bg-[#128A4D] items-center justify-center">
                 <Ionicons name="checkmark" size={16} color="#FFFFFF" />
               </View>
-              <Text className="text-[11px] font-bold text-[#128A4D] mt-2">Confirmed</Text>
+              <Text className="text-[11px] font-bold text-[#128A4D] mt-2">
+                Confirmed
+              </Text>
             </View>
 
             {/* Line 1 */}
@@ -203,17 +208,25 @@ export default function PickupOrderStatusScreen() {
                 <Ionicons name="restaurant" size={22} color="#065FCC" />
               </View>
               <View className="flex-1">
-                <Text className="text-[16px] font-bold text-[#171B20]" numberOfLines={1}>
+                <Text
+                  className="text-[16px] font-bold text-[#171B20]"
+                  numberOfLines={1}
+                >
                   {branchName || "Downtown Branch"}
                 </Text>
-                <Text className="text-[13px] font-medium text-[#6E7682] mt-0.5" numberOfLines={1}>
+                <Text
+                  className="text-[13px] font-medium text-[#6E7682] mt-0.5"
+                  numberOfLines={1}
+                >
                   {branchAddress}
                 </Text>
               </View>
             </View>
 
             <TouchableOpacity className="bg-[#EBF2FF] px-4 py-2 rounded-[8px] flex-row items-center">
-              <Text className="text-[13px] font-extrabold text-[#065FCC]">Directions</Text>
+              <Text className="text-[13px] font-extrabold text-[#065FCC]">
+                Directions
+              </Text>
             </TouchableOpacity>
           </View>
 
@@ -223,7 +236,9 @@ export default function PickupOrderStatusScreen() {
             activeOpacity={0.8}
             className="px-4 py-3 flex-row items-center justify-between bg-[#FCFDFE]"
           >
-            <Text className="text-[14px] font-bold text-[#424957]">Order Details</Text>
+            <Text className="text-[14px] font-bold text-[#424957]">
+              Order Details
+            </Text>
             <Ionicons
               name={showDetails ? "chevron-up" : "chevron-down"}
               size={18}
@@ -236,7 +251,10 @@ export default function PickupOrderStatusScreen() {
             <View className="px-4 pb-4 pt-1 bg-[#FCFDFE]">
               {items.length > 0 ? (
                 items.map((line, idx) => (
-                  <View key={line.itemId + idx} className="flex-row justify-between mb-2">
+                  <View
+                    key={line.itemId + idx}
+                    className="flex-row justify-between mb-2"
+                  >
                     <Text className="text-[14px] text-[#5A6270] flex-1">
                       {line.quantity}x {line.name}
                     </Text>
@@ -257,20 +275,32 @@ export default function PickupOrderStatusScreen() {
               )}
               <View className="h-px bg-[#E8EBF0] my-2" />
               <View className="flex-row justify-between mb-1">
-                <Text className="text-[13px] text-[#858C9B]">Payment Method</Text>
-                <Text className="text-[13px] font-medium text-[#424957]">{paymentMethod}</Text>
+                <Text className="text-[13px] text-[#858C9B]">
+                  Payment Method
+                </Text>
+                <Text className="text-[13px] font-medium text-[#424957]">
+                  {paymentMethod}
+                </Text>
               </View>
               <View className="flex-row justify-between mb-1">
                 <Text className="text-[13px] text-[#858C9B]">Subtotal</Text>
-                <Text className="text-[13px] font-medium text-[#424957]">{formatPrice(subtotal || 23.50)}</Text>
+                <Text className="text-[13px] font-medium text-[#424957]">
+                  {formatPrice(subtotal || 23.5)}
+                </Text>
               </View>
               <View className="flex-row justify-between mb-1">
                 <Text className="text-[13px] text-[#858C9B]">Tax & Fees</Text>
-                <Text className="text-[13px] font-medium text-[#424957]">{formatPrice(tax + serviceFee)}</Text>
+                <Text className="text-[13px] font-medium text-[#424957]">
+                  {formatPrice(tax + serviceFee)}
+                </Text>
               </View>
               <View className="flex-row justify-between mt-2">
-                <Text className="text-[14px] font-bold text-[#171B20]">Total Paid</Text>
-                <Text className="text-[14px] font-extrabold text-[#065FCC]">{formatPrice(totalWithTax)}</Text>
+                <Text className="text-[14px] font-bold text-[#171B20]">
+                  Total Paid
+                </Text>
+                <Text className="text-[14px] font-extrabold text-[#065FCC]">
+                  {formatPrice(totalWithTax)}
+                </Text>
               </View>
             </View>
           )}
@@ -312,7 +342,14 @@ function QrCodeMockup() {
   ];
 
   return (
-    <View style={{ width: 140, height: 140, justifyContent: "center", alignItems: "center" }}>
+    <View
+      style={{
+        width: 140,
+        height: 140,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
       {grid.map((row, rIdx) => (
         <View key={rIdx} className="flex-row">
           {row.map((cell, cIdx) => (

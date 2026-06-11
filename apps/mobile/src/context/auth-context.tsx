@@ -43,8 +43,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
       // Redirect unauthenticated users to sign-in
       router.replace("/(auth)/sign-in");
     } else if (isAuthenticated && inAuthGroup) {
-      // Redirect authenticated users away from login pages
-      router.replace("/(tabs)");
+      // Session provider routes to restaurant/branch selection or tabs
+      router.replace("/select-restaurant");
     }
   }, [isAuthenticated, segments, isLoading]);
 

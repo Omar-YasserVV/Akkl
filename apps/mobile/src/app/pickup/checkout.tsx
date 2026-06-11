@@ -72,7 +72,14 @@ export default function PickupCheckoutScreen() {
           <Text className="text-[17px] font-bold text-[#171B20] uppercase tracking-wider">
             Pick-up Location
           </Text>
-          <TouchableOpacity onPress={() => router.navigate("/pickup")}>
+          <TouchableOpacity
+            onPress={() =>
+              router.push({
+                pathname: "/select-branch",
+                params: { change: "true" },
+              })
+            }
+          >
             <Text className="text-[13px] font-extrabold text-[#065FCC]">CHANGE</Text>
           </TouchableOpacity>
         </View>

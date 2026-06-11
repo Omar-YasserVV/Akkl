@@ -1,4 +1,5 @@
 import { SharedMenuView } from "@/components/discovery/shared-menu-view";
+import { useSession } from "@/context/session-context";
 import { type DiscoveryMenuItem } from "@repo/utils";
 import { useLocalSearchParams } from "expo-router";
 import React from "react";
@@ -116,23 +117,20 @@ const FALLBACK_PICKUP_MENU: DiscoveryMenuItem[] = [
 
 export default function PickupMenuScreen() {
   const { branchId } = useLocalSearchParams<{ branchId: string }>();
+  const { restaurant, branch } = useSession();
 
+  const resolvedBranchId = branchId || branch?.id || "downtown-branch";
   const defaultBranchContext = {
-    branchId: branchId || "downtown-branch",
-    restaurantId: "akkl",
-    restaurantName: "Smart Restaurant",
-    branchName:
-      branchId === "uptown-hub"
-        ? "Uptown Hub"
-        : branchId === "east-side-kitchen"
-          ? "East Side Kitchen"
-          : "Downtown Branch",
+    branchId: resolvedBranchId,
+    restaurantId: restaurant?.id ?? "akkl",
+    restaurantName: restaurant?.name ?? "Smart Restaurant",
+    branchName: branch?.name ?? "Downtown Branch",
   };
 
   return (
     <SharedMenuView
       mode="pickup"
-      branchId={branchId || "downtown-branch"}
+      branchId={resolvedBranchId}
       fallbackMenu={FALLBACK_PICKUP_MENU}
       cartRoute="/pickup/cart"
       defaultBranchContext={defaultBranchContext}

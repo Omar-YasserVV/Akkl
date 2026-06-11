@@ -1,6 +1,7 @@
 import { AuthProvider, useAuth } from "@/context/auth-context";
 import { CartProvider } from "@/context/cart-context";
 import { LocationProvider } from "@/context/location-context";
+import { SessionProvider, useSession } from "@/context/session-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import {
   DarkTheme,
@@ -25,10 +26,11 @@ const queryClient = new QueryClient({
 });
 
 function NavigationTree() {
-  const { isLoading } = useAuth();
+  const { isLoading: authLoading, isAuthenticated } = useAuth();
+  const { isLoading: sessionLoading } = useSession();
   const colorScheme = useColorScheme();
 
-  if (isLoading) {
+  if (authLoading || (isAuthenticated && sessionLoading)) {
     return (
       <View className="flex-1 items-center justify-center bg-white dark:bg-zinc-900">
         <ActivityIndicator size="large" color="#4B5563" />
@@ -41,6 +43,8 @@ function NavigationTree() {
       <SafeAreaProvider>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(auth)" />
+          <Stack.Screen name="select-restaurant" />
+          <Stack.Screen name="select-branch" />
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="search" />
           <Stack.Screen name="pickup" />
@@ -62,7 +66,9 @@ export default function RootLayout() {
       <LocationProvider>
         <CartProvider>
           <AuthProvider>
-            <NavigationTree />
+            <SessionProvider>
+              <NavigationTree />
+            </SessionProvider>
           </AuthProvider>
         </CartProvider>
       </LocationProvider>

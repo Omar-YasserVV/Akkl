@@ -1,6 +1,7 @@
 import { BottomTabInset } from "@/constants/theme";
 import { useCart } from "@/context/cart-context";
 import { useLocation } from "@/context/location-context";
+import { useSession } from "@/context/session-context";
 import { Ionicons } from "@expo/vector-icons";
 import { discoveryApis, type DiscoveryBranch } from "@repo/utils";
 import { Image } from "expo-image";
@@ -73,21 +74,32 @@ const fallbackBranches: DiscoveryBranch[] = [
 export default function PickupScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { mode } = useLocalSearchParams<{ mode?: string }>();
   const { lat, lng } = useLocation();
+  const { restaurant, branch, setBranch: setSessionBranch } = useSession();
   const { setBranchContext } = useCart();
   const [branches, setBranches] = useState<DiscoveryBranch[]>([]);
   const [query, setQuery] = useState("");
   const [showMap, setShowMap] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  useEffect(() => {
+    if (branch?.id) {
+      router.replace({
+        pathname: "/pickup/menu",
+        params: { branchId: branch.id },
+      });
+    }
+  }, [branch, router]);
+
   const loadBranches = useCallback(async () => {
+    if (!restaurant) return;
     setIsLoading(true);
     try {
       const data = await discoveryApis.getBranchesNearby({
         lat: lat ?? undefined,
         lng: lng ?? undefined,
-        openNow: true,
+        restaurantId: restaurant.id,
+        openNow: false,
         q: query || undefined,
       });
       setBranches(data.length ? data : fallbackBranches);
@@ -97,7 +109,7 @@ export default function PickupScreen() {
     } finally {
       setIsLoading(false);
     }
-  }, [lat, lng, query]);
+  }, [lat, lng, query, restaurant]);
 
   useEffect(() => {
     const timer = setTimeout(loadBranches, query ? 300 : 0);
@@ -121,18 +133,19 @@ export default function PickupScreen() {
     );
   }, [branches, query]);
 
-  const handleSelect = (branch: DiscoveryBranch) => {
+  const handleSelect = async (selected: DiscoveryBranch) => {
+    await setSessionBranch({ id: selected.id, name: selected.name });
     setBranchContext({
-      branchId: branch.id,
-      restaurantId: branch.restaurant.id,
-      restaurantName: branch.restaurant.name,
-      branchName: branch.name,
+      branchId: selected.id,
+      restaurantId: selected.restaurant.id,
+      restaurantName: selected.restaurant.name,
+      branchName: selected.name,
     });
 
     router.push({
       pathname: "/pickup/menu",
       params: {
-        branchId: branch.id,
+        branchId: selected.id,
       },
     } as unknown as Href);
   };
@@ -150,7 +163,7 @@ export default function PickupScreen() {
               className="ml-2 text-[22px] leading-8 font-extrabold text-[#065FCC]"
               numberOfLines={1}
             >
-              Smart Restaurant
+              {restaurant?.name ?? "Restaurant"}
             </Text>
           </View>
           <TouchableOpacity onPress={() => router.push("/(tabs)/profile")}>
@@ -170,9 +183,16 @@ export default function PickupScreen() {
         </View>
 
         <View className="mt-5 flex-row items-center justify-between">
-          <Text className="text-[18px] leading-6 font-extrabold text-[#20242A]">
-            Find a Location
-          </Text>
+          <View>
+            <Text className="text-[18px] leading-6 font-extrabold text-[#20242A]">
+              Find a Location
+            </Text>
+            {branch ? (
+              <Text className="mt-1 text-[13px] text-[#6E7682]">
+                Current: {branch.name}
+              </Text>
+            ) : null}
+          </View>
           <TouchableOpacity
             onPress={() => setShowMap((current) => !current)}
             activeOpacity={0.86}
