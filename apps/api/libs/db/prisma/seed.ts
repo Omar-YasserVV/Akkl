@@ -5,18 +5,18 @@ import { hashPassword } from 'utils/argon2';
 import {
   BatchStatus,
   BranchStatus,
-  category,
   DietaryType,
   ExpenseType,
   HardwareType,
   IngredientCategory,
   InventoryLogAction,
   MeasurementUnit,
+  MenuCategory,
+  OrderSource,
   OrderState,
   PrismaClient,
   ShiftStatus,
-  source,
-  stockStatus,
+  StockStatus,
   UserRole,
 } from '../generated/client/client';
 
@@ -453,7 +453,7 @@ async function main() {
       warehouseId: warehouse.id,
       quantity: 0,
       minimumQuantity: 20,
-      stockStatus: stockStatus.OUT_OF_STOCK,
+      stockStatus: StockStatus.OUT_OF_STOCK,
     },
   });
 
@@ -463,7 +463,7 @@ async function main() {
       warehouseId: warehouse.id,
       quantity: 0,
       minimumQuantity: 10,
-      stockStatus: stockStatus.OUT_OF_STOCK,
+      stockStatus: StockStatus.OUT_OF_STOCK,
     },
   });
 
@@ -473,7 +473,7 @@ async function main() {
       warehouseId: warehouse.id,
       quantity: 0,
       minimumQuantity: 30,
-      stockStatus: stockStatus.OUT_OF_STOCK,
+      stockStatus: StockStatus.OUT_OF_STOCK,
     },
   });
 
@@ -483,7 +483,7 @@ async function main() {
       warehouseId: warehouse.id,
       quantity: 0,
       minimumQuantity: 15,
-      stockStatus: stockStatus.OUT_OF_STOCK,
+      stockStatus: StockStatus.OUT_OF_STOCK,
     },
   });
 
@@ -493,7 +493,7 @@ async function main() {
       warehouseId: warehouse.id,
       quantity: 0,
       minimumQuantity: 5,
-      stockStatus: stockStatus.OUT_OF_STOCK,
+      stockStatus: StockStatus.OUT_OF_STOCK,
     },
   });
 
@@ -503,7 +503,7 @@ async function main() {
       warehouseId: warehouse.id,
       quantity: 0,
       minimumQuantity: 5,
-      stockStatus: stockStatus.OUT_OF_STOCK,
+      stockStatus: StockStatus.OUT_OF_STOCK,
     },
   });
 
@@ -513,7 +513,7 @@ async function main() {
       warehouseId: warehouse.id,
       quantity: 0,
       minimumQuantity: 20,
-      stockStatus: stockStatus.OUT_OF_STOCK,
+      stockStatus: StockStatus.OUT_OF_STOCK,
     },
   });
 
@@ -607,31 +607,31 @@ async function main() {
   await Promise.all([
     prisma.inventoryItem.update({
       where: { id: beefItem.id },
-      data: { quantity: 150.5, stockStatus: stockStatus.IN_STOCK },
+      data: { quantity: 150.5, stockStatus: StockStatus.IN_STOCK },
     }),
     prisma.inventoryItem.update({
       where: { id: cheeseItem.id },
-      data: { quantity: 60.0, stockStatus: stockStatus.IN_STOCK },
+      data: { quantity: 60.0, stockStatus: StockStatus.IN_STOCK },
     }),
     prisma.inventoryItem.update({
       where: { id: bunItem.id },
-      data: { quantity: 200, stockStatus: stockStatus.IN_STOCK },
+      data: { quantity: 200, stockStatus: StockStatus.IN_STOCK },
     }),
     prisma.inventoryItem.update({
       where: { id: chickenItem.id },
-      data: { quantity: 80.0, stockStatus: stockStatus.IN_STOCK },
+      data: { quantity: 80.0, stockStatus: StockStatus.IN_STOCK },
     }),
     prisma.inventoryItem.update({
       where: { id: lettuceItem.id },
-      data: { quantity: 25.0, stockStatus: stockStatus.IN_STOCK },
+      data: { quantity: 25.0, stockStatus: StockStatus.IN_STOCK },
     }),
     prisma.inventoryItem.update({
       where: { id: oilItem.id },
-      data: { quantity: 20.0, stockStatus: stockStatus.IN_STOCK },
+      data: { quantity: 20.0, stockStatus: StockStatus.IN_STOCK },
     }),
     prisma.inventoryItem.update({
       where: { id: friesItem.id },
-      data: { quantity: 5.0, stockStatus: stockStatus.LOW_STOCK },
+      data: { quantity: 5.0, stockStatus: StockStatus.LOW_STOCK },
     }),
   ]);
 
@@ -646,7 +646,7 @@ async function main() {
       menuItemId: 'menu001',
       name: 'Double Cheeseburger',
       description: 'Signature beef burger with double cheddar cheese',
-      category: category.MAIN_COURSE,
+      category: MenuCategory.MAIN_COURSE,
       price: 12.99,
       discountPrice: 10.99,
       preparationTime: 12,
@@ -667,7 +667,7 @@ async function main() {
       menuItemId: 'menu005',
       name: 'Chocolate Lava Cake',
       description: 'Warm chocolate cake with molten chocolate center',
-      category: category.DESSERT,
+      category: MenuCategory.DESSERT,
       price: 6.99,
       discountPrice: 5.99,
       preparationTime: 8,
@@ -687,7 +687,7 @@ async function main() {
       menuItemId: 'menu002',
       name: 'Crispy Chicken Sandwich',
       description: 'Crispy fried chicken breast with fresh lettuce',
-      category: category.MAIN_COURSE,
+      category: MenuCategory.MAIN_COURSE,
       price: 11.49,
       discountPrice: 9.99,
       preparationTime: 10,
@@ -708,7 +708,7 @@ async function main() {
       menuItemId: 'menu003',
       name: 'Seasoned Fries',
       description: 'Crispy golden fries with house seasoning',
-      category: category.SIDE_DISH,
+      category: MenuCategory.SIDE_DISH,
       price: 4.99,
       preparationTime: 6,
       isAvailable: true,
@@ -729,7 +729,7 @@ async function main() {
       menuItemId: 'menu004',
       name: 'Truffle Burger',
       description: 'Premium wagyu beef with black truffle sauce',
-      category: category.MAIN_COURSE,
+      category: MenuCategory.MAIN_COURSE,
       price: 24.99,
       preparationTime: 18,
       isAvailable: false,
@@ -745,7 +745,7 @@ async function main() {
       menuItemId: 'menu005',
       name: 'Chocolate Lava Cake',
       description: 'Warm chocolate cake with a molten centre',
-      category: category.DESSERT,
+      category: MenuCategory.DESSERT,
       price: 6.99,
       preparationTime: 15,
       isAvailable: true,
@@ -758,7 +758,7 @@ async function main() {
       menuItemId: 'menu006',
       name: 'Soft Drink',
       description: 'Chilled can of your choice',
-      category: category.BEVERAGE,
+      category: MenuCategory.BEVERAGE,
       price: 2.49,
       preparationTime: 1,
       isAvailable: true,
@@ -772,7 +772,7 @@ async function main() {
       menuItemId: 'menu007',
       name: 'Onion Rings',
       description: 'Golden battered onion rings',
-      category: category.APPETIZER,
+      category: MenuCategory.APPETIZER,
       price: 4.49,
       preparationTime: 8,
       isAvailable: true,
@@ -880,7 +880,7 @@ async function main() {
       branchId: branch.id,
       userId: customer.id,
       CustomerName: 'Jane Doe',
-      source: source.APP,
+      source: OrderSource.APP,
       status: OrderState.COMPLETED,
       items: {
         create: [
@@ -898,7 +898,7 @@ async function main() {
       branchId: branch.id,
       userId: customer2.id,
       CustomerName: 'John Smith',
-      source: source.STORE,
+      source: OrderSource.STORE,
       status: OrderState.IN_PROGRESS,
       items: {
         create: [
@@ -916,7 +916,7 @@ async function main() {
       branchId: branch.id,
       userId: customer.id,
       CustomerName: 'Jane Doe',
-      source: source.APP,
+      source: OrderSource.APP,
       status: OrderState.PENDING,
       items: {
         create: [orderLine(burgerItem.id, 1, 9.99)],
@@ -931,7 +931,7 @@ async function main() {
       branchId: branch.id,
       userId: customer2.id,
       CustomerName: 'John Smith',
-      source: source.STORE,
+      source: OrderSource.STORE,
       status: OrderState.CANCELLED,
       items: {
         create: [orderLine(burgerItem.id, 1, 12.99)],
@@ -947,7 +947,7 @@ async function main() {
       branchId: branch.id,
       userId: customer.id,
       CustomerName: 'Jane Doe',
-      source: source.APP,
+      source: OrderSource.APP,
       status: OrderState.COMPLETED,
       items: {
         create: [
@@ -965,7 +965,7 @@ async function main() {
       branchId: branch.id,
       userId: customer2.id,
       CustomerName: 'John Smith',
-      source: source.STORE,
+      source: OrderSource.STORE,
       status: OrderState.PENDING,
       items: {
         create: [orderLine(friesMenuItem.id, 2, 6.99)],
@@ -980,7 +980,7 @@ async function main() {
       branchId: branch.id,
       userId: customer.id,
       CustomerName: 'Jane Doe',
-      source: source.APP,
+      source: OrderSource.APP,
       status: OrderState.IN_PROGRESS,
       items: {
         create: [orderLine(chickenSandwich.id, 2, 10.99)],
@@ -995,7 +995,7 @@ async function main() {
       branchId: branch.id,
       userId: customer2.id,
       CustomerName: 'John Smith',
-      source: source.APP,
+      source: OrderSource.APP,
       status: OrderState.COMPLETED,
       items: {
         create: [orderLine(chocolateLavaCake.id, 2, 7.49)],
@@ -1010,7 +1010,7 @@ async function main() {
       branchId: branch.id,
       userId: customer.id,
       CustomerName: 'Jane Doe',
-      source: source.STORE,
+      source: OrderSource.STORE,
       status: OrderState.CANCELLED,
       items: {
         create: [orderLine(chocolateLavaCake.id, 1, 7.49)],
@@ -1025,7 +1025,7 @@ async function main() {
       branchId: branch.id,
       userId: customer2.id,
       CustomerName: 'John Smith',
-      source: source.APP,
+      source: OrderSource.APP,
       status: OrderState.COMPLETED,
       items: {
         create: [
@@ -1043,7 +1043,7 @@ async function main() {
       branchId: branch.id,
       userId: customer.id,
       CustomerName: 'Jane Doe',
-      source: source.STORE,
+      source: OrderSource.STORE,
       status: OrderState.IN_PROGRESS,
       items: {
         create: [orderLine(onionRings.id, 2, 5.49)],
@@ -1058,7 +1058,7 @@ async function main() {
       branchId: branch.id,
       userId: customer2.id,
       CustomerName: 'John Smith',
-      source: source.APP,
+      source: OrderSource.APP,
       status: OrderState.COMPLETED,
       items: {
         create: [
@@ -1076,7 +1076,7 @@ async function main() {
       branchId: branch.id,
       userId: customer.id,
       CustomerName: 'Jane Doe',
-      source: source.APP,
+      source: OrderSource.APP,
       status: OrderState.PENDING,
       items: {
         create: [
@@ -1095,7 +1095,7 @@ async function main() {
       branchId: branch.id,
       userId: customer2.id,
       CustomerName: 'John Smith',
-      source: source.STORE,
+      source: OrderSource.STORE,
       status: OrderState.IN_PROGRESS,
       items: {
         create: [orderLine(truffleBurger.id, 1, 17.99)],
@@ -1110,7 +1110,7 @@ async function main() {
       branchId: branch.id,
       userId: customer.id,
       CustomerName: 'Jane Doe',
-      source: source.APP,
+      source: OrderSource.APP,
       status: OrderState.COMPLETED,
       items: {
         create: [
@@ -1128,7 +1128,7 @@ async function main() {
       branchId: branch.id,
       userId: customer2.id,
       CustomerName: 'John Smith',
-      source: source.STORE,
+      source: OrderSource.STORE,
       status: OrderState.CANCELLED,
       items: {
         create: [
@@ -1146,7 +1146,7 @@ async function main() {
       branchId: branch.id,
       userId: customer.id,
       CustomerName: 'Jane Doe',
-      source: source.APP,
+      source: OrderSource.APP,
       status: OrderState.COMPLETED,
       items: {
         create: [
@@ -1164,7 +1164,7 @@ async function main() {
       branchId: branch.id,
       userId: customer2.id,
       CustomerName: 'John Smith',
-      source: source.APP,
+      source: OrderSource.APP,
       status: OrderState.PENDING,
       items: {
         create: [orderLine(onionRings.id, 2, 5.49)],
@@ -1179,7 +1179,7 @@ async function main() {
       branchId: branch.id,
       userId: customer.id,
       CustomerName: 'Jane Doe',
-      source: source.STORE,
+      source: OrderSource.STORE,
       status: OrderState.IN_PROGRESS,
       items: {
         create: [
@@ -1197,7 +1197,7 @@ async function main() {
       branchId: branch.id,
       userId: customer2.id,
       CustomerName: 'John Smith',
-      source: source.STORE,
+      source: OrderSource.STORE,
       status: OrderState.COMPLETED,
       items: {
         create: [
@@ -1215,7 +1215,7 @@ async function main() {
       branchId: branch.id,
       userId: customer.id,
       CustomerName: 'Jane Doe',
-      source: source.APP,
+      source: OrderSource.APP,
       status: OrderState.COMPLETED,
       items: {
         create: [
@@ -1233,7 +1233,7 @@ async function main() {
       branchId: branch.id,
       userId: customer2.id,
       CustomerName: 'John Smith',
-      source: source.STORE,
+      source: OrderSource.STORE,
       status: OrderState.CANCELLED,
       items: {
         create: [
@@ -1251,7 +1251,7 @@ async function main() {
       branchId: branch.id,
       userId: customer.id,
       CustomerName: 'Jane Doe',
-      source: source.APP,
+      source: OrderSource.APP,
       status: OrderState.IN_PROGRESS,
       items: {
         create: [
@@ -1269,7 +1269,7 @@ async function main() {
       branchId: branch.id,
       userId: customer2.id,
       CustomerName: 'John Smith',
-      source: source.STORE,
+      source: OrderSource.STORE,
       status: OrderState.COMPLETED,
       items: {
         create: [
@@ -1288,7 +1288,7 @@ async function main() {
       branchId: branch.id,
       userId: customer.id,
       CustomerName: 'Jane Doe',
-      source: source.APP,
+      source: OrderSource.APP,
       status: OrderState.COMPLETED,
       items: {
         create: [
@@ -1793,7 +1793,7 @@ async function main() {
         menuItemId: 'pizza-001',
         name: 'Margherita Pizza',
         description: 'Classic tomato, mozzarella, and fresh basil',
-        category: category.MAIN_COURSE,
+        category: MenuCategory.MAIN_COURSE,
         price: 145,
         discountPrice: 120,
         preparationTime: 20,
@@ -1806,7 +1806,7 @@ async function main() {
         menuItemId: 'pizza-002',
         name: 'Pepperoni Feast',
         description: 'Loaded pepperoni with mozzarella',
-        category: category.MAIN_COURSE,
+        category: MenuCategory.MAIN_COURSE,
         price: 165,
         preparationTime: 22,
         isAvailable: true,
@@ -1818,7 +1818,7 @@ async function main() {
         menuItemId: 'pizza-003',
         name: 'Four Cheese Pizza',
         description: 'Mozzarella, gorgonzola, parmesan, and ricotta',
-        category: category.MAIN_COURSE,
+        category: MenuCategory.MAIN_COURSE,
         price: 175,
         discountPrice: 149,
         preparationTime: 20,
@@ -1829,7 +1829,7 @@ async function main() {
         menuItemId: 'sushi-001',
         name: 'Salmon Nigiri Set',
         description: 'Fresh salmon nigiri with wasabi and ginger',
-        category: category.MAIN_COURSE,
+        category: MenuCategory.MAIN_COURSE,
         price: 220,
         discountPrice: 189,
         preparationTime: 15,
@@ -1842,7 +1842,7 @@ async function main() {
         menuItemId: 'sushi-002',
         name: 'Dragon Roll',
         description: 'Eel, avocado, and cucumber roll',
-        category: category.MAIN_COURSE,
+        category: MenuCategory.MAIN_COURSE,
         price: 195,
         preparationTime: 18,
         isAvailable: true,
@@ -1852,7 +1852,7 @@ async function main() {
         menuItemId: 'salad-001',
         name: 'Quinoa Avocado Salad',
         description: 'Quinoa, avocado, cherry tomatoes, and lemon dressing',
-        category: category.MAIN_COURSE,
+        category: MenuCategory.MAIN_COURSE,
         price: 95,
         discountPrice: 79,
         preparationTime: 10,
@@ -1865,7 +1865,7 @@ async function main() {
         menuItemId: 'salad-002',
         name: 'Vegan Power Bowl',
         description: 'Roasted chickpeas, kale, and tahini sauce',
-        category: category.MAIN_COURSE,
+        category: MenuCategory.MAIN_COURSE,
         price: 88,
         preparationTime: 12,
         isAvailable: true,
