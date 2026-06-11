@@ -106,20 +106,20 @@ export default function HomeScreen() {
         <View className="flex-row items-center justify-between mb-8">
           <TouchableOpacity
             activeOpacity={0.85}
-            className="flex-row items-center flex-1"
+            className="flex-row gap-1 items-center flex-1"
           >
-            <Ionicons name="location-sharp" size={30} color="#065FCC" />
+            <Ionicons name="location-sharp" size={23} color="#065FCC" />
             <Text
-              className="ml-3 text-[28px] leading-9 font-bold text-[#065FCC]"
+              className="text-[18px] leading-9 font-semibold text-[#065FCC]"
               numberOfLines={1}
             >
               Downtown Branch
             </Text>
             <Ionicons
               name="chevron-down"
-              size={18}
+              size={20}
               color="#7B8495"
-              style={{ marginLeft: 8, marginTop: 3 }}
+              style={{ marginTop: 3 }}
             />
           </TouchableOpacity>
 
@@ -135,10 +135,10 @@ export default function HomeScreen() {
         <TouchableOpacity
           onPress={() => router.push("/search")}
           activeOpacity={0.9}
-          className="h-[68px] rounded-[10px] border border-[#E0E4EA] bg-[#F2F3F5] px-6 flex-row items-center mb-9"
+          className="h-14 rounded-[10px] border border-[#E0E4EA] bg-[#f3f4f5] px-6 flex-row items-center mb-9"
         >
-          <Ionicons name="search" size={34} color="#404958" />
-          <Text className="ml-5 text-[22px] text-[#858C9B]">
+          <Ionicons name="search" size={20} color="#404958" />
+          <Text className="ml-5 text-[15px] text-[#858C9B]">
             Search for dishes, drinks...
           </Text>
         </TouchableOpacity>
@@ -189,7 +189,7 @@ export default function HomeScreen() {
         </View>
 
         {isLoading ? (
-          <View className="h-[360px] items-center justify-center">
+          <View className="h-90 items-center justify-center">
             <ActivityIndicator size="large" color="#065FCC" />
           </View>
         ) : (

@@ -1,41 +1,103 @@
+import { MaterialIcons } from "@expo/vector-icons";
+import { Tabs, usePathname, useRouter } from "expo-router";
 import React from "react";
-import { useColorScheme } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
-import { Colors } from "@/constants/theme";
-import { NativeTabs } from "expo-router/build/native-tabs";
+const TABS = [
+  { name: "index", label: "Home", icon: "home" },
+  { name: "explore", label: "Menu", icon: "restaurant-menu" },
+  { name: "orders", label: "Orders", icon: "receipt-long" },
+  { name: "profile", label: "Profile", icon: "person" },
+] as const;
 
-export default function AppTabs() {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === "unspecified" ? "light" : scheme];
+const ACTIVE_COLOR = "#0057c0";
+const INACTIVE_COLOR = "#414755";
+const PILL_BG = "#dce8fb";
+
+function CustomTabBar() {
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const getActive = (name: string) => {
+    if (name === "index") return pathname === "/";
+    return pathname.startsWith(`/${name}`);
+  };
 
   return (
-    <NativeTabs
-      backgroundColor={colors.background}
-      indicatorColor="#DDE5FF"
-      labelStyle={{
-        selected: { color: "#065FCC", fontWeight: "700" },
-        default: { color: "#444B59", fontWeight: "700" },
-      }}
-    >
-      <NativeTabs.Trigger name="index">
-        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon md="home" renderingMode="template" />
-      </NativeTabs.Trigger>
-
-      <NativeTabs.Trigger name="explore">
-        <NativeTabs.Trigger.Label>Menu</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon md="restaurant_menu" renderingMode="template" />
-      </NativeTabs.Trigger>
-
-      <NativeTabs.Trigger name="orders">
-        <NativeTabs.Trigger.Label>Orders</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon md="receipt_long" renderingMode="template" />
-      </NativeTabs.Trigger>
-
-      <NativeTabs.Trigger name="profile">
-        <NativeTabs.Trigger.Icon md="person" renderingMode="template" />
-        <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
-      </NativeTabs.Trigger>
-    </NativeTabs>
+    <View style={styles.container}>
+      {TABS.map((tab) => {
+        const active = getActive(tab.name);
+        return (
+          <Pressable
+            key={tab.name}
+            onPress={() =>
+              router.push(tab.name === "index" ? "/" : `/${tab.name}`)
+            }
+            style={styles.tab}
+          >
+            <View style={[styles.pill, active && styles.pillActive]}>
+              <MaterialIcons
+                name={tab.icon}
+                size={24}
+                color={active ? ACTIVE_COLOR : INACTIVE_COLOR}
+              />
+            </View>
+            <Text style={[styles.label, active && styles.labelActive]}>
+              {tab.label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
   );
 }
+
+export default function AppTabs() {
+  return (
+    <Tabs
+      tabBar={() => <CustomTabBar />}
+      screenOptions={{ headerShown: false }}
+    >
+      <Tabs.Screen name="index" />
+      <Tabs.Screen name="explore" />
+      <Tabs.Screen name="orders" />
+      <Tabs.Screen name="profile" />
+    </Tabs>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: "row",
+    backgroundColor: "#ffffff",
+    paddingTop: 8,
+    paddingBottom: Platform.OS === "ios" ? 24 : 12,
+    paddingHorizontal: 8,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "#e5e7eb",
+  },
+  tab: {
+    flex: 1,
+    alignItems: "center",
+    gap: 2,
+  },
+  pill: {
+    paddingHorizontal: 20,
+    paddingVertical: 4,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "transparent",
+  },
+  pillActive: {
+    backgroundColor: PILL_BG,
+  },
+  label: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: INACTIVE_COLOR,
+  },
+  labelActive: {
+    color: ACTIVE_COLOR,
+  },
+});
