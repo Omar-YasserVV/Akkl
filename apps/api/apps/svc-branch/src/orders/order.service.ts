@@ -233,6 +233,23 @@ export class OrderService implements OnModuleInit {
     }
   }
 
+  async getUserOrders(
+    userId: string,
+    pagination: { page: number; limit: number },
+  ) {
+    const { page, limit } = pagination;
+    const skip = (page - 1) * limit;
+
+    try {
+      await this.validator.validateUser(userId); // 👈 see validator addition below
+
+      const { total, orders } = await this.repo.findByUser(userId, skip, limit);
+      return createPagination(orders, total, page, limit);
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
   /**
    * Retrieves an order by its ID. If a user is attached, only essential fields are returned in the user object.
    *

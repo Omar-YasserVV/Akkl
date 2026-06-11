@@ -1,8 +1,8 @@
 export const BRANCH_TOPICS = {
   // Branch
-  INITIALIZE: 'branch.initialize',               // Replaced CREATE
+  INITIALIZE: 'branch.initialize', // Replaced CREATE
   UPDATE_ONBOARDING: 'branch.update_onboarding', // New
-  FINALIZE: 'branch.finalize',                   // New
+  FINALIZE: 'branch.finalize', // New
   GET_ALL: 'branch.get_all',
   GET_BY_ID: 'branch.get_by_id',
   UPDATE: 'branch.update',
@@ -16,6 +16,7 @@ export const BRANCH_TOPICS = {
   DELETE_MENU: 'delete_menu_item',
   UPLOAD_MENU: 'upload_menu_excel',
   // Orders
+  GET_USER_ORDERS: 'get_user_orders',
   GET_ALL_ORDERS: 'get_orders_by_branch',
   GET_ORDER_BY_ID: 'get_order_by_id',
   CREATE_ORDER: 'create_order',

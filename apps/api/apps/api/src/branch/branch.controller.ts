@@ -40,7 +40,12 @@ import { ClientKafka } from '@nestjs/microservices';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiConsumes, ApiQuery } from '@nestjs/swagger';
 import { Response } from 'express';
-import { OrderSource, OrderState, TableStatus, UserRole } from 'libs/db/generated/client/client';
+import {
+  OrderSource,
+  OrderState,
+  TableStatus,
+  UserRole,
+} from 'libs/db/generated/client/client';
 import { lastValueFrom } from 'rxjs';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -91,6 +96,27 @@ export class BranchController implements OnModuleInit {
     });
   }
 
+  @Roles(
+    UserRole.BUSINESS_OWNER,
+    UserRole.CASHIER,
+    UserRole.MANAGER,
+    UserRole.CUSTOMER,
+  )
+  @Get('orders/mine')
+  @ApiQuery({ name: 'page', type: Number, required: true })
+  @ApiQuery({ name: 'limit', type: Number, required: true })
+  getUserOrders(
+    @CurrentUser('sub') userId: string,
+    @Query() pagination: OrdersPaginationDto,
+  ) {
+    return this.branchClient.send(BRANCH_TOPICS.GET_USER_ORDERS, {
+      userId,
+      pagination: {
+        page: Number(pagination.page) || 1,
+        limit: Number(pagination.limit) || 10,
+      },
+    });
+  }
   @Roles(UserRole.BUSINESS_OWNER)
   @Post('finalize')
   async finalizeBranch(@GetBranchId() branchId: string) {
@@ -309,17 +335,19 @@ export class BranchController implements OnModuleInit {
 
   @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER)
   @Post('tables')
-  createTable(
-    @GetBranchId() branchId: string,
-    @Body() data: CreateTableDto,
-  ) {
+  createTable(@GetBranchId() branchId: string, @Body() data: CreateTableDto) {
     return this.branchClient.send(BRANCH_TOPICS.CREATE_TABLE, {
       branchId,
       data,
     });
   }
 
-  @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER, UserRole.WAITER, UserRole.CASHIER)
+  @Roles(
+    UserRole.BUSINESS_OWNER,
+    UserRole.MANAGER,
+    UserRole.WAITER,
+    UserRole.CASHIER,
+  )
   @Get('tables')
   @ApiQuery({ name: 'zoneName', type: String, required: false })
   getBranchTables(
@@ -372,9 +400,19 @@ export class BranchController implements OnModuleInit {
     });
   }
 
-  @Roles(UserRole.BUSINESS_OWNER, UserRole.MANAGER, UserRole.CASHIER, UserRole.WAITER)
+  @Roles(
+    UserRole.BUSINESS_OWNER,
+    UserRole.MANAGER,
+    UserRole.CASHIER,
+    UserRole.WAITER,
+  )
   @Get('reservations/daily')
-  @ApiQuery({ name: 'date', type: String, required: false, description: 'ISO Date string YYYY-MM-DD' })
+  @ApiQuery({
+    name: 'date',
+    type: String,
+    required: false,
+    description: 'ISO Date string YYYY-MM-DD',
+  })
   getDailyReservations(
     @GetBranchId() branchId: string,
     @Query('date') date?: string,

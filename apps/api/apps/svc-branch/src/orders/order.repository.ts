@@ -45,6 +45,31 @@ export class OrderRepository {
     });
   }
 
+  findByUser(userId: string, skip: number, take: number) {
+    return this.prisma.$transaction(async (tx) => {
+      const total = await tx.order.count({ where: { userId } });
+
+      const orders = await tx.order.findMany({
+        where: { userId },
+        skip,
+        take,
+        include: {
+          items: { include: { branchMenuItem: true } },
+          branch: {
+            select: {
+              id: true,
+              name: true,
+              branchNumber: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      return { total, orders };
+    });
+  }
+
   async getOrdersByBranch(
     where: Prisma.OrderWhereInput,
     skip: number,

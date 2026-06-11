@@ -36,6 +36,17 @@ export class OrderController {
     return this.orderService.deleteOrder(orderId);
   }
 
+  @MessagePattern(BRANCH_TOPICS.GET_USER_ORDERS)
+  async getUserOrders(
+    @Payload('userId') userId: string,
+    @Payload('pagination') pagination: OrdersPaginationDto,
+  ) {
+    return this.orderService.getUserOrders(userId, {
+      page: Number(pagination.page) || 1,
+      limit: Number(pagination.limit) || 10,
+    });
+  }
+
   @MessagePattern(BRANCH_TOPICS.GET_ALL_ORDERS)
   async getOrdersByBranch(
     @Payload('branchId') branchId: string,

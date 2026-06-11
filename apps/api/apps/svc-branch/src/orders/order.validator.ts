@@ -35,4 +35,16 @@ export class OrderValidator {
       });
     }
   }
+
+  async validateUser(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user)
+      throw new RpcException({
+        statusCode: 404,
+        message: `User ${userId} not found`,
+      });
+
+    return user;
+  }
 }
