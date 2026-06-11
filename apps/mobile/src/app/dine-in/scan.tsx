@@ -69,12 +69,16 @@ export default function DineInScanScreen() {
       </View>
 
       <View className="flex-1 mx-5 mb-5 rounded-[12px] overflow-hidden bg-[#1A1A1A]">
-        <QrScannerView />
+        {/* Camera + overlay */}
+        <QrScannerView
+          onScan={(data) => {
+            const tableNumber = parseTableQr(data);
+            if (tableNumber) handleTableDetected(tableNumber);
+          }}
+        />
 
-        <View
-          className="absolute bottom-0 left-0 right-0 px-6 pb-6"
-          style={{ zIndex: 2 }}
-        >
+        {/* Buttons sit OUTSIDE the camera but inside the dark card */}
+        <View className="px-6 pb-6 pt-3 bg-[#1A1A1A]">
           <TouchableOpacity
             onPress={simulateScan}
             activeOpacity={0.88}
