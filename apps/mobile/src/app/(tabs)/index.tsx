@@ -88,7 +88,7 @@ export default function HomeScreen() {
       <ScrollView
         className="flex-1"
         contentContainerStyle={{
-          paddingBottom: BottomTabInset + 34,
+          paddingBottom: BottomTabInset,
           paddingTop: insets.top + 20,
           paddingHorizontal: 30,
         }}
@@ -103,14 +103,14 @@ export default function HomeScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
-        <View className="flex-row items-center justify-between mb-8">
+        <View className="flex-row items-center justify-between mb-6">
           <TouchableOpacity
             activeOpacity={0.85}
             className="flex-row gap-1 items-center flex-1"
           >
-            <Ionicons name="location-sharp" size={23} color="#065FCC" />
+            <Ionicons name="location-sharp" size={23} color="#0057C0" />
             <Text
-              className="text-[18px] leading-9 font-semibold text-[#065FCC]"
+              className="text-[18px] leading-9 font-semibold text-[#0057C0]"
               numberOfLines={1}
             >
               Downtown Branch
@@ -165,24 +165,26 @@ export default function HomeScreen() {
 
         <TouchableOpacity
           activeOpacity={0.86}
-          className="h-[86px] rounded-[10px] border border-[#BEC8DA] bg-white px-6 flex-row items-center mb-9"
+          className="rounded-[10px] border border-[#BEC8DA] bg-white px-6 flex-row items-center mb-9"
         >
-          <Ionicons name="restaurant-outline" size={30} color="#065FCC" />
-          <Text className="ml-6 flex-1 text-[25px] text-[#20242A]">
-            Book a Table
-          </Text>
-          <Ionicons name="chevron-forward" size={27} color="#737C8B" />
+          <View className="flex-row items-center gap-3 flex-1 py-4">
+            <Ionicons name="restaurant-outline" size={18} color="#0057C0" />
+            <Text className="flex-1 text-[16px] text-[#191C1D]">
+              Book a Table
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color="#737C8B" />
         </TouchableOpacity>
 
         <View className="flex-row items-center justify-between mb-4">
-          <Text className="text-[32px] leading-10 font-extrabold text-[#171B20]">
+          <Text className="text-[22px] font-semibold text-[#191C1D]">
             Featured Items
           </Text>
           <TouchableOpacity
             onPress={() => router.push("/(tabs)/explore")}
             activeOpacity={0.8}
           >
-            <Text className="text-[20px] font-semibold text-[#065FCC]">
+            <Text className="text-[14px] font-semibold text-[#0057C0]">
               View All
             </Text>
           </TouchableOpacity>
@@ -190,35 +192,35 @@ export default function HomeScreen() {
 
         {isLoading ? (
           <View className="h-90 items-center justify-center">
-            <ActivityIndicator size="large" color="#065FCC" />
+            <ActivityIndicator size="large" color="#0057C0" />
           </View>
         ) : (
           <TouchableOpacity
             onPress={() => openItem(featuredItem)}
             activeOpacity={0.92}
-            className="overflow-hidden rounded-t-[12px] bg-white"
+            className="overflow-hidden rounded-[12px] shadow-md bg-white"
             style={{ marginBottom: 60 }}
           >
             <Image
               source={{ uri: featuredItem.image ?? fallbackFeaturedImage }}
-              style={{ width: "100%", height: 758 }}
+              style={{ width: "100%", height: 200 }}
               contentFit="cover"
             />
             <View className="bg-white px-3 py-4">
               <Text
-                className="text-[27px] leading-9 font-extrabold text-[#1C2026]"
+                className="text-[18px] font-extrabold text-[#1C2026]"
                 numberOfLines={1}
               >
                 {featuredItem.name}
               </Text>
-              <Text className="mt-1 text-[25px] leading-8 font-extrabold text-[#065FCC]">
+              <Text className="mt-1 text-[16px] font-extrabold text-[#0057C0]">
                 {formatPrice(featuredItem.discountPrice ?? featuredItem.price)}
               </Text>
             </View>
           </TouchableOpacity>
         )}
 
-        <View className="flex-row gap-6 mt-10">
+        <View className="flex-row gap-6">
           <ShortcutTile
             icon="star-outline"
             label="Daily Deals"
@@ -250,7 +252,7 @@ function ActionTile({
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.88}
-      className="flex-1 h-[208px] rounded-[15px] border border-[#E2E6EC] bg-white items-center justify-center"
+      className="flex-1 p-3 gap-1 bg-[#f3f4f5] rounded-[15px] border border-[#E2E6EC] items-center justify-center"
       style={{
         shadowColor: "#0B1220",
         shadowOpacity: 0.07,
@@ -259,13 +261,13 @@ function ActionTile({
         elevation: 2,
       }}
     >
-      <View className="h-[84px] w-[84px] rounded-full bg-[#065FCC] items-center justify-center mb-4">
-        <Ionicons name={icon} size={40} color="#FFFFFF" />
+      <View className="p-4 rounded-full bg-[#0057C0] items-center justify-center">
+        <Ionicons name={icon} size={30} color="#FFFFFF" />
       </View>
-      <Text className="text-[28px] leading-9 font-extrabold text-[#20242A]">
+      <Text className="text-[18px] mt-1 font-semibold text-[#191C1D]">
         {title}
       </Text>
-      <Text className="mt-1 text-[17px] leading-6 font-semibold text-[#4D5563]">
+      <Text className=" text-[11px] font-semibold text-[#414755]">
         {subtitle}
       </Text>
     </TouchableOpacity>
@@ -285,12 +287,10 @@ function ShortcutTile({
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.86}
-      className="flex-1 h-[178px] rounded-[15px] bg-[#ECEDEF] px-6 justify-center"
+      className="flex-1 py-5 rounded-[15px] bg-[#ECEDEF] px-6 justify-center"
     >
-      <Ionicons name={icon} size={31} color="#065FCC" />
-      <Text className="mt-3 text-[18px] leading-6 font-extrabold text-[#24282F]">
-        {label}
-      </Text>
+      <Ionicons name={icon} size={21} color="#0057C0" />
+      <Text className="mt-3 text-[14px] font-bold text-[#24282F]">{label}</Text>
     </TouchableOpacity>
   );
 }
