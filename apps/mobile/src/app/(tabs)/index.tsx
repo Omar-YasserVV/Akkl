@@ -56,8 +56,8 @@ export default function HomeScreen() {
         lng ?? undefined,
       );
       setHome(data);
-    } catch (error) {
-      console.error("Failed to load home feed", error);
+    } catch {
+      setHome(null);
     } finally {
       setIsLoading(false);
       setRefreshing(false);
@@ -186,6 +186,7 @@ export default function HomeScreen() {
         </View>
 
         <TouchableOpacity
+          onPress={() => router.push("../reservation")}
           activeOpacity={0.86}
           className="rounded-[10px] border border-[#BEC8DA] bg-white px-6 flex-row items-center mb-9"
         >

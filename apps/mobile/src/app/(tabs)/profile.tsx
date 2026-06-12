@@ -173,7 +173,11 @@ export default function ProfileScreen() {
 
         {/* Preferences */}
         <ProfileSection title="PREFERENCES">
-          <ProfileMenuItem icon="notifications-outline" label="Notifications" />
+          <ProfileMenuItem
+            icon="notifications-outline"
+            label="Notifications"
+            onPress={() => router.push("/reservation/notifications")}
+          />
           <ProfileMenuItem
             icon="globe-outline"
             label="Language"

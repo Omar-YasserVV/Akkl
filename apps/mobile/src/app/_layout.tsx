@@ -4,9 +4,9 @@ import { LocationProvider } from "@/context/location-context";
 import { SessionProvider, useSession } from "@/context/session-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
+    DarkTheme,
+    DefaultTheme,
+    ThemeProvider,
 } from "@react-navigation/native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
@@ -49,6 +49,7 @@ function NavigationTree() {
           <Stack.Screen name="search" />
           <Stack.Screen name="pickup" />
           <Stack.Screen name="dine-in" />
+          <Stack.Screen name="reservation" />
           <Stack.Screen name="restaurant/[id]" />
           <Stack.Screen name="item/[id]" />
         </Stack>

@@ -1,12 +1,12 @@
 import React from "react";
 import {
-  FlatList,
-  Image,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
+    FlatList,
+    Image,
+    StyleSheet,
+    Text,
+    View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Order, OrderStatus } from "./types/PaginatedResponse";
 
 interface OrdersListProps {
