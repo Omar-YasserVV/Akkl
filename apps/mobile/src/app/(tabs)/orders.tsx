@@ -1,8 +1,8 @@
 import React from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useOrders } from "../../orders/hooks/Orders";
 import { OrdersList } from "../../orders/orders";
-import { useOrders } from "../../orders/orders/hooks/Orders";
 
 export default function OrdersScreen() {
   const insets = useSafeAreaInsets();
