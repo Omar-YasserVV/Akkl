@@ -1,5 +1,5 @@
-import { GuardsModule } from '@app/guards';
-import { Module } from '@nestjs/common';
+import { BranchIdMiddleware, GuardsModule } from '@app/guards';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AnalyticsModule } from './analytics/analytics.module';
 
@@ -31,4 +31,8 @@ import { WarehouseModule } from './warehouse/warehouse.module';
     DiscoveryModule,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(BranchIdMiddleware).forRoutes('*');
+  }
+}

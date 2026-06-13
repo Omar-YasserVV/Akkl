@@ -36,6 +36,7 @@ async function bootstrap(): Promise<void> {
       'Authorization',
       'X-Requested-With',
       'Accept',
+      'x-branch-id',
     ],
   });
 

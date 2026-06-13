@@ -267,7 +267,12 @@ export class BranchController implements OnModuleInit {
 
   // ---------------- ORDERS ----------------
 
-  @Roles(UserRole.BUSINESS_OWNER, UserRole.CASHIER, UserRole.MANAGER)
+  @Roles(
+    UserRole.BUSINESS_OWNER,
+    UserRole.CASHIER,
+    UserRole.MANAGER,
+    UserRole.CUSTOMER,
+  )
   @Post('orders')
   createOrder(
     @GetBranchId() branchId: string,

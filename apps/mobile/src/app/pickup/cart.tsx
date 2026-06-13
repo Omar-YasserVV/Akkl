@@ -15,10 +15,6 @@ export default function PickupCartScreen() {
     branchName,
   } = useCart();
 
-  const serviceFee = 2.5;
-  const tax = subtotal * 0.08;
-  const totalWithTax = subtotal > 0 ? subtotal + serviceFee + tax : 0;
-
   return (
     <CartReviewScreen
       title="Your Cart"
@@ -26,10 +22,8 @@ export default function PickupCartScreen() {
       items={items}
       summaryRows={[
         { label: "Subtotal", value: formatPrice(subtotal) },
-        { label: "Service Fee", value: formatPrice(serviceFee) },
-        { label: "Tax (8%)", value: formatPrice(tax) },
       ]}
-      total={formatPrice(totalWithTax)}
+      total={formatPrice(subtotal)}
       ctaLabel="Go to Checkout"
       onBack={() => router.back()}
       onEmptyAction={() => router.back()}

@@ -1,9 +1,14 @@
+import { useAuth } from "@/context/auth-context";
 import { useCart } from "@/context/cart-context";
+import { useCreateOrder } from "@/orders/hooks/Orders";
+import { buildCreateOrderPayload } from "@/orders/utils/buildCreateOrderPayload";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { type Href, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -18,30 +23,44 @@ const formatPrice = (price: number) => `${price.toFixed(2)} LE`;
 export default function PickupCheckoutScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const {
-    items,
-    subtotal,
-    placeOrder,
-    branchName,
-  } = useCart();
+  const { user } = useAuth();
+  const { mutate: createOrder, isPending } = useCreateOrder();
+  const { items, subtotal, placeOrder, branchName } = useCart();
 
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("apple_pay");
-
-  const serviceFee = 2.50; // Fixed Service Fee matching design
-  const tax = subtotal * 0.08; // 8% Tax rate
-  const totalWithTax = subtotal > 0 ? subtotal + serviceFee + tax : 0;
+  const [paymentMethod, setPaymentMethod] =
+    useState<PaymentMethod>("apple_pay");
 
   const handlePlaceOrder = () => {
-    const methodLabel = paymentMethod === "apple_pay" ? "Apple Pay" : "Visa **** 4242";
-    placeOrder(methodLabel);
-    router.replace("/pickup/order-status" as Href);
+    if (!user || items.length === 0) return;
+
+    const methodLabel =
+      paymentMethod === "apple_pay" ? "Apple Pay" : "Visa **** 4242";
+
+    createOrder(buildCreateOrderPayload(items, user), {
+      onSuccess: (order) => {
+        console.log(order);
+
+        placeOrder(methodLabel, {
+          id: String(order.orderNumber),
+          total: parseFloat(order.totalPrice),
+        });
+        router.replace("/pickup/order-status" as Href);
+      },
+      onError: () => {
+        Alert.alert(
+          "Order failed",
+          "Could not place your order. Please try again.",
+        );
+      },
+    });
   };
 
-  const branchAddress = branchName === "Uptown Hub" 
-    ? "42 Garden Street, Uptown" 
-    : branchName === "East Side Kitchen" 
-    ? "88 Market Road, East Side" 
-    : "Smart Dining HQ, 5th Ave";
+  const branchAddress =
+    branchName === "Uptown Hub"
+      ? "42 Garden Street, Uptown"
+      : branchName === "East Side Kitchen"
+        ? "88 Market Road, East Side"
+        : "Smart Dining HQ, 5th Ave";
 
   return (
     <View className="flex-1 bg-[#F7F8FA]">
@@ -80,7 +99,9 @@ export default function PickupCheckoutScreen() {
               })
             }
           >
-            <Text className="text-[13px] font-extrabold text-[#065FCC]">CHANGE</Text>
+            <Text className="text-[13px] font-extrabold text-[#065FCC]">
+              CHANGE
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -125,7 +146,10 @@ export default function PickupCheckoutScreen() {
         </Text>
         <View className="bg-white rounded-[12px] border border-[#E8EBF0] p-4 mb-6">
           {items.map((line, idx) => (
-            <View key={line.itemId + idx} className="flex-row items-center mb-3">
+            <View
+              key={line.itemId + idx}
+              className="flex-row items-center mb-3"
+            >
               <Image
                 source={{
                   uri:
@@ -136,11 +160,15 @@ export default function PickupCheckoutScreen() {
                 contentFit="cover"
               />
               <View className="flex-1 ml-3 pr-2">
-                <Text className="text-[15px] font-bold text-[#171B20]" numberOfLines={1}>
+                <Text
+                  className="text-[15px] font-bold text-[#171B20]"
+                  numberOfLines={1}
+                >
                   {line.name}
                 </Text>
                 <Text className="text-[13px] font-medium text-[#6E7682] mt-0.5">
-                  Qty: {line.quantity} {line.variationLabel ? `· Size: ${line.variationLabel}` : ""}
+                  Qty: {line.quantity}{" "}
+                  {line.variationLabel ? `· Size: ${line.variationLabel}` : ""}
                 </Text>
               </View>
               <Text className="text-[15px] font-bold text-[#171B20]">
@@ -149,17 +177,13 @@ export default function PickupCheckoutScreen() {
             </View>
           ))}
           <View className="h-px bg-[#E8EBF0] my-2" />
-          <View className="flex-row justify-between mb-1.5 mt-1">
-            <Text className="text-[14px] text-[#6E7682] font-medium">Subtotal</Text>
-            <Text className="text-[14px] font-semibold text-[#1A1A1A]">{formatPrice(subtotal)}</Text>
-          </View>
-          <View className="flex-row justify-between mb-1.5">
-            <Text className="text-[14px] text-[#6E7682] font-medium">Tax</Text>
-            <Text className="text-[14px] font-semibold text-[#1A1A1A]">{formatPrice(tax)}</Text>
-          </View>
           <View className="flex-row justify-between mt-1">
-            <Text className="text-[16px] font-extrabold text-[#171B20]">Total</Text>
-            <Text className="text-[16px] font-extrabold text-[#065FCC]">{formatPrice(totalWithTax)}</Text>
+            <Text className="text-[16px] font-extrabold text-[#171B20]">
+              Total
+            </Text>
+            <Text className="text-[16px] font-extrabold text-[#065FCC]">
+              {formatPrice(subtotal)}
+            </Text>
           </View>
         </View>
 
@@ -173,18 +197,24 @@ export default function PickupCheckoutScreen() {
           onPress={() => setPaymentMethod("apple_pay")}
           activeOpacity={0.88}
           className={`bg-white rounded-[12px] border p-4 flex-row items-center mb-3 ${
-            paymentMethod === "apple_pay" ? "border-[#065FCC]" : "border-[#E8EBF0]"
+            paymentMethod === "apple_pay"
+              ? "border-[#065FCC]"
+              : "border-[#E8EBF0]"
           }`}
         >
           <View className="w-10 h-10 rounded-full bg-[#EBF2FF] items-center justify-center">
             <Ionicons name="logo-apple" size={20} color="#065FCC" />
           </View>
           <View className="flex-1 ml-4">
-            <Text className="text-[15px] font-bold text-[#171B20]">Apple Pay</Text>
+            <Text className="text-[15px] font-bold text-[#171B20]">
+              Apple Pay
+            </Text>
           </View>
           <View
             className={`w-5 h-5 rounded-full border-2 items-center justify-center ${
-              paymentMethod === "apple_pay" ? "border-[#065FCC]" : "border-[#BEC8DA]"
+              paymentMethod === "apple_pay"
+                ? "border-[#065FCC]"
+                : "border-[#BEC8DA]"
             }`}
           >
             {paymentMethod === "apple_pay" && (
@@ -198,18 +228,24 @@ export default function PickupCheckoutScreen() {
           onPress={() => setPaymentMethod("credit_card")}
           activeOpacity={0.88}
           className={`bg-white rounded-[12px] border p-4 flex-row items-center mb-6 ${
-            paymentMethod === "credit_card" ? "border-[#065FCC]" : "border-[#E8EBF0]"
+            paymentMethod === "credit_card"
+              ? "border-[#065FCC]"
+              : "border-[#E8EBF0]"
           }`}
         >
           <View className="w-10 h-10 rounded-full bg-[#F2F3F5] items-center justify-center">
             <Ionicons name="card-outline" size={20} color="#6E7682" />
           </View>
           <View className="flex-1 ml-4">
-            <Text className="text-[15px] font-bold text-[#171B20]">Visa •••• 4242</Text>
+            <Text className="text-[15px] font-bold text-[#171B20]">
+              Visa •••• 4242
+            </Text>
           </View>
           <View
             className={`w-5 h-5 rounded-full border-2 items-center justify-center ${
-              paymentMethod === "credit_card" ? "border-[#065FCC]" : "border-[#BEC8DA]"
+              paymentMethod === "credit_card"
+                ? "border-[#065FCC]"
+                : "border-[#BEC8DA]"
             }`}
           >
             {paymentMethod === "credit_card" && (
@@ -230,26 +266,32 @@ export default function PickupCheckoutScreen() {
           </Text>
           <View className="flex-row items-center mt-0.5">
             <Text className="text-[18px] font-extrabold text-[#171B20] mr-2">
-              {formatPrice(totalWithTax)}
+              {formatPrice(subtotal)}
             </Text>
             <View className="bg-[#E2F7EB] rounded-full px-2 py-0.5 flex-row items-center">
               <Ionicons name="lock-closed" size={10} color="#128A4D" />
-              <Text className="ml-1 text-[9px] font-bold text-[#128A4D]">Secure</Text>
+              <Text className="ml-1 text-[9px] font-bold text-[#128A4D]">
+                Secure
+              </Text>
             </View>
           </View>
         </View>
 
         <TouchableOpacity
           onPress={handlePlaceOrder}
-          disabled={items.length === 0}
+          disabled={items.length === 0 || isPending}
           activeOpacity={0.9}
-          className={`h-[48px] rounded-[10px] bg-[#065FCC] px-6 items-center justify-center ${
-            items.length === 0 ? "opacity-50" : ""
+          className={`h-[48px] rounded-[10px] bg-[#065FCC] px-6 items-center justify-center flex-row ${
+            items.length === 0 || isPending ? "opacity-50" : ""
           }`}
         >
-          <Text className="text-[15px] font-extrabold text-white">
-            Place Pick-Up Order
-          </Text>
+          {isPending ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text className="text-[15px] font-extrabold text-white">
+              Place Pick-Up Order
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
     </View>

@@ -9,7 +9,7 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { OrderState } from '../../../../db/generated/client/client';
+import { OrderState, OrderSource } from '../../../../db/generated/client/client';
 
 export class CreateOrderItemDto {
   @ApiProperty({ example: 'd1321b65-07c4-403c-baf1-261570a67231' })
@@ -48,4 +48,9 @@ export class CreateOrderDto {
   @IsEnum(OrderState)
   @IsOptional()
   status?: OrderState;
+
+  @ApiPropertyOptional({ enum: OrderSource, default: OrderSource.STORE })
+  @IsEnum(OrderSource)
+  @IsOptional()
+  source?: OrderSource;
 }

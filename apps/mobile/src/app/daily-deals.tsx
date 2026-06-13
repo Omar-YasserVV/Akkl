@@ -6,7 +6,7 @@ import {
   discoveryApis,
   type DiscoveryHome,
   type DiscoveryMenuItem,
-} from "@repo/utils";
+} from "@repo/utils"; 
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";

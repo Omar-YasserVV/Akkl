@@ -269,7 +269,12 @@ export class SvcWarehouseService {
       );
 
       // All deductions in one local DB transaction
-      await this.repo.deductBatch(consumptionMap, inventoryMap, dto.orderId);
+      await this.repo.deductBatch(
+        consumptionMap,
+        inventoryMap,
+        dto.branchId,
+        dto.orderId,
+      );
 
       return { success: true };
     } catch (error) {

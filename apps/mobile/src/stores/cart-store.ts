@@ -60,11 +60,13 @@ interface CartState extends CartTotals {
     variationId?: string,
   ) => void;
   removeItem: (itemId: string, variationId?: string) => void;
-  placeOrder: (paymentMethod: string) => PlacedOrder;
+  placeOrder: (
+    paymentMethod: string,
+    orderDetails?: { id: string; total: number },
+  ) => PlacedOrder;
   clearCart: () => void;
 }
 
-const SERVICE_FEE_RATE = 0.1;
 const EMPTY_TOTALS: CartTotals = {
   itemCount: 0,
   subtotal: 0,
@@ -72,25 +74,17 @@ const EMPTY_TOTALS: CartTotals = {
   total: 0,
 };
 
-function generateOrderId() {
-  return `AKL-${Math.floor(10000 + Math.random() * 90000)}`;
-}
-
-function computeTotals(
-  items: CartLineItem[],
-  orderMode: OrderMode | null,
-): CartTotals {
+function computeTotals(items: CartLineItem[]): CartTotals {
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = items.reduce(
     (sum, item) => sum + item.unitPrice * item.quantity,
     0,
   );
-  const serviceFee = orderMode === "dine-in" ? subtotal * SERVICE_FEE_RATE : 0;
   return {
     itemCount,
     subtotal,
-    serviceFee,
-    total: subtotal + serviceFee,
+    serviceFee: 0,
+    total: subtotal,
   };
 }
 
@@ -136,7 +130,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   },
 
   addItem: (item) => {
-    const { branchId, orderMode } = get();
+    const { branchId } = get();
 
     if (branchId && branchId !== item.branchId) {
       const items = [item];
@@ -145,7 +139,7 @@ export const useCartStore = create<CartState>((set, get) => ({
         branchId: item.branchId,
         restaurantId: item.restaurantId,
         restaurantName: item.restaurantName,
-        ...computeTotals(items, orderMode),
+        ...computeTotals(items),
       });
       return;
     }
@@ -174,12 +168,11 @@ export const useCartStore = create<CartState>((set, get) => ({
       branchId: item.branchId,
       restaurantId: item.restaurantId,
       restaurantName: item.restaurantName,
-      ...computeTotals(items, orderMode),
+      ...computeTotals(items),
     });
   },
 
   updateItemQuantity: (itemId, quantity, variationId) => {
-    const { orderMode } = get();
     const items = get()
       .items.map((line) =>
         line.itemId === itemId && line.variationId === variationId
@@ -190,29 +183,28 @@ export const useCartStore = create<CartState>((set, get) => ({
 
     set({
       items,
-      ...computeTotals(items, orderMode),
+      ...computeTotals(items),
     });
   },
 
   removeItem: (itemId, variationId) => {
-    const { orderMode } = get();
     const items = get().items.filter(
       (line) => !(line.itemId === itemId && line.variationId === variationId),
     );
 
     set({
       items,
-      ...computeTotals(items, orderMode),
+      ...computeTotals(items),
     });
   },
 
-  placeOrder: (paymentMethod) => {
+  placeOrder: (paymentMethod, orderDetails) => {
     const { tableNumber, branchName, total } = get();
     const order: PlacedOrder = {
-      id: generateOrderId(),
+      id: orderDetails?.id ?? "—",
       tableNumber: tableNumber ?? "—",
       branchName: branchName ?? "Branch",
-      total,
+      total: orderDetails?.total ?? total,
       placedAt: new Date(),
       paymentMethod,
     };

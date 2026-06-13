@@ -26,16 +26,10 @@ export class OrderCalculator {
         );
       }
 
-      if (!dbItem.variations.length) {
-        throw new Error(`No variations for item ${dbItem.id}`);
-      }
-
       const variation = dbItem.variations[0];
-      if (!variation) {
-        throw new Error(`Variation is undefined for item ${dbItem.id}`);
-      }
-
-      const unitPrice = variation.price.toNumber();
+      const unitPrice = variation
+        ? variation.price.toNumber()
+        : dbItem.price.toNumber();
       const lineTotal = unitPrice * itemInput.quantity;
 
       total += lineTotal;
@@ -43,6 +37,7 @@ export class OrderCalculator {
 
       return {
         menuItemId: dbItem.id,
+        variationId: variation?.id ?? null,
         quantity: itemInput.quantity,
         price: unitPrice,
         totalPrice: lineTotal,

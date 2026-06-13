@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { setBranchIdGetter } from "@repo/utils";
 import { useRouter, useSegments } from "expo-router";
 import {
   createContext,
@@ -38,6 +39,10 @@ export const SessionContext = createContext<SessionContextType | undefined>(
   undefined,
 );
 
+function syncBranchIdGetter(next: SessionBranch | null) {
+  setBranchIdGetter(() => next?.id ?? null);
+}
+
 export function SessionProvider({ children }: PropsWithChildren) {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
@@ -56,7 +61,9 @@ export function SessionProvider({ children }: PropsWithChildren) {
           setRestaurantState(JSON.parse(storedRestaurant));
         }
         if (storedBranch) {
-          setBranchState(JSON.parse(storedBranch));
+          const parsedBranch = JSON.parse(storedBranch) as SessionBranch;
+          setBranchState(parsedBranch);
+          syncBranchIdGetter(parsedBranch);
         }
       })
       .catch((error) => {
@@ -105,6 +112,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
   const setRestaurant = useCallback(async (next: SessionRestaurant) => {
     setRestaurantState(next);
     setBranchState(null);
+    syncBranchIdGetter(null);
     await AsyncStorage.setItem(RESTAURANT_KEY, JSON.stringify(next));
     await AsyncStorage.removeItem(BRANCH_KEY);
   }, []);
@@ -112,6 +120,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
   const setBranch = useCallback(
     async (next: SessionBranch) => {
       setBranchState(next);
+      syncBranchIdGetter(next);
       await AsyncStorage.setItem(BRANCH_KEY, JSON.stringify(next));
 
       if (restaurant) {
@@ -129,6 +138,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
   const clearSession = useCallback(async () => {
     setRestaurantState(null);
     setBranchState(null);
+    syncBranchIdGetter(null);
     await AsyncStorage.multiRemove([RESTAURANT_KEY, BRANCH_KEY]);
   }, []);
 

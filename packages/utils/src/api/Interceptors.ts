@@ -1,4 +1,5 @@
 import { AxiosInstance } from "axios";
+import { getBranchId } from "./BranchContext";
 import {
   ApiError,
   getErrorMessage,
@@ -7,6 +8,14 @@ import {
 import { RetryConfig, getRetryDelay, shouldRetry, sleep } from "./Retry";
 
 export const applyInterceptors = (api: AxiosInstance): void => {
+  api.interceptors.request.use((config) => {
+    const branchId = getBranchId();
+    if (branchId) {
+      config.headers.set("x-branch-id", branchId);
+    }
+    return config;
+  });
+
   api.interceptors.response.use(
     (response) => response,
 

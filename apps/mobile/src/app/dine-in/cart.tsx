@@ -1,19 +1,15 @@
 import { CartReviewScreen } from "@/components/cart/CartReviewScreen";
 import { DINE_IN_RECOMMENDATIONS, formatPrice } from "@/constants/dine-in";
 import { useCart } from "@/context/cart-context";
-import { useReservationStore } from "@/stores/reservation-store";
 import type { DiscoveryMenuItem } from "@repo/utils";
 import { type Href, useRouter } from "expo-router";
 import React from "react";
 
 export default function DineInCartScreen() {
   const router = useRouter();
-  const submitRequest = useReservationStore((state) => state.submitRequest);
   const {
     items,
     subtotal,
-    serviceFee,
-    total,
     addItem,
     updateItemQuantity,
     removeItem,
@@ -42,10 +38,9 @@ export default function DineInCartScreen() {
       items={items}
       summaryRows={[
         { label: "Subtotal", value: formatPrice(subtotal) },
-        { label: "Service Fee (10%)", value: formatPrice(serviceFee) },
       ]}
-      total={formatPrice(total)}
-      ctaLabel="Send Request"
+      total={formatPrice(subtotal)}
+      ctaLabel="Go to Payment"
       recommendations={DINE_IN_RECOMMENDATIONS.map((item) => ({
         id: item.id,
         name: item.name,
@@ -55,10 +50,7 @@ export default function DineInCartScreen() {
       }))}
       onBack={() => router.back()}
       onEmptyAction={() => router.back()}
-      onSubmit={() => {
-        submitRequest();
-        router.push("/reservation/status" as Href);
-      }}
+      onSubmit={() => router.push("/dine-in/payment" as Href)}
       onQuantityChange={updateItemQuantity}
       onRemove={removeItem}
     />

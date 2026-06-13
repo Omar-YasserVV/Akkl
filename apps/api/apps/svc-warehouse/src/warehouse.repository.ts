@@ -442,7 +442,7 @@ export class WarehouseRepository {
     await tx.inventoryUsageLog.create({
       data: {
         branchId,
-        orderId,
+        orderId: orderId || undefined,
         inventoryItemId: item.id,
         action: InventoryLogAction.CONSUME,
         quantityChange: -consumedQuantity,
@@ -491,7 +491,7 @@ export class WarehouseRepository {
           invItem.id,
           totalConsumed,
           branchId,
-          orderId ?? '',
+          orderId,
         );
       }
     });

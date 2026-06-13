@@ -1,10 +1,15 @@
 import { TableHeader } from "@/components/dine-in/table-header";
 import { formatPrice } from "@/constants/dine-in";
 import { useCart } from "@/context/cart-context";
+import { useAuth } from "@/context/auth-context";
+import { buildCreateOrderPayload } from "@/orders/utils/buildCreateOrderPayload";
+import { useCreateOrder } from "@/orders/hooks/Orders";
 import { Ionicons } from "@expo/vector-icons";
 import { type Href, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -43,16 +48,31 @@ const PAYMENT_OPTIONS: {
 export default function DineInPaymentScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { total, placeOrder, items } = useCart();
+  const { user } = useAuth();
+  const { mutate: createOrder, isPending } = useCreateOrder();
+  const { subtotal, placeOrder, items } = useCart();
   const [selectedMethod, setSelectedMethod] =
     useState<PaymentMethod>("apple_pay");
 
   const handlePlaceOrder = () => {
+    if (!user || items.length === 0) return;
+
     const label =
       PAYMENT_OPTIONS.find((option) => option.id === selectedMethod)?.title ??
       "Payment";
-    placeOrder(label);
-    router.replace("/dine-in/order-status" as Href);
+
+    createOrder(buildCreateOrderPayload(items, user), {
+      onSuccess: (order) => {
+        placeOrder(label, {
+          id: String(order.orderNumber),
+          total: parseFloat(order.totalPrice),
+        });
+        router.replace("/dine-in/order-status" as Href);
+      },
+      onError: () => {
+        Alert.alert("Order failed", "Could not place your order. Please try again.");
+      },
+    });
   };
 
   return (
@@ -126,15 +146,19 @@ export default function DineInPaymentScreen() {
       >
         <TouchableOpacity
           onPress={handlePlaceOrder}
-          disabled={items.length === 0}
+          disabled={items.length === 0 || isPending}
           activeOpacity={0.9}
-          className={`h-[56px] rounded-[12px] items-center justify-center ${
-            items.length === 0 ? "bg-[#B0B8C4]" : "bg-[#065FCC]"
+          className={`h-[56px] rounded-[12px] items-center justify-center flex-row ${
+            items.length === 0 || isPending ? "bg-[#B0B8C4]" : "bg-[#065FCC]"
           }`}
         >
-          <Text className="text-[17px] font-bold text-white">
-            Confirm & Place Order | {formatPrice(total)}
-          </Text>
+          {isPending ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text className="text-[17px] font-bold text-white">
+              Confirm & Place Order | {formatPrice(subtotal)}
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
     </View>

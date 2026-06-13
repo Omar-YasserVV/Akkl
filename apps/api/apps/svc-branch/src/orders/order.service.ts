@@ -4,7 +4,7 @@ import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { DeductForOrderReqDto } from 'apps/svc-warehouse/src/dto/inventory/inventory.deduct.dto';
 import { Prisma } from 'libs/db/generated/client/client';
-import { OrderState } from 'libs/db/generated/client/enums';
+import { OrderState, OrderSource } from 'libs/db/generated/client/enums';
 import { firstValueFrom } from 'rxjs';
 import { createPagination } from 'utils/pagination.util';
 import { OrderCalculator } from './order.calculator';
@@ -59,7 +59,7 @@ export class OrderService implements OnModuleInit {
         });
       }
 
-      const { items = [], CustomerName } = data;
+      const { items = [], CustomerName, source } = data;
 
       this.validator.validateItems(items);
       const { user } = await this.validator.validateBranchAndUser(
@@ -87,6 +87,7 @@ export class OrderService implements OnModuleInit {
         itemCount,
         status: OrderState.IN_PROGRESS,
         customerName: CustomerName || user.fullName,
+        source: source ?? OrderSource.STORE,
         items: { create: orderItemsData },
       });
       console.log(order.id);
@@ -107,6 +108,7 @@ export class OrderService implements OnModuleInit {
       );
 
       if (!deductionResult.success) {
+        await this.repo.delete(order.id);
         throw new RpcException({
           statusCode: 422,
           message: deductionResult.message ?? 'Inventory deduction failed',

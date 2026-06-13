@@ -49,10 +49,7 @@ export default function PickupOrderStatusScreen() {
   const orderId = lastOrder?.id ?? "#ORD-9921";
   const paymentMethod = lastOrder?.paymentMethod ?? "Apple Pay";
   const placedAt = lastOrder?.placedAt ?? new Date();
-
-  const serviceFee = 2.5;
-  const tax = subtotal * 0.08;
-  const totalWithTax = subtotal > 0 ? subtotal + serviceFee + tax : 29.84; // Fallback total matching design
+  const orderTotal = lastOrder?.total ?? subtotal;
 
   const toggleDetails = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -285,13 +282,7 @@ export default function PickupOrderStatusScreen() {
               <View className="flex-row justify-between mb-1">
                 <Text className="text-[13px] text-[#858C9B]">Subtotal</Text>
                 <Text className="text-[13px] font-medium text-[#424957]">
-                  {formatPrice(subtotal || 23.5)}
-                </Text>
-              </View>
-              <View className="flex-row justify-between mb-1">
-                <Text className="text-[13px] text-[#858C9B]">Tax & Fees</Text>
-                <Text className="text-[13px] font-medium text-[#424957]">
-                  {formatPrice(tax + serviceFee)}
+                  {formatPrice(subtotal || orderTotal)}
                 </Text>
               </View>
               <View className="flex-row justify-between mt-2">
@@ -299,7 +290,7 @@ export default function PickupOrderStatusScreen() {
                   Total Paid
                 </Text>
                 <Text className="text-[14px] font-extrabold text-[#065FCC]">
-                  {formatPrice(totalWithTax)}
+                  {formatPrice(orderTotal)}
                 </Text>
               </View>
             </View>
