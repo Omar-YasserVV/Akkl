@@ -1,6 +1,10 @@
 import { FilterChips } from "@/components/discovery/filter-chips";
 import { useMenu } from "@/hooks/useMenu";
 import { useCartStore } from "@/stores/cart-store";
+import {
+  getDisplayPrice,
+  hasVariations,
+} from "@/utils/menuItem";
 import { Ionicons } from "@expo/vector-icons";
 import { type DiscoveryMenuItem } from "@repo/utils";
 import { Image } from "expo-image";
@@ -141,6 +145,7 @@ function MenuList({
 }) {
   const { width } = useWindowDimensions();
   const cardWidth = (width - 44) / 2;
+  const router = useRouter();
   const addItem = useCartStore((state) => state.addItem);
 
   // Sync with your cart storage side-effects upon a successful data fetch
@@ -161,6 +166,14 @@ function MenuList({
 
   const handleQuickAdd = useCallback(
     (item: DiscoveryMenuItem) => {
+      if (hasVariations(item)) {
+        router.push({
+          pathname: "/item/[id]",
+          params: { id: item.id, branchId: item.branchId },
+        });
+        return;
+      }
+
       addItem({
         itemId: item.id,
         name: item.name,
@@ -172,11 +185,11 @@ function MenuList({
           defaultBranchContext?.restaurantName ??
           "Smart Restaurant",
         quantity: 1,
-        unitPrice: item.discountPrice ?? item.price,
+        unitPrice: getDisplayPrice(item),
         image: item.image,
       });
     },
-    [addItem, defaultBranchContext],
+    [addItem, defaultBranchContext, router],
   );
 
   const renderItem = useCallback(
@@ -294,7 +307,7 @@ const MenuGridItem = memo(function MenuGridItem({
           {item.name}
         </Text>
         <Text className="mt-1 text-[15px] font-bold text-[#065FCC]">
-          {formatPrice(item.discountPrice ?? item.price)}
+          {formatPrice(getDisplayPrice(item))}
         </Text>
       </View>
     </View>

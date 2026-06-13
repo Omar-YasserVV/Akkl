@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
+import { formatMenuItemPrice, hasVariations } from "@/utils/menuItem";
 
 interface MenuItemRowProps {
   item: DiscoveryMenuItem;
@@ -17,7 +18,8 @@ export function MenuItemRow({
   onAdd,
   showRestaurant = true,
 }: MenuItemRowProps) {
-  const price = item.discountPrice ?? item.price;
+  const formatPrice = (price: number) => `${price.toFixed(2)} LE`;
+  const priceLabel = formatMenuItemPrice(item, formatPrice);
 
   return (
     <TouchableOpacity
@@ -50,14 +52,12 @@ export function MenuItemRow({
           </Text>
         ) : null}
         <View className="flex-row items-center mt-2">
-          {item.discountPrice ? (
+          {item.discountPrice && !hasVariations(item) ? (
             <Text className="text-xs text-[#9BA5B7] line-through mr-2">
               {item.price.toFixed(2)} LE
             </Text>
           ) : null}
-          <Text className="text-sm font-bold text-primary">
-            {price.toFixed(2)} LE
-          </Text>
+          <Text className="text-sm font-bold text-primary">{priceLabel}</Text>
         </View>
       </View>
 

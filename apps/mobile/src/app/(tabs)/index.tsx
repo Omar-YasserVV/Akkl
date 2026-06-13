@@ -1,12 +1,14 @@
 import { BottomTabInset } from "@/constants/theme";
 import { useLocation } from "@/context/location-context";
 import { useSession } from "@/context/session-context";
+import { getDisplayPrice } from "@/utils/menuItem";
 import { Ionicons } from "@expo/vector-icons";
 import {
   discoveryApis,
   type DiscoveryHome,
   type DiscoveryMenuItem,
 } from "@repo/utils";
+import { useCartStore } from "@/stores/cart-store";
 import { Image } from "expo-image";
 import { type Href, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -49,6 +51,10 @@ export default function HomeScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  const itemCount = useCartStore((state) => state.itemCount);
+  const total = useCartStore((state) => state.total);
+  const orderMode = useCartStore((state) => state.orderMode);
+
   const loadHome = useCallback(async () => {
     try {
       const data = await discoveryApis.getHome(
@@ -90,7 +96,7 @@ export default function HomeScreen() {
       <ScrollView
         className="flex-1"
         contentContainerStyle={{
-          paddingBottom: BottomTabInset,
+          paddingBottom: BottomTabInset + (itemCount > 0 ? 80 : 0),
           paddingTop: insets.top + 20,
           paddingHorizontal: 30,
         }}
@@ -237,7 +243,7 @@ export default function HomeScreen() {
                 {featuredItem.name}
               </Text>
               <Text className="mt-1 text-[16px] font-extrabold text-[#0057C0]">
-                {formatPrice(featuredItem.discountPrice ?? featuredItem.price)}
+                {formatPrice(getDisplayPrice(featuredItem))}
               </Text>
             </View>
           </TouchableOpacity>
@@ -256,6 +262,28 @@ export default function HomeScreen() {
           />
         </View>
       </ScrollView>
+
+      {itemCount > 0 && (
+        <View
+          className="absolute left-4 right-4"
+          style={{ bottom: insets.bottom + 16 }}
+        >
+          <TouchableOpacity
+            onPress={() =>
+              router.push((orderMode === "dine-in" ? "/dine-in/cart" : "/pickup/cart") as Href)
+            }
+            activeOpacity={0.9}
+            className="h-[56px] rounded-[12px] bg-[#0057C0] px-5 flex-row items-center justify-between"
+          >
+            <Text className="text-[17px] font-bold text-white">
+              View Cart ({itemCount} {itemCount === 1 ? "item" : "items"})
+            </Text>
+            <Text className="text-[17px] font-bold text-white">
+              {formatPrice(total)}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }

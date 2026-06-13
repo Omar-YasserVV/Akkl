@@ -15,6 +15,7 @@ export interface CreateOrderBody {
     quantity: number;
     specialInstructions?: string | null;
     price: number;
+    variationId?: string | null;
   }[];
   status: OrderState;
   userId: string;

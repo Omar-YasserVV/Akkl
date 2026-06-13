@@ -1,4 +1,5 @@
 import { QuantityStepper } from "@/components/discovery/quantity-stepper";
+import { formatCartLineLabel } from "@/orders/utils/orderDetails";
 import type { CartLineItem } from "@/context/cart-context";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
@@ -197,9 +198,7 @@ function CartReviewItem({
   ) => void;
   onRemove: (itemId: string, variationId?: string) => void;
 }) {
-  const description = item.variationLabel
-    ? `Size: ${item.variationLabel}`
-    : "Extra basil, thin crust";
+  const description = formatCartLineLabel(item);
 
   return (
     <View style={styles.itemCard}>
@@ -214,9 +213,11 @@ function CartReviewItem({
             <Text style={styles.itemName} numberOfLines={1}>
               {item.name}
             </Text>
-            <Text style={styles.itemDescription} numberOfLines={1}>
-              {description}
-            </Text>
+            {description ? (
+              <Text style={styles.itemDescription} numberOfLines={1}>
+                {description}
+              </Text>
+            ) : null}
           </View>
           <Text style={styles.itemPrice}>{formatPrice(item.unitPrice)}</Text>
         </View>

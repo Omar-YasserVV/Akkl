@@ -1,5 +1,6 @@
 import { useCart } from "@/context/cart-context";
 import { useTrackedOrder } from "@/orders/hooks/Orders";
+import { formatOrderLineLabel } from "@/orders/utils/orderDetails";
 import {
   getEstimatedPrepMinutes,
   getPickupStageFromStatus,
@@ -233,7 +234,7 @@ export default function PickupOrderStatusScreen() {
                 orderItems.map((line) => (
                   <View key={line.id} className="flex-row justify-between mb-2">
                     <Text className="text-[14px] text-[#5A6270] flex-1">
-                      {line.quantity}x {line.branchMenuItem.name}
+                      {formatOrderLineLabel(line)}
                     </Text>
                     <Text className="text-[14px] font-semibold text-[#171B20]">
                       {formatPrice(parseFloat(line.totalPrice))}

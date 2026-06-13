@@ -2,6 +2,7 @@ import { TableHeader } from "@/components/dine-in/table-header";
 import { formatPrice } from "@/constants/dine-in";
 import { useCart } from "@/context/cart-context";
 import { useTrackedOrder } from "@/orders/hooks/Orders";
+import { formatOrderLineLabel } from "@/orders/utils/orderDetails";
 import type { OrderStatus } from "@/orders/types/PaginatedResponse";
 import { Ionicons } from "@expo/vector-icons";
 import { type Href, useRouter } from "expo-router";
@@ -157,7 +158,7 @@ export default function DineInOrderStatusScreen() {
                     className="flex-row justify-between mb-2 last:mb-0"
                   >
                     <Text className="text-[14px] text-[#5A6270] flex-1 pr-3">
-                      {item.quantity}x {item.branchMenuItem.name}
+                      {formatOrderLineLabel(item)}
                     </Text>
                     <Text className="text-[14px] font-semibold text-[#171B20]">
                       {formatPrice(parseFloat(item.totalPrice))}

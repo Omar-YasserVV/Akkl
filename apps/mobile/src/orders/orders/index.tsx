@@ -1,6 +1,7 @@
 import React from "react";
 import { FlatList, Image, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { formatOrderLineLabel } from "../utils/orderDetails";
 import { Order, OrderStatus } from "../types/PaginatedResponse";
 
 interface OrdersListProps {
@@ -9,7 +10,8 @@ interface OrdersListProps {
   refreshing?: boolean;
 }
 
-// Sophisticated, modern color palette for status indicators
+const formatPrice = (price: number) => `${price.toFixed(2)} LE`;
+
 const getStatusStyles = (status: OrderStatus) => {
   switch (status) {
     case "COMPLETED":
@@ -18,6 +20,8 @@ const getStatusStyles = (status: OrderStatus) => {
       return { bg: "#E8F0FE", text: "#1A73E8" };
     case "PENDING":
       return { bg: "#FEF7E0", text: "#B06000" };
+    case "CANCELLED":
+      return { bg: "#FCE8E6", text: "#C5221F" };
     default:
       return { bg: "#F1F3F4", text: "#5F6368" };
   }
@@ -25,9 +29,10 @@ const getStatusStyles = (status: OrderStatus) => {
 
 const OrderCard = ({ order }: { order: Order }) => {
   const statusStyle = getStatusStyles(order.status);
-
-  // Extracting first item image if available
   const itemImage = order.items?.[0]?.branchMenuItem?.image;
+  const itemSummary = order.items?.length
+    ? order.items.map(formatOrderLineLabel).join(", ")
+    : `${order.itemCount} ${order.itemCount === 1 ? "item" : "items"}`;
 
   const formattedDate = new Date(order.createdAt).toLocaleDateString("en-US", {
     month: "short",
@@ -76,8 +81,10 @@ const OrderCard = ({ order }: { order: Order }) => {
         <Text style={styles.branchText} numberOfLines={1}>
           {order.branch.name}
         </Text>
+        <Text style={styles.itemsSummary} numberOfLines={2}>
+          {itemSummary}
+        </Text>
 
-        {/* Footer Details Wrapper */}
         <View style={styles.cardFooter}>
           <View>
             <Text style={styles.dateText}>{formattedDate}</Text>
@@ -86,7 +93,7 @@ const OrderCard = ({ order }: { order: Order }) => {
             </Text>
           </View>
           <Text style={styles.price}>
-            ${parseFloat(order.totalPrice).toFixed(2)}
+            {formatPrice(parseFloat(order.totalPrice))}
           </Text>
         </View>
       </View>
@@ -213,6 +220,11 @@ const styles = StyleSheet.create({
   branchText: {
     fontSize: 12,
     color: "#5F6368",
+    marginBottom: 4,
+  },
+  itemsSummary: {
+    fontSize: 12,
+    color: "#737C8B",
     marginBottom: 8,
   },
   cardFooter: {

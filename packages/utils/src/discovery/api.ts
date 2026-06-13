@@ -61,4 +61,5 @@ export type {
   DiscoveryMenuItemDetail,
   DiscoveryRestaurant,
   DiscoverySearchResult,
+  DiscoveryMenuVariation,
 } from "./types";

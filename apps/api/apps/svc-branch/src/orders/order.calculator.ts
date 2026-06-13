@@ -8,7 +8,8 @@ type MenuItem = Prisma.BranchMenuItemGetPayload<{
 type OrderItemInput = {
   menuItemId: string;
   quantity: number;
-  specialInstructions?: string | null; // 👈 add this
+  variationId?: string | null;
+  specialInstructions?: string | null;
 };
 
 @Injectable()
@@ -26,7 +27,17 @@ export class OrderCalculator {
         );
       }
 
-      const variation = dbItem.variations[0];
+      let variation = dbItem.variations[0];
+      if (itemInput.variationId) {
+        const found = dbItem.variations.find((v) => v.id === itemInput.variationId);
+        if (!found) {
+          throw new Error(
+            `Variation ${itemInput.variationId} not found for menu item ${dbItem.id}`,
+          );
+        }
+        variation = found;
+      }
+
       const unitPrice = variation
         ? variation.price.toNumber()
         : dbItem.price.toNumber();

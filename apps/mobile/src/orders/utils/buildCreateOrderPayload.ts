@@ -15,6 +15,7 @@ export function buildCreateOrderPayload(
       quantity: item.quantity,
       specialInstructions: null,
       price: item.unitPrice,
+      variationId: item.variationId || null,
     })),
   };
 }

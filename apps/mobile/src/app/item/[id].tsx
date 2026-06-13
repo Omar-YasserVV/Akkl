@@ -1,6 +1,11 @@
 import { PairingCarousel } from "@/components/discovery/pairing-carousel";
 import { QuantityStepper } from "@/components/discovery/quantity-stepper";
 import { useCartStore } from "@/stores/cart-store";
+import {
+  getDisplayPrice,
+  getValidVariations,
+  hasVariations,
+} from "@/utils/menuItem";
 import { Ionicons } from "@expo/vector-icons";
 import {
   discoveryApis,
@@ -14,7 +19,6 @@ import {
   ActivityIndicator,
   Alert,
   ScrollView,
-  Switch,
   Text,
   TouchableOpacity,
   View,
@@ -29,7 +33,6 @@ export default function ItemCustomizeScreen() {
   const [detail, setDetail] = useState<DiscoveryMenuItemDetail | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedVariationId, setSelectedVariationId] = useState<string | null>(null);
-  const [selectedTags, setSelectedTags] = useState<Record<string, boolean>>({});
   const [isLoading, setIsLoading] = useState(true);
 
   const loadItem = useCallback(async () => {
@@ -37,8 +40,9 @@ export default function ItemCustomizeScreen() {
     try {
       const data = await discoveryApis.getMenuItem(id);
       setDetail(data);
-      if (data.item.variations.length === 1) {
-        setSelectedVariationId(data.item.variations[0].id);
+      const variations = getValidVariations(data.item);
+      if (variations.length > 0) {
+        setSelectedVariationId(variations[0].id);
       }
     } catch (error) {
       console.error("Failed to load item", error);
@@ -52,7 +56,8 @@ export default function ItemCustomizeScreen() {
   }, [loadItem]);
 
   const item = detail?.item;
-  const selectedVariation = item?.variations.find(
+  const variations = item ? getValidVariations(item) : [];
+  const selectedVariation = variations.find(
     (v) => v.id === selectedVariationId,
   );
 
@@ -60,18 +65,18 @@ export default function ItemCustomizeScreen() {
     if (selectedVariation) {
       return selectedVariation.discountPrice ?? selectedVariation.price;
     }
-    return item?.discountPrice ?? item?.price ?? 0;
+    return item ? getDisplayPrice(item) : 0;
   }, [item, selectedVariation]);
 
   const total = unitPrice * quantity;
 
-  const handleAddToCart = () => {
-    if (!item) return;
+  const isButtonDisabled = item ? hasVariations(item) && !selectedVariationId : true;
+  const buttonText = isButtonDisabled
+    ? "Select a Size"
+    : `Add to Cart · ${total.toFixed(2)} LE`;
 
-    if (item.variations.length > 0 && !selectedVariationId) {
-      Alert.alert("Choose a size", "Please select a variation before adding to cart.");
-      return;
-    }
+  const handleAddToCart = () => {
+    if (!item || isButtonDisabled) return;
 
     addItem({
       itemId: item.id,
@@ -86,10 +91,7 @@ export default function ItemCustomizeScreen() {
       image: item.image,
     });
 
-    Alert.alert("Added to cart", `${quantity}x ${item.name} added.`, [
-      { text: "Continue", style: "cancel" },
-      { text: "Done", onPress: () => router.back() },
-    ]);
+    router.back();
   };
 
   const handleAddPairing = (pairing: DiscoveryMenuItem) => {
@@ -165,20 +167,20 @@ export default function ItemCustomizeScreen() {
           </View>
         </View>
 
-        {item.variations.length > 0 ? (
+        {variations.length > 0 ? (
           <View className="mx-4 mt-4 bg-white rounded-2xl border border-gray-100 p-4">
             <Text className="text-lg font-bold text-[#2D2D2D] mb-3">
               Choose Size
             </Text>
-            {item.variations.map((variation) => {
+            {variations.map((variation) => {
               const isSelected = selectedVariationId === variation.id;
               const price = variation.discountPrice ?? variation.price;
               return (
                 <TouchableOpacity
                   key={variation.id}
                   onPress={() => setSelectedVariationId(variation.id)}
-                  className={`flex-row items-center justify-between py-3 border-b border-gray-50 ${
-                    isSelected ? "bg-primary/5 -mx-2 px-2 rounded-xl" : ""
+                  className={`flex-row items-center justify-between py-3.5 px-3 mb-2 rounded-xl border ${
+                    isSelected ? "border-primary bg-primary/5" : "border-gray-100 bg-white"
                   }`}
                 >
                   <View>
@@ -190,41 +192,21 @@ export default function ItemCustomizeScreen() {
                     </Text>
                   </View>
                   <View
-                    className={`w-5 h-5 rounded-full border-2 ${
-                      isSelected ? "border-primary bg-primary" : "border-gray-300"
+                    className={`w-5 h-5 rounded-full border-2 items-center justify-center ${
+                      isSelected ? "border-primary" : "border-gray-300"
                     }`}
-                  />
+                  >
+                    {isSelected && (
+                      <View className="w-2.5 h-2.5 rounded-full bg-primary" />
+                    )}
+                  </View>
                 </TouchableOpacity>
               );
             })}
           </View>
         ) : null}
 
-        {item.dietaryTags.length > 0 ? (
-          <View className="mx-4 mt-4 bg-white rounded-2xl border border-gray-100 p-4">
-            <Text className="text-lg font-bold text-[#2D2D2D] mb-3">
-              Preferences
-            </Text>
-            {item.dietaryTags.map((tag) => (
-              <View
-                key={tag.id}
-                className="flex-row items-center justify-between py-3 border-b border-gray-50"
-              >
-                <Text className="font-medium text-[#2D2D2D]">{tag.name}</Text>
-                <Switch
-                  value={!!selectedTags[tag.id]}
-                  onValueChange={(value) =>
-                    setSelectedTags((current) => ({
-                      ...current,
-                      [tag.id]: value,
-                    }))
-                  }
-                  trackColor={{ true: "#1565C0" }}
-                />
-              </View>
-            ))}
-          </View>
-        ) : null}
+
 
         {detail?.pairings?.length ? (
           <View className="mx-4">
@@ -243,10 +225,13 @@ export default function ItemCustomizeScreen() {
         <QuantityStepper value={quantity} onChange={setQuantity} />
         <TouchableOpacity
           onPress={handleAddToCart}
-          className="flex-1 bg-primary rounded-2xl py-4 items-center"
+          disabled={isButtonDisabled}
+          className={`flex-1 rounded-2xl py-4 items-center ${
+            isButtonDisabled ? "bg-gray-300" : "bg-primary"
+          }`}
         >
           <Text className="text-white font-bold text-base">
-            Add to Cart · {total.toFixed(2)} LE
+            {buttonText}
           </Text>
         </TouchableOpacity>
       </View>

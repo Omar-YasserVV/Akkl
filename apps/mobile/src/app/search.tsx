@@ -1,10 +1,12 @@
 import { MenuItemRow } from "@/components/discovery/menu-item-row";
 import { RestaurantCard } from "@/components/discovery/restaurant-card";
 import { SearchBar } from "@/components/discovery/search-bar";
+import { useCartStore } from "@/stores/cart-store";
+import { getDisplayPrice, hasVariations } from "@/utils/menuItem";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { discoveryApis, type DiscoverySearchResult } from "@repo/utils";
-import { useRouter } from "expo-router";
+import { discoveryApis, type DiscoverySearchResult, type DiscoveryMenuItem } from "@repo/utils";
+import { type Href, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -24,6 +26,35 @@ export default function SearchScreen() {
   const [results, setResults] = useState<DiscoverySearchResult | null>(null);
   const [recent, setRecent] = useState<string[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+
+  const itemCount = useCartStore((state) => state.itemCount);
+  const total = useCartStore((state) => state.total);
+  const orderMode = useCartStore((state) => state.orderMode);
+  const addItem = useCartStore((state) => state.addItem);
+
+  const formatPrice = (price: number) => `${price.toFixed(2)} LE`;
+  const cartRoute = orderMode === "dine-in" ? "/dine-in/cart" : "/pickup/cart";
+
+  const handleQuickAdd = (item: DiscoveryMenuItem) => {
+    if (hasVariations(item)) {
+      router.push({
+        pathname: "/item/[id]",
+        params: { id: item.id, branchId: item.branchId },
+      });
+      return;
+    }
+
+    addItem({
+      itemId: item.id,
+      name: item.name,
+      branchId: item.branchId,
+      restaurantId: item.restaurantId ?? "akkl",
+      restaurantName: item.restaurantName ?? "Smart Restaurant",
+      quantity: 1,
+      unitPrice: getDisplayPrice(item),
+      image: item.image,
+    });
+  };
 
   useEffect(() => {
     AsyncStorage.getItem(RECENT_KEY).then((value) => {
@@ -94,7 +125,10 @@ export default function SearchScreen() {
         />
       </View>
 
-      <ScrollView className="flex-1 px-4 pt-4">
+      <ScrollView
+        className="flex-1 px-4 pt-4"
+        contentContainerStyle={{ paddingBottom: insets.bottom + (itemCount > 0 ? 90 : 30) }}
+      >
         {!query && recent.length > 0 ? (
           <View className="mb-6">
             <View className="flex-row items-center justify-between mb-3">
@@ -164,6 +198,7 @@ export default function SearchScreen() {
                     params: { id: item.id, branchId: item.branchId },
                   })
                 }
+                onAdd={() => handleQuickAdd(item)}
               />
             ))}
           </View>
@@ -178,6 +213,26 @@ export default function SearchScreen() {
           </Text>
         ) : null}
       </ScrollView>
+
+      {itemCount > 0 && (
+        <View
+          className="absolute left-4 right-4"
+          style={{ bottom: insets.bottom + 16 }}
+        >
+          <TouchableOpacity
+            onPress={() => router.push(cartRoute as Href)}
+            activeOpacity={0.9}
+            className="h-[56px] rounded-[12px] bg-[#065FCC] px-5 flex-row items-center justify-between"
+          >
+            <Text className="text-[17px] font-bold text-white">
+              View Cart ({itemCount} {itemCount === 1 ? "item" : "items"})
+            </Text>
+            <Text className="text-[17px] font-bold text-white">
+              {formatPrice(total)}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }

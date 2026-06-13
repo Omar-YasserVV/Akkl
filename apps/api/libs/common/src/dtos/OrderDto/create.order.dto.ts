@@ -27,6 +27,11 @@ export class CreateOrderItemDto {
 
   @IsNumber({ maxDecimalPlaces: 2 })
   price!: number;
+
+  @ApiPropertyOptional({ example: 'variation-uuid-here' })
+  @IsOptional()
+  @IsString()
+  variationId?: string;
 }
 
 export class CreateOrderDto {
