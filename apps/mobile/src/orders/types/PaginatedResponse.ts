@@ -11,7 +11,11 @@ export interface PaginatedResponse<T> {
 
 // types/Order.ts
 export type OrderSource = "APP" | "STORE";
-export type OrderStatus = "PENDING" | "IN_PROGRESS" | "COMPLETED";
+export type OrderStatus =
+  | "PENDING"
+  | "IN_PROGRESS"
+  | "COMPLETED"
+  | "CANCELLED";
 export type MenuCategory =
   | "MAIN_COURSE"
   | "APPETIZER"

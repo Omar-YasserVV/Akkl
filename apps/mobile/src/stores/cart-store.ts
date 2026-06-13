@@ -17,6 +17,7 @@ export interface CartLineItem {
 
 export interface PlacedOrder {
   id: string;
+  orderNumber: number;
   tableNumber: string;
   branchName: string;
   total: number;
@@ -62,7 +63,7 @@ interface CartState extends CartTotals {
   removeItem: (itemId: string, variationId?: string) => void;
   placeOrder: (
     paymentMethod: string,
-    orderDetails?: { id: string; total: number },
+    orderDetails?: { id: string; orderNumber: number; total: number },
   ) => PlacedOrder;
   clearCart: () => void;
 }
@@ -202,6 +203,7 @@ export const useCartStore = create<CartState>((set, get) => ({
     const { tableNumber, branchName, total } = get();
     const order: PlacedOrder = {
       id: orderDetails?.id ?? "—",
+      orderNumber: orderDetails?.orderNumber ?? 0,
       tableNumber: tableNumber ?? "—",
       branchName: branchName ?? "Branch",
       total: orderDetails?.total ?? total,

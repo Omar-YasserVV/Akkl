@@ -25,8 +25,6 @@ const RecentOrdersTable = () => {
     limit: 5,
   });
 
-  console.log(data);
-
   return (
     <Card className="border border-default-200 col-span-3" shadow="none">
       <CardHeader className="flex flex-col items-start px-6 pt-5 space-y-1">

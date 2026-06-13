@@ -38,10 +38,9 @@ export default function PickupCheckoutScreen() {
 
     createOrder(buildCreateOrderPayload(items, user), {
       onSuccess: (order) => {
-        console.log(order);
-
         placeOrder(methodLabel, {
-          id: String(order.orderNumber),
+          id: order.id,
+          orderNumber: order.orderNumber,
           total: parseFloat(order.totalPrice),
         });
         router.replace("/pickup/order-status" as Href);

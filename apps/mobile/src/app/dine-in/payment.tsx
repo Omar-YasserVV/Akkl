@@ -64,7 +64,8 @@ export default function DineInPaymentScreen() {
     createOrder(buildCreateOrderPayload(items, user), {
       onSuccess: (order) => {
         placeOrder(label, {
-          id: String(order.orderNumber),
+          id: order.id,
+          orderNumber: order.orderNumber,
           total: parseFloat(order.totalPrice),
         });
         router.replace("/dine-in/order-status" as Href);

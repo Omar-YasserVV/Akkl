@@ -11,6 +11,7 @@ export default function OrdersScreen() {
     page: 1,
     limit: 20,
   });
+  console.log(response);
 
   const orders = response?.data ?? [];
 
