@@ -217,7 +217,7 @@ export default function SearchScreen() {
       {itemCount > 0 && (
         <View
           className="absolute left-4 right-4"
-          style={{ bottom: insets.bottom + 16 }}
+          style={{ bottom: insets.bottom + 16, zIndex: 9999, elevation: 5 }}
         >
           <TouchableOpacity
             onPress={() => router.push(cartRoute as Href)}

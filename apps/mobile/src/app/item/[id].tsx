@@ -17,7 +17,6 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -28,12 +27,20 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function ItemCustomizeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { id, branchId } = useLocalSearchParams<{ id: string; branchId?: string }>();
+  const { id, branchId } = useLocalSearchParams<{
+    id: string;
+    branchId?: string;
+  }>();
   const addItem = useCartStore((state) => state.addItem);
   const [detail, setDetail] = useState<DiscoveryMenuItemDetail | null>(null);
   const [quantity, setQuantity] = useState(1);
-  const [selectedVariationId, setSelectedVariationId] = useState<string | null>(null);
+  const [selectedVariationId, setSelectedVariationId] = useState<string | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedPairings, setSelectedPairings] = useState<DiscoveryMenuItem[]>(
+    [],
+  );
 
   const loadItem = useCallback(async () => {
     if (!id) return;
@@ -68,9 +75,15 @@ export default function ItemCustomizeScreen() {
     return item ? getDisplayPrice(item) : 0;
   }, [item, selectedVariation]);
 
-  const total = unitPrice * quantity;
+  const pairingsTotal = selectedPairings.reduce(
+    (sum, p) => sum + (p.discountPrice ?? p.price),
+    0,
+  );
+  const total = unitPrice * quantity + pairingsTotal;
 
-  const isButtonDisabled = item ? hasVariations(item) && !selectedVariationId : true;
+  const isButtonDisabled = item
+    ? hasVariations(item) && !selectedVariationId
+    : true;
   const buttonText = isButtonDisabled
     ? "Select a Size"
     : `Add to Cart · ${total.toFixed(2)} LE`;
@@ -91,19 +104,30 @@ export default function ItemCustomizeScreen() {
       image: item.image,
     });
 
+    selectedPairings.forEach((pairing) => {
+      addItem({
+        itemId: pairing.id,
+        name: pairing.name,
+        branchId: pairing.branchId,
+        restaurantId: pairing.restaurantId ?? "",
+        restaurantName: pairing.restaurantName ?? "",
+        quantity: 1,
+        unitPrice: pairing.discountPrice ?? pairing.price,
+        image: pairing.image,
+      });
+    });
+
     router.back();
   };
 
-  const handleAddPairing = (pairing: DiscoveryMenuItem) => {
-    addItem({
-      itemId: pairing.id,
-      name: pairing.name,
-      branchId: pairing.branchId,
-      restaurantId: pairing.restaurantId ?? "",
-      restaurantName: pairing.restaurantName ?? "",
-      quantity: 1,
-      unitPrice: pairing.discountPrice ?? pairing.price,
-      image: pairing.image,
+  const handleTogglePairing = (pairing: DiscoveryMenuItem) => {
+    setSelectedPairings((prev) => {
+      const exists = prev.some((p) => p.id === pairing.id);
+      if (exists) {
+        return prev.filter((p) => p.id !== pairing.id);
+      } else {
+        return [...prev, pairing];
+      }
     });
   };
 
@@ -129,7 +153,10 @@ export default function ItemCustomizeScreen() {
         </Text>
       </View>
 
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 120 }}>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: 120 }}
+      >
         <View className="bg-white mx-4 mt-4 rounded-2xl overflow-hidden border border-gray-100">
           <View className="h-52 bg-gray-100">
             {item.image ? (
@@ -179,8 +206,10 @@ export default function ItemCustomizeScreen() {
                 <TouchableOpacity
                   key={variation.id}
                   onPress={() => setSelectedVariationId(variation.id)}
-                  className={`flex-row items-center justify-between py-3.5 px-3 mb-2 rounded-xl border ${
-                    isSelected ? "border-primary bg-primary/5" : "border-gray-100 bg-white"
+                  className={`flex-row items-center justify-between py-3.5 px-3 mb-2 rounded-[8px] border ${
+                    isSelected
+                      ? "border-primary bg-primary/5"
+                      : "border-gray-100 bg-white"
                   }`}
                 >
                   <View>
@@ -206,13 +235,12 @@ export default function ItemCustomizeScreen() {
           </View>
         ) : null}
 
-
-
         {detail?.pairings?.length ? (
           <View className="mx-4">
             <PairingCarousel
               pairings={detail.pairings}
-              onAdd={handleAddPairing}
+              selectedIds={selectedPairings.map((p) => p.id)}
+              onToggle={handleTogglePairing}
             />
           </View>
         ) : null}
@@ -230,9 +258,7 @@ export default function ItemCustomizeScreen() {
             isButtonDisabled ? "bg-gray-300" : "bg-primary"
           }`}
         >
-          <Text className="text-white font-bold text-base">
-            {buttonText}
-          </Text>
+          <Text className="text-white font-bold text-base">{buttonText}</Text>
         </TouchableOpacity>
       </View>
     </View>
