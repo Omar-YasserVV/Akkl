@@ -153,6 +153,7 @@ export abstract class SvcAnalyticsBase {
   protected calcPercentageChange(current: number, previous: number): number {
     if (previous === 0 && current === 0) return 0;
     if (previous === 0) return 100;
-    return ((current - previous) / previous) * 100;
+    const percentChange = ((current - previous) / previous) * 100;
+    return Number(percentChange.toFixed(2));
   }
 }
