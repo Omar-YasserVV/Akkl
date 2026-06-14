@@ -30,11 +30,83 @@ const prisma = new PrismaClient({
   adapter: new PrismaPg(process.env.DATABASE_URL),
 });
 
+// -------------------------------------------------------
+// HELPERS
+// -------------------------------------------------------
+
+/** Return a random element from an array */
+function pick<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)]!;
+}
+
+/** Return a random integer between min and max (inclusive) */
+function randInt(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+/**
+ * Build a realistic Date within a given calendar day.
+ * Weekends & Thursdays skew toward dinner (18-23h).
+ * Weekdays spread across lunch (11-14h) and dinner (18-22h).
+ */
+function orderTimeForDay(date: Date): Date {
+  const dow = date.getDay(); // 0=Sun … 6=Sat
+  const isWeekend = dow === 5 || dow === 6 || dow === 4; // Thu-Fri-Sat busy
+
+  let hour: number;
+  const r = Math.random();
+  if (isWeekend) {
+    // 10% breakfast, 30% lunch, 60% dinner
+    if (r < 0.1) hour = randInt(9, 11);
+    else if (r < 0.4) hour = randInt(12, 15);
+    else hour = randInt(18, 23);
+  } else {
+    // 5% breakfast, 45% lunch, 50% dinner
+    if (r < 0.05) hour = randInt(9, 10);
+    else if (r < 0.5) hour = randInt(11, 14);
+    else hour = randInt(18, 22);
+  }
+
+  const result = new Date(date);
+  result.setHours(hour, randInt(0, 59), randInt(0, 59), 0);
+  return result;
+}
+
+/**
+ * How many orders should this day generate?
+ * Weekends: 18-30, weekdays: 8-18, with a gentle upward trend
+ * across the 60 days to simulate growth.
+ */
+function ordersForDay(date: Date, dayIndex: number): number {
+  const dow = date.getDay();
+  const isWeekend = dow === 5 || dow === 6 || dow === 4;
+  const growthBonus = Math.floor(dayIndex / 10); // +1 every 10 days
+
+  return isWeekend
+    ? randInt(18, 30) + growthBonus
+    : randInt(8, 18) + growthBonus;
+}
+
+/**
+ * Weighted random order status.
+ * Historical orders are mostly COMPLETED; some CANCELLED.
+ */
+function historicalStatus(): OrderState {
+  const r = Math.random();
+  if (r < 0.78) return OrderState.COMPLETED;
+  if (r < 0.92) return OrderState.CANCELLED;
+  if (r < 0.96) return OrderState.IN_PROGRESS;
+  return OrderState.PENDING;
+}
+
+// -------------------------------------------------------
+// MAIN
+// -------------------------------------------------------
 async function main() {
   console.log('🚀 Starting Seeding process...');
 
   // -------------------------------------------------------
-  // 1. CLEANUP — children before parents to respect FK constraints
+  // 1. CLEANUP
   // -------------------------------------------------------
   await prisma.inventoryUsageLog.deleteMany({});
   await prisma.stockBatch.deleteMany({});
@@ -47,7 +119,7 @@ async function main() {
   await prisma.branchMenuItem.deleteMany({});
   await prisma.reservation.deleteMany({});
   await prisma.table.deleteMany({});
-  await prisma.hardware.deleteMany({}); // NEW: Added hardware cleanup
+  await prisma.hardware.deleteMany({});
   await prisma.shift.deleteMany({});
   await prisma.warehouse.deleteMany({});
   await prisma.ingredient.deleteMany({});
@@ -70,26 +142,21 @@ async function main() {
       lastLogin: new Date(),
     },
   });
-
   console.log('✅ System admin created');
 
   // -------------------------------------------------------
   // 3. USERS
   // -------------------------------------------------------
-  // Utility: hash passwords using bcrypt
-
-  // Default plaintext passwords for seed users (also written in comment for each user below)
   const passwords = {
-    owner: 'owner123', // password: owner123
-    manager: 'manager123', // password: manager123
-    cashier: 'cashier123', // password: cashier123
-    chief: 'chief123', // password: chief123
-    waiter: 'waiter123', // password: waiter123
-    customer: 'customer123', // password: customer123
-    customer2: 'customer2123', // password: customer2123
+    owner: 'owner123',
+    manager: 'manager123',
+    cashier: 'cashier123',
+    chief: 'chief123',
+    waiter: 'waiter123',
+    customer: 'customer123',
+    customer2: 'customer2123',
   };
 
-  // Hash all passwords in parallel and assign to variables
   const [
     ownerHashed,
     managerHashed,
@@ -112,7 +179,7 @@ async function main() {
     data: {
       email: 'omar@owner.com',
       username: 'omar_yasser',
-      password: ownerHashed, // password: owner123
+      password: ownerHashed,
       fullName: 'Omar Yasser Shawky',
       phone: '01000000001',
       role: UserRole.BUSINESS_OWNER,
@@ -123,7 +190,7 @@ async function main() {
     data: {
       email: 'manager@branch.com',
       username: 'branch_mgr',
-      password: managerHashed, // password: manager123
+      password: managerHashed,
       fullName: 'Ahmed Manager',
       phone: '01000000002',
       role: UserRole.MANAGER,
@@ -135,7 +202,7 @@ async function main() {
     data: {
       email: 'cashier@branch.com',
       username: 'branch_cashier',
-      password: cashierHashed, // password: cashier123
+      password: cashierHashed,
       fullName: 'Sara Cashier',
       phone: '01000000004',
       role: UserRole.CASHIER,
@@ -147,7 +214,7 @@ async function main() {
     data: {
       email: 'chief@branch.com',
       username: 'branch_chief',
-      password: chiefHashed, // password: chief123
+      password: chiefHashed,
       fullName: 'Hassan Chief',
       phone: '01000000005',
       role: UserRole.CHIEF,
@@ -159,7 +226,7 @@ async function main() {
     data: {
       email: 'waiter@branch.com',
       username: 'branch_waiter',
-      password: waiterHashed, // password: waiter123
+      password: waiterHashed,
       fullName: 'Mostafa Waiter',
       phone: '01000000006',
       role: UserRole.WAITER,
@@ -171,7 +238,7 @@ async function main() {
     data: {
       email: 'customer@gmail.com',
       username: 'foodie_jane',
-      password: customerHashed, // password: customer123
+      password: customerHashed,
       fullName: 'Jane Doe',
       phone: '01000000003',
       role: UserRole.CUSTOMER,
@@ -182,7 +249,7 @@ async function main() {
     data: {
       email: 'customer2@gmail.com',
       username: 'hungry_john',
-      password: customer2Hashed, // password: customer2123
+      password: customer2Hashed,
       fullName: 'John Smith',
       phone: '01000000007',
       role: UserRole.CUSTOMER,
@@ -201,11 +268,10 @@ async function main() {
       ownerId: owner.id,
     },
   });
-
   console.log('✅ Restaurant created');
 
   // -------------------------------------------------------
-  // 5. BRANCHES
+  // 5. BRANCH
   // -------------------------------------------------------
   const branch = await prisma.branch.create({
     data: {
@@ -215,7 +281,7 @@ async function main() {
       phone: '01555123456',
       latitude: 30.3082,
       longitude: 31.7428,
-      status: BranchStatus.ACTIVE, // Force active for seed data
+      status: BranchStatus.ACTIVE,
       restaurantId: restaurant.id,
       haveTables: true,
       haveReservations: true,
@@ -242,10 +308,10 @@ async function main() {
     data: { branchId: branch.id },
   });
 
-  console.log('✅ Branches created');
+  console.log('✅ Branch created');
 
   // -------------------------------------------------------
-  // 6. HARDWARE (NEW: Step 4 Configurations)
+  // 6. HARDWARE
   // -------------------------------------------------------
   await prisma.hardware.createMany({
     data: [
@@ -269,7 +335,6 @@ async function main() {
       },
     ],
   });
-
   console.log('✅ Hardware profiles created');
 
   // -------------------------------------------------------
@@ -278,19 +343,16 @@ async function main() {
   const veganTag = await prisma.dietaryTag.create({
     data: { name: DietaryType.VEGAN },
   });
-
   const glutenFreeTag = await prisma.dietaryTag.create({
     data: { name: DietaryType.GLUTEN_FREE },
   });
-
   const dairyFreeTag = await prisma.dietaryTag.create({
     data: { name: DietaryType.DAIRY_FREE },
   });
-
   console.log('✅ Dietary tags created');
 
   // -------------------------------------------------------
-  // 8. TABLES & RESERVATIONS (UPDATED WITH ZONES)
+  // 8. TABLES & RESERVATIONS
   // -------------------------------------------------------
   const table1 = await prisma.table.create({
     data: {
@@ -300,7 +362,6 @@ async function main() {
       branchId: branch.id,
     },
   });
-
   const table2 = await prisma.table.create({
     data: {
       tableNumber: 'Table 2',
@@ -309,7 +370,6 @@ async function main() {
       branchId: branch.id,
     },
   });
-
   const table3 = await prisma.table.create({
     data: {
       tableNumber: 'Patio 1',
@@ -347,17 +407,15 @@ async function main() {
       },
     ],
   });
-
   console.log('✅ Tables & reservations created');
 
   // -------------------------------------------------------
-  // 9. WAREHOUSES
+  // 9. WAREHOUSE
   // -------------------------------------------------------
   const warehouse = await prisma.warehouse.create({
     data: { name: 'Main Cold Storage', branchId: branch.id },
   });
-
-  console.log('✅ Warehouses created');
+  console.log('✅ Warehouse created');
 
   // -------------------------------------------------------
   // 10. INGREDIENTS
@@ -371,7 +429,6 @@ async function main() {
       category: IngredientCategory.MEAT,
     },
   });
-
   const cheeseSlab = await prisma.ingredient.upsert({
     where: { name: 'Cheddar Cheese Slab' },
     update: {},
@@ -381,7 +438,6 @@ async function main() {
       category: IngredientCategory.DAIRY,
     },
   });
-
   const briocheBun = await prisma.ingredient.upsert({
     where: { name: 'Brioche Bun' },
     update: {},
@@ -391,7 +447,6 @@ async function main() {
       category: IngredientCategory.BAKERY,
     },
   });
-
   const chickenBreast = await prisma.ingredient.upsert({
     where: { name: 'Chicken Breast' },
     update: {},
@@ -401,7 +456,6 @@ async function main() {
       category: IngredientCategory.MEAT,
     },
   });
-
   const lettuce = await prisma.ingredient.upsert({
     where: { name: 'Iceberg Lettuce' },
     update: {},
@@ -411,7 +465,6 @@ async function main() {
       category: IngredientCategory.PRODUCE,
     },
   });
-
   const oliveOil = await prisma.ingredient.upsert({
     where: { name: 'Extra Virgin Olive Oil' },
     update: {},
@@ -421,7 +474,6 @@ async function main() {
       category: IngredientCategory.OILS,
     },
   });
-
   const frenchFries = await prisma.ingredient.upsert({
     where: { name: 'Frozen French Fries' },
     update: {},
@@ -431,17 +483,6 @@ async function main() {
       category: IngredientCategory.PRODUCE,
     },
   });
-
-  const sesameOil = await prisma.ingredient.upsert({
-    where: { name: 'Sesame Oil' },
-    update: {},
-    create: {
-      name: 'Sesame Oil',
-      unit: MeasurementUnit.L,
-      category: IngredientCategory.OILS,
-    },
-  });
-
   console.log('✅ Ingredients created');
 
   // -------------------------------------------------------
@@ -451,72 +492,65 @@ async function main() {
     data: {
       ingredientId: beefPatty.id,
       warehouseId: warehouse.id,
-      quantity: 0,
+      quantity: 500,
       minimumQuantity: 20,
-      stockStatus: StockStatus.OUT_OF_STOCK,
+      stockStatus: StockStatus.IN_STOCK,
     },
   });
-
   const cheeseItem = await prisma.inventoryItem.create({
     data: {
       ingredientId: cheeseSlab.id,
       warehouseId: warehouse.id,
-      quantity: 0,
+      quantity: 300,
       minimumQuantity: 10,
-      stockStatus: StockStatus.OUT_OF_STOCK,
+      stockStatus: StockStatus.IN_STOCK,
     },
   });
-
   const bunItem = await prisma.inventoryItem.create({
     data: {
       ingredientId: briocheBun.id,
       warehouseId: warehouse.id,
-      quantity: 0,
+      quantity: 1000,
       minimumQuantity: 30,
-      stockStatus: StockStatus.OUT_OF_STOCK,
+      stockStatus: StockStatus.IN_STOCK,
     },
   });
-
   const chickenItem = await prisma.inventoryItem.create({
     data: {
       ingredientId: chickenBreast.id,
       warehouseId: warehouse.id,
-      quantity: 0,
+      quantity: 400,
       minimumQuantity: 15,
-      stockStatus: StockStatus.OUT_OF_STOCK,
+      stockStatus: StockStatus.IN_STOCK,
     },
   });
-
   const lettuceItem = await prisma.inventoryItem.create({
     data: {
       ingredientId: lettuce.id,
       warehouseId: warehouse.id,
-      quantity: 0,
+      quantity: 200,
       minimumQuantity: 5,
-      stockStatus: StockStatus.OUT_OF_STOCK,
+      stockStatus: StockStatus.IN_STOCK,
     },
   });
-
   const oilItem = await prisma.inventoryItem.create({
     data: {
       ingredientId: oliveOil.id,
       warehouseId: warehouse.id,
-      quantity: 0,
+      quantity: 100,
       minimumQuantity: 5,
-      stockStatus: StockStatus.OUT_OF_STOCK,
+      stockStatus: StockStatus.IN_STOCK,
     },
   });
-
   const friesItem = await prisma.inventoryItem.create({
     data: {
       ingredientId: frenchFries.id,
       warehouseId: warehouse.id,
-      quantity: 0,
+      quantity: 500,
       minimumQuantity: 20,
-      stockStatus: StockStatus.OUT_OF_STOCK,
+      stockStatus: StockStatus.IN_STOCK,
     },
   });
-
   console.log('✅ Inventory items created');
 
   // -------------------------------------------------------
@@ -526,116 +560,84 @@ async function main() {
     data: [
       {
         inventoryItemId: beefItem.id,
-        initialQuantity: 150.5,
-        remainingQuantity: 150.5,
-        numberOfUnits: 15,
+        initialQuantity: 500,
+        remainingQuantity: 500,
+        numberOfUnits: 50,
         unitSize: 10,
         costPerUnit: 9.0,
-        receivedAt: new Date(),
-        expiresAt: new Date(Date.now() + 5 * 86400000),
-        status: BatchStatus.ACTIVE,
-      },
-      {
-        inventoryItemId: cheeseItem.id,
-        initialQuantity: 60.0,
-        remainingQuantity: 60.0,
-        numberOfUnits: 12,
-        unitSize: 5,
-        costPerUnit: 13.0,
-        receivedAt: new Date(),
+        receivedAt: new Date(Date.now() - 60 * 86400000),
         expiresAt: new Date(Date.now() + 30 * 86400000),
         status: BatchStatus.ACTIVE,
       },
       {
+        inventoryItemId: cheeseItem.id,
+        initialQuantity: 300,
+        remainingQuantity: 300,
+        numberOfUnits: 60,
+        unitSize: 5,
+        costPerUnit: 13.0,
+        receivedAt: new Date(Date.now() - 60 * 86400000),
+        expiresAt: new Date(Date.now() + 60 * 86400000),
+        status: BatchStatus.ACTIVE,
+      },
+      {
         inventoryItemId: bunItem.id,
-        initialQuantity: 200,
-        remainingQuantity: 200,
-        numberOfUnits: 10,
+        initialQuantity: 1000,
+        remainingQuantity: 1000,
+        numberOfUnits: 50,
         unitSize: 20,
         costPerUnit: 0.3,
-        receivedAt: new Date(),
-        expiresAt: new Date(Date.now() + 3 * 86400000),
+        receivedAt: new Date(Date.now() - 60 * 86400000),
+        expiresAt: new Date(Date.now() + 10 * 86400000),
         status: BatchStatus.ACTIVE,
       },
       {
         inventoryItemId: chickenItem.id,
-        initialQuantity: 80.0,
-        remainingQuantity: 80.0,
-        numberOfUnits: 8,
+        initialQuantity: 400,
+        remainingQuantity: 400,
+        numberOfUnits: 40,
         unitSize: 10,
         costPerUnit: 7.5,
-        receivedAt: new Date(),
-        expiresAt: new Date(Date.now() + 4 * 86400000),
+        receivedAt: new Date(Date.now() - 60 * 86400000),
+        expiresAt: new Date(Date.now() + 20 * 86400000),
         status: BatchStatus.ACTIVE,
       },
       {
         inventoryItemId: lettuceItem.id,
-        initialQuantity: 25.0,
-        remainingQuantity: 25.0,
-        numberOfUnits: 5,
+        initialQuantity: 200,
+        remainingQuantity: 200,
+        numberOfUnits: 40,
         unitSize: 5,
         costPerUnit: 1.2,
-        receivedAt: new Date(),
-        expiresAt: new Date(Date.now() + 2 * 86400000),
+        receivedAt: new Date(Date.now() - 60 * 86400000),
+        expiresAt: new Date(Date.now() + 5 * 86400000),
         status: BatchStatus.ACTIVE,
       },
       {
         inventoryItemId: oilItem.id,
-        initialQuantity: 20.0,
-        remainingQuantity: 20.0,
-        numberOfUnits: 4,
+        initialQuantity: 100,
+        remainingQuantity: 100,
+        numberOfUnits: 20,
         unitSize: 5,
         costPerUnit: 8.0,
-        receivedAt: new Date(),
+        receivedAt: new Date(Date.now() - 60 * 86400000),
         expiresAt: new Date(Date.now() + 180 * 86400000),
         status: BatchStatus.ACTIVE,
       },
       {
         inventoryItemId: friesItem.id,
-        initialQuantity: 100.0,
-        remainingQuantity: 5.0,
-        numberOfUnits: 10,
+        initialQuantity: 500,
+        remainingQuantity: 500,
+        numberOfUnits: 50,
         unitSize: 10,
         costPerUnit: 2.5,
-        receivedAt: new Date(Date.now() - 10 * 86400000),
-        expiresAt: new Date(Date.now() + 20 * 86400000),
+        receivedAt: new Date(Date.now() - 60 * 86400000),
+        expiresAt: new Date(Date.now() + 30 * 86400000),
         status: BatchStatus.ACTIVE,
       },
     ],
   });
-
-  await Promise.all([
-    prisma.inventoryItem.update({
-      where: { id: beefItem.id },
-      data: { quantity: 150.5, stockStatus: StockStatus.IN_STOCK },
-    }),
-    prisma.inventoryItem.update({
-      where: { id: cheeseItem.id },
-      data: { quantity: 60.0, stockStatus: StockStatus.IN_STOCK },
-    }),
-    prisma.inventoryItem.update({
-      where: { id: bunItem.id },
-      data: { quantity: 200, stockStatus: StockStatus.IN_STOCK },
-    }),
-    prisma.inventoryItem.update({
-      where: { id: chickenItem.id },
-      data: { quantity: 80.0, stockStatus: StockStatus.IN_STOCK },
-    }),
-    prisma.inventoryItem.update({
-      where: { id: lettuceItem.id },
-      data: { quantity: 25.0, stockStatus: StockStatus.IN_STOCK },
-    }),
-    prisma.inventoryItem.update({
-      where: { id: oilItem.id },
-      data: { quantity: 20.0, stockStatus: StockStatus.IN_STOCK },
-    }),
-    prisma.inventoryItem.update({
-      where: { id: friesItem.id },
-      data: { quantity: 5.0, stockStatus: StockStatus.LOW_STOCK },
-    }),
-  ]);
-
-  console.log('✅ Stock batches created & inventory synced');
+  console.log('✅ Stock batches created');
 
   // -------------------------------------------------------
   // 13. MENU ITEMS
@@ -656,26 +658,6 @@ async function main() {
         create: [
           { size: 'Regular', price: 9.99 },
           { size: 'Large', price: 12.99, discountPrice: 10.99 },
-        ],
-      },
-    },
-  });
-
-  const chocolateLavaCake = await prisma.branchMenuItem.create({
-    data: {
-      branchId: branch.id,
-      menuItemId: 'menu005',
-      name: 'Chocolate Lava Cake',
-      description: 'Warm chocolate cake with molten chocolate center',
-      category: MenuCategory.DESSERT,
-      price: 6.99,
-      discountPrice: 5.99,
-      preparationTime: 8,
-      isAvailable: true,
-      variations: {
-        create: [
-          { size: 'Single', price: 6.99, discountPrice: 5.99 },
-          { size: 'Double', price: 12.99 },
         ],
       },
     },
@@ -733,9 +715,7 @@ async function main() {
       price: 24.99,
       preparationTime: 18,
       isAvailable: false,
-      variations: {
-        create: [{ size: 'One Size', price: 24.99 }],
-      },
+      variations: { create: [{ size: 'One Size', price: 24.99 }] },
     },
   });
 
@@ -749,6 +729,12 @@ async function main() {
       price: 6.99,
       preparationTime: 15,
       isAvailable: true,
+      variations: {
+        create: [
+          { size: 'Single', price: 6.99, discountPrice: 5.99 },
+          { size: 'Double', price: 12.99 },
+        ],
+      },
     },
   });
 
@@ -787,7 +773,6 @@ async function main() {
   // -------------------------------------------------------
   await prisma.recipe.createMany({
     data: [
-      // Double Cheeseburger
       {
         menuItemId: burgerItem.id,
         ingredientId: beefPatty.id,
@@ -803,7 +788,6 @@ async function main() {
         ingredientId: briocheBun.id,
         quantityRequired: 1,
       },
-      // Crispy Chicken Sandwich
       {
         menuItemId: chickenSandwich.id,
         ingredientId: chickenBreast.id,
@@ -824,7 +808,6 @@ async function main() {
         ingredientId: oliveOil.id,
         quantityRequired: 0.02,
       },
-      // Seasoned Fries
       {
         menuItemId: friesMenuItem.id,
         ingredientId: frenchFries.id,
@@ -835,7 +818,6 @@ async function main() {
         ingredientId: oliveOil.id,
         quantityRequired: 0.01,
       },
-      // Truffle Burger
       {
         menuItemId: truffleBurger.id,
         ingredientId: beefPatty.id,
@@ -846,752 +828,17 @@ async function main() {
         ingredientId: briocheBun.id,
         quantityRequired: 1,
       },
-      // Onion Rings
       {
         menuItemId: onionRings.id,
         ingredientId: oliveOil.id,
         quantityRequired: 0.03,
       },
-      // Chocolate Lava Cake & Soft Drink have no tracked ingredients
     ],
   });
-
-  // Silence unused-variable lint for items with no recipe entries
-  void chocLava;
-  void softDrink;
-
   console.log('✅ Recipes created');
 
   // -------------------------------------------------------
-  // 15. ORDERS
-  // -------------------------------------------------------
-  const orderLine = (menuItemId: string, quantity: number, price: number) => ({
-    menuItemId,
-    quantity,
-    price,
-    totalPrice: quantity * price,
-  });
-
-  // Use captures to store created order objects for possible further use
-  const order1 = await prisma.order.create({
-    data: {
-      totalPrice: 27.97,
-      itemCount: 3,
-      branchId: branch.id,
-      userId: customer.id,
-      customerName: 'Jane Doe',
-      source: OrderSource.APP,
-      status: OrderState.COMPLETED,
-      items: {
-        create: [
-          orderLine(burgerItem.id, 1, 12.99),
-          orderLine(friesMenuItem.id, 2, 4.99),
-        ],
-      },
-    },
-  });
-
-  const order2 = await prisma.order.create({
-    data: {
-      totalPrice: 19.98,
-      itemCount: 2,
-      branchId: branch.id,
-      userId: customer2.id,
-      customerName: 'John Smith',
-      source: OrderSource.STORE,
-      status: OrderState.IN_PROGRESS,
-      items: {
-        create: [
-          orderLine(chickenSandwich.id, 1, 11.49),
-          orderLine(friesMenuItem.id, 1, 5.99),
-        ],
-      },
-    },
-  });
-
-  const order3 = await prisma.order.create({
-    data: {
-      totalPrice: 9.99,
-      itemCount: 1,
-      branchId: branch.id,
-      userId: customer.id,
-      customerName: 'Jane Doe',
-      source: OrderSource.APP,
-      status: OrderState.PENDING,
-      items: {
-        create: [orderLine(burgerItem.id, 1, 9.99)],
-      },
-    },
-  });
-
-  const order4 = await prisma.order.create({
-    data: {
-      totalPrice: 12.99,
-      itemCount: 1,
-      branchId: branch.id,
-      userId: customer2.id,
-      customerName: 'John Smith',
-      source: OrderSource.STORE,
-      status: OrderState.CANCELLED,
-      items: {
-        create: [orderLine(burgerItem.id, 1, 12.99)],
-      },
-    },
-  });
-
-  // --- Additional 20 diverse orders for seeding ---
-  const order5 = await prisma.order.create({
-    data: {
-      totalPrice: 24.97,
-      itemCount: 2,
-      branchId: branch.id,
-      userId: customer.id,
-      customerName: 'Jane Doe',
-      source: OrderSource.APP,
-      status: OrderState.COMPLETED,
-      items: {
-        create: [
-          orderLine(truffleBurger.id, 1, 17.99),
-          orderLine(friesMenuItem.id, 1, 6.99),
-        ],
-      },
-    },
-  });
-
-  const order6 = await prisma.order.create({
-    data: {
-      totalPrice: 13.99,
-      itemCount: 1,
-      branchId: branch.id,
-      userId: customer2.id,
-      customerName: 'John Smith',
-      source: OrderSource.STORE,
-      status: OrderState.PENDING,
-      items: {
-        create: [orderLine(friesMenuItem.id, 2, 6.99)],
-      },
-    },
-  });
-
-  const order7 = await prisma.order.create({
-    data: {
-      totalPrice: 21.99,
-      itemCount: 2,
-      branchId: branch.id,
-      userId: customer.id,
-      customerName: 'Jane Doe',
-      source: OrderSource.APP,
-      status: OrderState.IN_PROGRESS,
-      items: {
-        create: [orderLine(chickenSandwich.id, 2, 10.99)],
-      },
-    },
-  });
-
-  const order8 = await prisma.order.create({
-    data: {
-      totalPrice: 14.98,
-      itemCount: 2,
-      branchId: branch.id,
-      userId: customer2.id,
-      customerName: 'John Smith',
-      source: OrderSource.APP,
-      status: OrderState.COMPLETED,
-      items: {
-        create: [orderLine(chocolateLavaCake.id, 2, 7.49)],
-      },
-    },
-  });
-
-  const order9 = await prisma.order.create({
-    data: {
-      totalPrice: 7.49,
-      itemCount: 1,
-      branchId: branch.id,
-      userId: customer.id,
-      customerName: 'Jane Doe',
-      source: OrderSource.STORE,
-      status: OrderState.CANCELLED,
-      items: {
-        create: [orderLine(chocolateLavaCake.id, 1, 7.49)],
-      },
-    },
-  });
-
-  const order10 = await prisma.order.create({
-    data: {
-      totalPrice: 18.98,
-      itemCount: 2,
-      branchId: branch.id,
-      userId: customer2.id,
-      customerName: 'John Smith',
-      source: OrderSource.APP,
-      status: OrderState.COMPLETED,
-      items: {
-        create: [
-          orderLine(truffleBurger.id, 1, 17.99),
-          orderLine(softDrink.id, 1, 0.99),
-        ],
-      },
-    },
-  });
-
-  const order11 = await prisma.order.create({
-    data: {
-      totalPrice: 10.98,
-      itemCount: 2,
-      branchId: branch.id,
-      userId: customer.id,
-      customerName: 'Jane Doe',
-      source: OrderSource.STORE,
-      status: OrderState.IN_PROGRESS,
-      items: {
-        create: [orderLine(onionRings.id, 2, 5.49)],
-      },
-    },
-  });
-
-  const order12 = await prisma.order.create({
-    data: {
-      totalPrice: 25.98,
-      itemCount: 2,
-      branchId: branch.id,
-      userId: customer2.id,
-      customerName: 'John Smith',
-      source: OrderSource.APP,
-      status: OrderState.COMPLETED,
-      items: {
-        create: [
-          orderLine(truffleBurger.id, 1, 17.99),
-          orderLine(chickenSandwich.id, 1, 7.99),
-        ],
-      },
-    },
-  });
-
-  const order13 = await prisma.order.create({
-    data: {
-      totalPrice: 12.49,
-      itemCount: 1,
-      branchId: branch.id,
-      userId: customer.id,
-      customerName: 'Jane Doe',
-      source: OrderSource.APP,
-      status: OrderState.PENDING,
-      items: {
-        create: [
-          orderLine(friesMenuItem.id, 1, 6.99),
-          orderLine(softDrink.id, 1, 0.99),
-          orderLine(onionRings.id, 1, 4.51),
-        ],
-      },
-    },
-  });
-
-  const order14 = await prisma.order.create({
-    data: {
-      totalPrice: 17.99,
-      itemCount: 1,
-      branchId: branch.id,
-      userId: customer2.id,
-      customerName: 'John Smith',
-      source: OrderSource.STORE,
-      status: OrderState.IN_PROGRESS,
-      items: {
-        create: [orderLine(truffleBurger.id, 1, 17.99)],
-      },
-    },
-  });
-
-  const order15 = await prisma.order.create({
-    data: {
-      totalPrice: 22.48,
-      itemCount: 3,
-      branchId: branch.id,
-      userId: customer.id,
-      customerName: 'Jane Doe',
-      source: OrderSource.APP,
-      status: OrderState.COMPLETED,
-      items: {
-        create: [
-          orderLine(burgerItem.id, 1, 9.49),
-          orderLine(friesMenuItem.id, 2, 6.49),
-        ],
-      },
-    },
-  });
-
-  const order16 = await prisma.order.create({
-    data: {
-      totalPrice: 11.99,
-      itemCount: 2,
-      branchId: branch.id,
-      userId: customer2.id,
-      customerName: 'John Smith',
-      source: OrderSource.STORE,
-      status: OrderState.CANCELLED,
-      items: {
-        create: [
-          orderLine(softDrink.id, 1, 0.99),
-          orderLine(chickenSandwich.id, 1, 11.0),
-        ],
-      },
-    },
-  });
-
-  const order17 = await prisma.order.create({
-    data: {
-      totalPrice: 36.97,
-      itemCount: 3,
-      branchId: branch.id,
-      userId: customer.id,
-      customerName: 'Jane Doe',
-      source: OrderSource.APP,
-      status: OrderState.COMPLETED,
-      items: {
-        create: [
-          orderLine(burgerItem.id, 2, 9.99),
-          orderLine(friesMenuItem.id, 2, 6.99),
-        ],
-      },
-    },
-  });
-
-  const order18 = await prisma.order.create({
-    data: {
-      totalPrice: 10.98,
-      itemCount: 2,
-      branchId: branch.id,
-      userId: customer2.id,
-      customerName: 'John Smith',
-      source: OrderSource.APP,
-      status: OrderState.PENDING,
-      items: {
-        create: [orderLine(onionRings.id, 2, 5.49)],
-      },
-    },
-  });
-
-  const order19 = await prisma.order.create({
-    data: {
-      totalPrice: 29.98,
-      itemCount: 2,
-      branchId: branch.id,
-      userId: customer.id,
-      customerName: 'Jane Doe',
-      source: OrderSource.STORE,
-      status: OrderState.IN_PROGRESS,
-      items: {
-        create: [
-          orderLine(truffleBurger.id, 1, 17.99),
-          orderLine(chickenSandwich.id, 1, 11.99),
-        ],
-      },
-    },
-  });
-
-  const order20 = await prisma.order.create({
-    data: {
-      totalPrice: 7.98,
-      itemCount: 2,
-      branchId: branch.id,
-      userId: customer2.id,
-      customerName: 'John Smith',
-      source: OrderSource.STORE,
-      status: OrderState.COMPLETED,
-      items: {
-        create: [
-          orderLine(softDrink.id, 2, 0.99),
-          orderLine(onionRings.id, 1, 5.0),
-        ],
-      },
-    },
-  });
-
-  const order21 = await prisma.order.create({
-    data: {
-      totalPrice: 12.98,
-      itemCount: 2,
-      branchId: branch.id,
-      userId: customer.id,
-      customerName: 'Jane Doe',
-      source: OrderSource.APP,
-      status: OrderState.COMPLETED,
-      items: {
-        create: [
-          orderLine(burgerItem.id, 1, 9.99),
-          orderLine(softDrink.id, 1, 2.99),
-        ],
-      },
-    },
-  });
-
-  const order22 = await prisma.order.create({
-    data: {
-      totalPrice: 10.98,
-      itemCount: 2,
-      branchId: branch.id,
-      userId: customer2.id,
-      customerName: 'John Smith',
-      source: OrderSource.STORE,
-      status: OrderState.CANCELLED,
-      items: {
-        create: [
-          orderLine(friesMenuItem.id, 1, 5.49),
-          orderLine(chocolateLavaCake.id, 1, 5.49),
-        ],
-      },
-    },
-  });
-
-  const order23 = await prisma.order.create({
-    data: {
-      totalPrice: 31.98,
-      itemCount: 4,
-      branchId: branch.id,
-      userId: customer.id,
-      customerName: 'Jane Doe',
-      source: OrderSource.APP,
-      status: OrderState.IN_PROGRESS,
-      items: {
-        create: [
-          orderLine(burgerItem.id, 2, 9.99),
-          orderLine(friesMenuItem.id, 2, 5.99),
-        ],
-      },
-    },
-  });
-
-  const order24 = await prisma.order.create({
-    data: {
-      totalPrice: 19.97,
-      itemCount: 3,
-      branchId: branch.id,
-      userId: customer2.id,
-      customerName: 'John Smith',
-      source: OrderSource.STORE,
-      status: OrderState.COMPLETED,
-      items: {
-        create: [
-          orderLine(onionRings.id, 1, 5.99),
-          orderLine(chocolateLavaCake.id, 1, 7.99),
-          orderLine(softDrink.id, 1, 5.99),
-        ],
-      },
-    },
-  });
-
-  const order25 = await prisma.order.create({
-    data: {
-      totalPrice: 15.99,
-      itemCount: 2,
-      branchId: branch.id,
-      userId: customer.id,
-      customerName: 'Jane Doe',
-      source: OrderSource.APP,
-      status: OrderState.COMPLETED,
-      items: {
-        create: [
-          orderLine(chickenSandwich.id, 1, 11.99),
-          orderLine(onionRings.id, 1, 4.0),
-        ],
-      },
-    },
-  });
-
-  console.log('✅ Orders created');
-
-  // -------------------------------------------------------
-  // 16. INVENTORY USAGE LOGS
-  // -------------------------------------------------------
-  // Inventory Usage Logs referencing seeded orders
-
-  // Create one inventory usage log per order (matching all 25 orders)
-  await prisma.inventoryUsageLog.createMany({
-    data: [
-      // Manually written example logs for demonstration; adjust the inventoryItemId, notes, and values accordingly.
-      {
-        branchId: branch.id,
-        inventoryItemId: beefItem.id,
-        orderId: order1.id,
-        action: InventoryLogAction.CONSUME,
-        notes: 'Used for 2 double cheeseburgers (order1)',
-        previousQuantity: 10,
-        newQuantity: 8,
-        quantityChange: -2,
-        createdAt: new Date(order1.createdAt ?? Date.now()),
-      },
-      {
-        branchId: branch.id,
-        inventoryItemId: cheeseItem.id,
-        orderId: order2.id,
-        action: InventoryLogAction.CONSUME,
-        notes: 'Used cheese in crispy chicken sandwich (order2)',
-        previousQuantity: 20,
-        newQuantity: 19,
-        quantityChange: -1,
-        createdAt: new Date(order2.createdAt ?? Date.now()),
-      },
-      {
-        branchId: branch.id,
-        inventoryItemId: friesItem.id,
-        orderId: order3.id,
-        action: InventoryLogAction.CONSUME,
-        notes: 'Used for fries order (order3)',
-        previousQuantity: 30,
-        newQuantity: 28,
-        quantityChange: -2,
-        createdAt: new Date(order3.createdAt ?? Date.now()),
-      },
-      {
-        branchId: branch.id,
-        inventoryItemId: lettuceItem.id,
-        orderId: order4.id,
-        action: InventoryLogAction.CONSUME,
-        notes: 'Lettuce for veggie burger (order4)',
-        previousQuantity: 10,
-        newQuantity: 9,
-        quantityChange: -1,
-        createdAt: new Date(order4.createdAt ?? Date.now()),
-      },
-      {
-        branchId: branch.id,
-        inventoryItemId: chickenItem.id,
-        orderId: order5.id,
-        action: InventoryLogAction.CONSUME,
-        notes: 'Chicken used in sandwich (order5)',
-        previousQuantity: 8,
-        newQuantity: 7,
-        quantityChange: -1,
-        createdAt: new Date(order5.createdAt ?? Date.now()),
-      },
-      {
-        branchId: branch.id,
-        inventoryItemId: friesItem.id,
-        orderId: order6.id,
-        action: InventoryLogAction.CONSUME,
-        notes: 'Daily fries prep (order6)',
-        previousQuantity: 7,
-        newQuantity: 5,
-        quantityChange: -2,
-        createdAt: new Date(order6.createdAt ?? Date.now() - 86400000),
-      },
-      {
-        branchId: branch.id,
-        inventoryItemId: beefItem.id,
-        orderId: order7.id,
-        action: InventoryLogAction.CONSUME,
-        notes: 'Used for beef burger (order7)',
-        previousQuantity: 8,
-        newQuantity: 7,
-        quantityChange: -1,
-        createdAt: new Date(order7.createdAt ?? Date.now()),
-      },
-      {
-        branchId: branch.id,
-        inventoryItemId: cheeseItem.id,
-        orderId: order8.id,
-        action: InventoryLogAction.CONSUME,
-        notes: 'Cheese slice for cheeseburger (order8)',
-        previousQuantity: 19,
-        newQuantity: 18,
-        quantityChange: -1,
-        createdAt: new Date(order8.createdAt ?? Date.now()),
-      },
-      {
-        branchId: branch.id,
-        inventoryItemId: lettuceItem.id,
-        orderId: order9.id,
-        action: InventoryLogAction.CONSUME,
-        notes: 'Lettuce in taco (order9)',
-        previousQuantity: 9,
-        newQuantity: 8,
-        quantityChange: -1,
-        createdAt: new Date(order9.createdAt ?? Date.now()),
-      },
-      {
-        branchId: branch.id,
-        inventoryItemId: chickenItem.id,
-        orderId: order10.id,
-        action: InventoryLogAction.CONSUME,
-        notes: 'Chicken for wrap (order10)',
-        previousQuantity: 7,
-        newQuantity: 5,
-        quantityChange: -2,
-        createdAt: new Date(order10.createdAt ?? Date.now()),
-      },
-      {
-        branchId: branch.id,
-        inventoryItemId: beefItem.id,
-        orderId: order11.id,
-        action: InventoryLogAction.CONSUME,
-        notes: 'Beef for nachos (order11)',
-        previousQuantity: 7,
-        newQuantity: 6,
-        quantityChange: -1,
-        createdAt: new Date(order11.createdAt ?? Date.now()),
-      },
-      {
-        branchId: branch.id,
-        inventoryItemId: cheeseItem.id,
-        orderId: order12.id,
-        action: InventoryLogAction.CONSUME,
-        notes: 'Melted cheese on fries (order12)',
-        previousQuantity: 18,
-        newQuantity: 16,
-        quantityChange: -2,
-        createdAt: new Date(order12.createdAt ?? Date.now()),
-      },
-      {
-        branchId: branch.id,
-        inventoryItemId: lettuceItem.id,
-        orderId: order13.id,
-        action: InventoryLogAction.UPDATE,
-        notes: 'Wilted lettuce discarded (order13)',
-        previousQuantity: 5,
-        newQuantity: 4,
-        quantityChange: -1,
-        createdAt: new Date(order13.createdAt ?? Date.now()),
-      },
-      {
-        branchId: branch.id,
-        inventoryItemId: friesItem.id,
-        orderId: order14.id,
-        action: InventoryLogAction.CONSUME,
-        notes: 'Loaded fries special (order14)',
-        previousQuantity: 5,
-        newQuantity: 4,
-        quantityChange: -1,
-        createdAt: new Date(order14.createdAt ?? Date.now()),
-      },
-      {
-        branchId: branch.id,
-        inventoryItemId: chickenItem.id,
-        orderId: order15.id,
-        action: InventoryLogAction.CONSUME,
-        notes: 'Chicken for burrito (order15)',
-        previousQuantity: 5,
-        newQuantity: 4,
-        quantityChange: -1,
-        createdAt: new Date(order15.createdAt ?? Date.now()),
-      },
-      {
-        branchId: branch.id,
-        inventoryItemId: beefItem.id,
-        orderId: order16.id,
-        action: InventoryLogAction.CONSUME,
-        notes: 'Used for signature burger (order16)',
-        previousQuantity: 6,
-        newQuantity: 4,
-        quantityChange: -2,
-        createdAt: new Date(order16.createdAt ?? Date.now()),
-      },
-      {
-        branchId: branch.id,
-        inventoryItemId: cheeseItem.id,
-        orderId: order17.id,
-        action: InventoryLogAction.CONSUME,
-        notes: 'Extra cheese pizza (order17)',
-        previousQuantity: 16,
-        newQuantity: 15,
-        quantityChange: -1,
-        createdAt: new Date(order17.createdAt ?? Date.now()),
-      },
-      {
-        branchId: branch.id,
-        inventoryItemId: lettuceItem.id,
-        orderId: order18.id,
-        action: InventoryLogAction.CONSUME,
-        notes: 'Lettuce for salad (order18)',
-        previousQuantity: 4,
-        newQuantity: 2,
-        quantityChange: -2,
-        createdAt: new Date(order18.createdAt ?? Date.now()),
-      },
-      {
-        branchId: branch.id,
-        inventoryItemId: friesItem.id,
-        orderId: order19.id,
-        action: InventoryLogAction.CONSUME,
-        notes: 'Fries consumed (order19)',
-        previousQuantity: 4,
-        newQuantity: 2,
-        quantityChange: -2,
-        createdAt: new Date(order19.createdAt ?? Date.now()),
-      },
-      {
-        branchId: branch.id,
-        inventoryItemId: chickenItem.id,
-        orderId: order20.id,
-        action: InventoryLogAction.CONSUME,
-        notes: 'Chicken for nuggets (order20)',
-        previousQuantity: 4,
-        newQuantity: 3,
-        quantityChange: -1,
-        createdAt: new Date(order20.createdAt ?? Date.now()),
-      },
-      {
-        branchId: branch.id,
-        inventoryItemId: beefItem.id,
-        orderId: order21.id,
-        action: InventoryLogAction.CONSUME,
-        notes: 'Beef for sliders (order21)',
-        previousQuantity: 4,
-        newQuantity: 2,
-        quantityChange: -2,
-        createdAt: new Date(order21.createdAt ?? Date.now()),
-      },
-      {
-        branchId: branch.id,
-        inventoryItemId: cheeseItem.id,
-        orderId: order22.id,
-        action: InventoryLogAction.CONSUME,
-        notes: 'Cheese for quesadilla (order22)',
-        previousQuantity: 15,
-        newQuantity: 13,
-        quantityChange: -2,
-        createdAt: new Date(order22.createdAt ?? Date.now()),
-      },
-      {
-        branchId: branch.id,
-        inventoryItemId: lettuceItem.id,
-        orderId: order23.id,
-        action: InventoryLogAction.CONSUME,
-        notes: 'Lettuce for wrap (order23)',
-        previousQuantity: 2,
-        newQuantity: 1,
-        quantityChange: -1,
-        createdAt: new Date(order23.createdAt ?? Date.now()),
-      },
-      {
-        branchId: branch.id,
-        inventoryItemId: friesItem.id,
-        orderId: order24.id,
-        action: InventoryLogAction.CONSUME,
-        notes: 'Fries for large combo (order24)',
-        previousQuantity: 2,
-        newQuantity: 0,
-        quantityChange: -2,
-        createdAt: new Date(order24.createdAt ?? Date.now()),
-      },
-      {
-        branchId: branch.id,
-        inventoryItemId: chickenItem.id,
-        orderId: order25.id,
-        action: InventoryLogAction.CONSUME,
-        notes: 'Chicken in club sandwich (order25)',
-        previousQuantity: 3,
-        newQuantity: 2,
-        quantityChange: -1,
-        createdAt: new Date(order25.createdAt ?? Date.now()),
-      },
-    ],
-  });
-
-  console.log('✅ Inventory usage logs created');
-
-  // -------------------------------------------------------
-  // 17. SHIFTS
+  // 15. SHIFTS
   // -------------------------------------------------------
   await prisma.shift.createMany({
     data: [
@@ -1622,11 +869,10 @@ async function main() {
       },
     ],
   });
-
   console.log('✅ Shifts created');
 
   // -------------------------------------------------------
-  // 18. EXPENSES
+  // 16. EXPENSES
   // -------------------------------------------------------
   await prisma.expense.createMany({
     data: [
@@ -1668,11 +914,10 @@ async function main() {
       },
     ],
   });
-
   console.log('✅ Expenses created');
 
   // -------------------------------------------------------
-  // DISCOVERY: ADDITIONAL RESTAURANTS & BRANCHES
+  // 17. DISCOVERY RESTAURANTS & BRANCHES
   // -------------------------------------------------------
   const napoliPizza = await prisma.restaurant.create({
     data: {
@@ -1682,7 +927,6 @@ async function main() {
       ownerId: owner.id,
     },
   });
-
   const napoliCentral = await prisma.branch.create({
     data: {
       name: 'Central Hub',
@@ -1704,7 +948,6 @@ async function main() {
       },
     },
   });
-
   const napoliNorth = await prisma.branch.create({
     data: {
       name: 'North Plaza',
@@ -1726,7 +969,6 @@ async function main() {
       },
     },
   });
-
   const sakuraSushi = await prisma.restaurant.create({
     data: {
       name: 'Sakura Sushi',
@@ -1735,7 +977,6 @@ async function main() {
       ownerId: owner.id,
     },
   });
-
   const sakuraBranch = await prisma.branch.create({
     data: {
       name: 'Maadi Branch',
@@ -1757,7 +998,6 @@ async function main() {
       },
     },
   });
-
   const greenBowl = await prisma.restaurant.create({
     data: {
       name: 'Green Bowl Salads',
@@ -1766,7 +1006,6 @@ async function main() {
       ownerId: owner.id,
     },
   });
-
   const greenBowlBranch = await prisma.branch.create({
     data: {
       name: 'Zamalek Branch',
@@ -1879,7 +1118,6 @@ async function main() {
   const margherita = await prisma.branchMenuItem.findFirst({
     where: { branchId: napoliCentral.id, menuItemId: 'pizza-001' },
   });
-
   if (margherita) {
     await prisma.menuItemVariation.createMany({
       data: [
@@ -1898,11 +1136,9 @@ async function main() {
       ],
     });
   }
-
   const salmonSet = await prisma.branchMenuItem.findFirst({
     where: { branchId: sakuraBranch.id, menuItemId: 'sushi-001' },
   });
-
   if (salmonSet) {
     await prisma.menuItemVariation.createMany({
       data: [
@@ -1917,28 +1153,241 @@ async function main() {
     });
   }
 
+  // suppress unused var warnings
+  void napoliNorth;
+  void sakuraBranch;
+  void greenBowlBranch;
+  void chocLava;
+  void softDrink;
+
   console.log('✅ Discovery restaurants & menus created');
 
+  // -------------------------------------------------------
+  // 18. HISTORICAL ORDERS — 2 MONTHS (60 days back → today)
+  // -------------------------------------------------------
+  console.log('⏳ Generating 2 months of historical orders...');
+
+  /**
+   * Menu items available for the Downtown branch with their recipe-linked ingredients.
+   * Each entry: { item, price, ingredients: [{ inventoryItemId, qtyPerUnit }] }
+   */
+  const MENU_CATALOG = [
+    {
+      item: burgerItem,
+      price: 12.99,
+      weight: 25, // relative order frequency
+      ingredients: [
+        { inventoryItemId: beefItem.id, qtyPerUnit: 0.25 },
+        { inventoryItemId: cheeseItem.id, qtyPerUnit: 0.05 },
+        { inventoryItemId: bunItem.id, qtyPerUnit: 1 },
+      ],
+    },
+    {
+      item: chickenSandwich,
+      price: 11.49,
+      weight: 22,
+      ingredients: [
+        { inventoryItemId: chickenItem.id, qtyPerUnit: 0.2 },
+        { inventoryItemId: lettuceItem.id, qtyPerUnit: 0.05 },
+        { inventoryItemId: bunItem.id, qtyPerUnit: 1 },
+        { inventoryItemId: oilItem.id, qtyPerUnit: 0.02 },
+      ],
+    },
+    {
+      item: friesMenuItem,
+      price: 4.99,
+      weight: 30,
+      ingredients: [
+        { inventoryItemId: friesItem.id, qtyPerUnit: 0.3 },
+        { inventoryItemId: oilItem.id, qtyPerUnit: 0.01 },
+      ],
+    },
+    {
+      item: onionRings,
+      price: 4.49,
+      weight: 12,
+      ingredients: [{ inventoryItemId: oilItem.id, qtyPerUnit: 0.03 }],
+    },
+    {
+      item: chocLava,
+      price: 6.99,
+      weight: 8,
+      ingredients: [], // no tracked ingredients
+    },
+    {
+      item: softDrink,
+      price: 2.49,
+      weight: 15,
+      ingredients: [], // no tracked ingredients
+    },
+  ] as const;
+
+  /** Weighted random menu item selection */
+  const totalWeight = MENU_CATALOG.reduce((s, m) => s + m.weight, 0);
+  function pickMenuItem() {
+    let r = Math.random() * totalWeight;
+    for (const m of MENU_CATALOG) {
+      r -= m.weight;
+      if (r <= 0) return m;
+    }
+    return MENU_CATALOG[0];
+  }
+
+  const users = [customer, customer2];
+  const sources = [OrderSource.APP, OrderSource.STORE];
+
+  // Running inventory tracker so usage logs have coherent prev/new quantities
+  const runningQty: Record<string, number> = {
+    [beefItem.id]: 500,
+    [cheeseItem.id]: 300,
+    [bunItem.id]: 1000,
+    [chickenItem.id]: 400,
+    [lettuceItem.id]: 200,
+    [oilItem.id]: 100,
+    [friesItem.id]: 500,
+  };
+
+  const NOW = Date.now();
+  const START = NOW - 60 * 86400000; // 60 days ago
+
+  let totalOrdersCreated = 0;
+  let totalLogsCreated = 0;
+
+  for (let dayIndex = 0; dayIndex < 60; dayIndex++) {
+    const dayStart = new Date(START + dayIndex * 86400000);
+
+    // Skip Sundays (branch closed per weeklyHours)
+    if (dayStart.getDay() === 0) continue;
+
+    const count = ordersForDay(dayStart, dayIndex);
+
+    // We batch-create orders per day using sequential awaits
+    // (createMany doesn't support nested relations)
+    for (let i = 0; i < count; i++) {
+      const orderTime = orderTimeForDay(dayStart);
+      const user = pick(users);
+      const status = historicalStatus();
+
+      // Build 1-4 line items per order
+      const lineItemCount = randInt(1, 4);
+      const lineItems: {
+        menuItemId: string;
+        quantity: number;
+        price: number;
+        totalPrice: number;
+      }[] = [];
+      let orderTotal = 0;
+      let orderItemCount = 0;
+
+      for (let li = 0; li < lineItemCount; li++) {
+        const catalog = pickMenuItem();
+        const qty = randInt(1, 3);
+        const price = catalog.price;
+        const total = parseFloat((qty * price).toFixed(2));
+        lineItems.push({
+          menuItemId: catalog.item.id,
+          quantity: qty,
+          price,
+          totalPrice: total,
+        });
+        orderTotal += total;
+        orderItemCount += qty;
+      }
+
+      orderTotal = parseFloat(orderTotal.toFixed(2));
+
+      const order = await prisma.order.create({
+        data: {
+          totalPrice: orderTotal,
+          itemCount: orderItemCount,
+          branchId: branch.id,
+          userId: user.id,
+          customerName: user.fullName,
+          source: pick(sources),
+          status,
+          createdAt: orderTime,
+          updatedAt: orderTime,
+          items: { create: lineItems },
+        },
+      });
+
+      totalOrdersCreated++;
+
+      // Only COMPLETED orders consume inventory
+      if (status === OrderState.COMPLETED) {
+        // Aggregate ingredient consumption across all line items
+        const consumptionMap: Record<string, number> = {};
+
+        for (const li of lineItems) {
+          const catalog = MENU_CATALOG.find((m) => m.item.id === li.menuItemId);
+          if (!catalog) continue;
+          for (const ing of catalog.ingredients) {
+            consumptionMap[ing.inventoryItemId] =
+              (consumptionMap[ing.inventoryItemId] ?? 0) +
+              ing.qtyPerUnit * li.quantity;
+          }
+        }
+
+        // Create one usage log per ingredient consumed
+        for (const [invItemId, qty] of Object.entries(consumptionMap)) {
+          const rounded = parseFloat(qty.toFixed(4));
+          const prev = parseFloat((runningQty[invItemId] ?? 0).toFixed(4));
+          const next = parseFloat(Math.max(0, prev - rounded).toFixed(4));
+          runningQty[invItemId] = next;
+
+          await prisma.inventoryUsageLog.create({
+            data: {
+              branchId: branch.id,
+              inventoryItemId: invItemId,
+              orderId: order.id,
+              action: InventoryLogAction.CONSUME,
+              notes: `Consumed for order #${order.orderNumber}`,
+              previousQuantity: prev,
+              newQuantity: next,
+              quantityChange: parseFloat((-rounded).toFixed(4)),
+              createdAt: orderTime,
+            },
+          });
+
+          totalLogsCreated++;
+        }
+      }
+    }
+
+    // Progress log every 10 days
+    if ((dayIndex + 1) % 10 === 0) {
+      console.log(
+        `  📅 Day ${dayIndex + 1}/60 done — ${totalOrdersCreated} orders so far`,
+      );
+    }
+  }
+
+  console.log(
+    `✅ Historical orders created: ${totalOrdersCreated} orders, ${totalLogsCreated} inventory logs`,
+  );
+
+  // -------------------------------------------------------
+  // SUMMARY
+  // -------------------------------------------------------
   console.log(`
 ✅ Seeding completed successfully!
 
 📊 Summary:
-├── 1  System Admin
-├── 7  Users  (owner · manager · cashier · chief · waiter · 2 customers)
-├── 4  Restaurants
-├── 5  Branches (ACTIVE with Location Data & Schedules)
-├── 4  Hardware Devices (KDS & Printers)
-├── 3  Dietary Tags
-├── 3  Tables  +  3 Reservations
-├── 2  Warehouses
-├── 8  Ingredients
-├── 8  Inventory Items  +  8 Stock Batches
-├── 7  Menu Items  (appetizer · mains · side · dessert · beverage · 1 unavailable)
-├── 13 Recipe entries
-├── 24 Orders  (pending · in-progress · completed · cancelled)
-├── 5  Inventory Usage Logs
-├── 4  Shifts
-└── 6  Expenses
+├── 1   System Admin
+├── 7   Users (owner · manager · cashier · chief · waiter · 2 customers)
+├── 4   Restaurants
+├── 5   Branches (ACTIVE with location data & schedules)
+├── 3   Hardware Devices (KDS & Printers)
+├── 3   Dietary Tags
+├── 3   Tables  +  3 Reservations
+├── 1   Warehouse
+├── 7   Ingredients  +  7 Inventory Items  +  7 Stock Batches
+├── 7   Menu Items (appetizer · mains · side · dessert · beverage · 1 unavailable)
+├── 12  Recipe entries
+├── 4   Shifts
+├── 6   Expenses
+├── ~${totalOrdersCreated}  Orders spread across 60 days (realistic weekday/weekend patterns)
+└── ~${totalLogsCreated}  Inventory usage logs (COMPLETED orders only, per recipe)
   `);
 }
 
