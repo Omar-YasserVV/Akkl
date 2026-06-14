@@ -1,13 +1,5 @@
-import {
-  Button,
-  Card,
-  CardBody,
-  CardFooter,
-  CardHeader,
-  Skeleton,
-} from "@heroui/react";
+import { Card, CardBody, CardHeader, Skeleton } from "@heroui/react";
 import { useMemo } from "react";
-import { IoArrowForward } from "react-icons/io5";
 import { useStockAlerts } from "../hooks/useWarehouse";
 import StockAlertCard from "./StockAlertCard";
 
@@ -66,15 +58,6 @@ const StockAlerts = ({ warehouseId, isLoading }: StockAlertsProps) => {
           ))
         )}
       </CardBody>
-      <CardFooter className="pt-3">
-        <Button
-          className="w-full"
-          variant="light"
-          endContent={<IoArrowForward />}
-        >
-          View All Alerts
-        </Button>
-      </CardFooter>
     </Card>
   );
 };

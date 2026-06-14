@@ -27,7 +27,7 @@ const ChartSelector = ({
   onSelect,
 }: ChartSelectorProps) => {
   return (
-    <div className="grid grid-cols-3 gap-4">
+    <div className="grid grid-cols-2 gap-4">
       {charts.map((chart, i) => {
         const isActive = activeChartIndex === i;
         const Icon = icons[i];

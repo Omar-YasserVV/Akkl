@@ -879,7 +879,7 @@ async function main() {
       itemCount: 3,
       branchId: branch.id,
       userId: customer.id,
-      CustomerName: 'Jane Doe',
+      customerName: 'Jane Doe',
       source: OrderSource.APP,
       status: OrderState.COMPLETED,
       items: {
@@ -897,7 +897,7 @@ async function main() {
       itemCount: 2,
       branchId: branch.id,
       userId: customer2.id,
-      CustomerName: 'John Smith',
+      customerName: 'John Smith',
       source: OrderSource.STORE,
       status: OrderState.IN_PROGRESS,
       items: {
@@ -915,7 +915,7 @@ async function main() {
       itemCount: 1,
       branchId: branch.id,
       userId: customer.id,
-      CustomerName: 'Jane Doe',
+      customerName: 'Jane Doe',
       source: OrderSource.APP,
       status: OrderState.PENDING,
       items: {
@@ -930,7 +930,7 @@ async function main() {
       itemCount: 1,
       branchId: branch.id,
       userId: customer2.id,
-      CustomerName: 'John Smith',
+      customerName: 'John Smith',
       source: OrderSource.STORE,
       status: OrderState.CANCELLED,
       items: {
@@ -946,7 +946,7 @@ async function main() {
       itemCount: 2,
       branchId: branch.id,
       userId: customer.id,
-      CustomerName: 'Jane Doe',
+      customerName: 'Jane Doe',
       source: OrderSource.APP,
       status: OrderState.COMPLETED,
       items: {
@@ -964,7 +964,7 @@ async function main() {
       itemCount: 1,
       branchId: branch.id,
       userId: customer2.id,
-      CustomerName: 'John Smith',
+      customerName: 'John Smith',
       source: OrderSource.STORE,
       status: OrderState.PENDING,
       items: {
@@ -979,7 +979,7 @@ async function main() {
       itemCount: 2,
       branchId: branch.id,
       userId: customer.id,
-      CustomerName: 'Jane Doe',
+      customerName: 'Jane Doe',
       source: OrderSource.APP,
       status: OrderState.IN_PROGRESS,
       items: {
@@ -994,7 +994,7 @@ async function main() {
       itemCount: 2,
       branchId: branch.id,
       userId: customer2.id,
-      CustomerName: 'John Smith',
+      customerName: 'John Smith',
       source: OrderSource.APP,
       status: OrderState.COMPLETED,
       items: {
@@ -1009,7 +1009,7 @@ async function main() {
       itemCount: 1,
       branchId: branch.id,
       userId: customer.id,
-      CustomerName: 'Jane Doe',
+      customerName: 'Jane Doe',
       source: OrderSource.STORE,
       status: OrderState.CANCELLED,
       items: {
@@ -1024,7 +1024,7 @@ async function main() {
       itemCount: 2,
       branchId: branch.id,
       userId: customer2.id,
-      CustomerName: 'John Smith',
+      customerName: 'John Smith',
       source: OrderSource.APP,
       status: OrderState.COMPLETED,
       items: {
@@ -1042,7 +1042,7 @@ async function main() {
       itemCount: 2,
       branchId: branch.id,
       userId: customer.id,
-      CustomerName: 'Jane Doe',
+      customerName: 'Jane Doe',
       source: OrderSource.STORE,
       status: OrderState.IN_PROGRESS,
       items: {
@@ -1057,7 +1057,7 @@ async function main() {
       itemCount: 2,
       branchId: branch.id,
       userId: customer2.id,
-      CustomerName: 'John Smith',
+      customerName: 'John Smith',
       source: OrderSource.APP,
       status: OrderState.COMPLETED,
       items: {
@@ -1075,7 +1075,7 @@ async function main() {
       itemCount: 1,
       branchId: branch.id,
       userId: customer.id,
-      CustomerName: 'Jane Doe',
+      customerName: 'Jane Doe',
       source: OrderSource.APP,
       status: OrderState.PENDING,
       items: {
@@ -1094,7 +1094,7 @@ async function main() {
       itemCount: 1,
       branchId: branch.id,
       userId: customer2.id,
-      CustomerName: 'John Smith',
+      customerName: 'John Smith',
       source: OrderSource.STORE,
       status: OrderState.IN_PROGRESS,
       items: {
@@ -1109,7 +1109,7 @@ async function main() {
       itemCount: 3,
       branchId: branch.id,
       userId: customer.id,
-      CustomerName: 'Jane Doe',
+      customerName: 'Jane Doe',
       source: OrderSource.APP,
       status: OrderState.COMPLETED,
       items: {
@@ -1127,7 +1127,7 @@ async function main() {
       itemCount: 2,
       branchId: branch.id,
       userId: customer2.id,
-      CustomerName: 'John Smith',
+      customerName: 'John Smith',
       source: OrderSource.STORE,
       status: OrderState.CANCELLED,
       items: {
@@ -1145,7 +1145,7 @@ async function main() {
       itemCount: 3,
       branchId: branch.id,
       userId: customer.id,
-      CustomerName: 'Jane Doe',
+      customerName: 'Jane Doe',
       source: OrderSource.APP,
       status: OrderState.COMPLETED,
       items: {
@@ -1163,7 +1163,7 @@ async function main() {
       itemCount: 2,
       branchId: branch.id,
       userId: customer2.id,
-      CustomerName: 'John Smith',
+      customerName: 'John Smith',
       source: OrderSource.APP,
       status: OrderState.PENDING,
       items: {
@@ -1178,7 +1178,7 @@ async function main() {
       itemCount: 2,
       branchId: branch.id,
       userId: customer.id,
-      CustomerName: 'Jane Doe',
+      customerName: 'Jane Doe',
       source: OrderSource.STORE,
       status: OrderState.IN_PROGRESS,
       items: {
@@ -1196,7 +1196,7 @@ async function main() {
       itemCount: 2,
       branchId: branch.id,
       userId: customer2.id,
-      CustomerName: 'John Smith',
+      customerName: 'John Smith',
       source: OrderSource.STORE,
       status: OrderState.COMPLETED,
       items: {
@@ -1214,7 +1214,7 @@ async function main() {
       itemCount: 2,
       branchId: branch.id,
       userId: customer.id,
-      CustomerName: 'Jane Doe',
+      customerName: 'Jane Doe',
       source: OrderSource.APP,
       status: OrderState.COMPLETED,
       items: {
@@ -1232,7 +1232,7 @@ async function main() {
       itemCount: 2,
       branchId: branch.id,
       userId: customer2.id,
-      CustomerName: 'John Smith',
+      customerName: 'John Smith',
       source: OrderSource.STORE,
       status: OrderState.CANCELLED,
       items: {
@@ -1250,7 +1250,7 @@ async function main() {
       itemCount: 4,
       branchId: branch.id,
       userId: customer.id,
-      CustomerName: 'Jane Doe',
+      customerName: 'Jane Doe',
       source: OrderSource.APP,
       status: OrderState.IN_PROGRESS,
       items: {
@@ -1268,7 +1268,7 @@ async function main() {
       itemCount: 3,
       branchId: branch.id,
       userId: customer2.id,
-      CustomerName: 'John Smith',
+      customerName: 'John Smith',
       source: OrderSource.STORE,
       status: OrderState.COMPLETED,
       items: {
@@ -1287,7 +1287,7 @@ async function main() {
       itemCount: 2,
       branchId: branch.id,
       userId: customer.id,
-      CustomerName: 'Jane Doe',
+      customerName: 'Jane Doe',
       source: OrderSource.APP,
       status: OrderState.COMPLETED,
       items: {
@@ -1677,7 +1677,8 @@ async function main() {
   const napoliPizza = await prisma.restaurant.create({
     data: {
       name: 'Napoli Pizza House',
-      logoUrl: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=200',
+      logoUrl:
+        'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=200',
       ownerId: owner.id,
     },
   });
@@ -1729,7 +1730,8 @@ async function main() {
   const sakuraSushi = await prisma.restaurant.create({
     data: {
       name: 'Sakura Sushi',
-      logoUrl: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=200',
+      logoUrl:
+        'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=200',
       ownerId: owner.id,
     },
   });
@@ -1759,7 +1761,8 @@ async function main() {
   const greenBowl = await prisma.restaurant.create({
     data: {
       name: 'Green Bowl Salads',
-      logoUrl: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=200',
+      logoUrl:
+        'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=200',
       ownerId: owner.id,
     },
   });
@@ -1903,7 +1906,12 @@ async function main() {
   if (salmonSet) {
     await prisma.menuItemVariation.createMany({
       data: [
-        { branchMenuItemId: salmonSet.id, size: '8 Pieces', price: 220, discountPrice: 189 },
+        {
+          branchMenuItemId: salmonSet.id,
+          size: '8 Pieces',
+          price: 220,
+          discountPrice: 189,
+        },
         { branchMenuItemId: salmonSet.id, size: '12 Pieces', price: 295 },
       ],
     });

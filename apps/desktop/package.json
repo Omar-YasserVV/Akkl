@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "start": "electron .",
     "build": "tsc && vite build && electron-builder",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
@@ -44,7 +45,7 @@
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
     "@vitejs/plugin-react": "^4.2.1",
-    "electron": "41.2.0",
+    "electron": "42.4.0",
     "electron-builder": "^24.13.3",
     "eslint": "9.39.1",
     "postcss": "^8.5.6",

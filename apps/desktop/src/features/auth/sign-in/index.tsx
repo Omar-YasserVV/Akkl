@@ -1,8 +1,8 @@
 import { useAuthStore } from "@/store/AuthStore";
-import { Button, Checkbox, Input, Spinner } from "@heroui/react";
+import { Button, Input, Spinner } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { HiOutlineEye, HiOutlineEyeOff } from "react-icons/hi";
 import { Navigate, useNavigate, useNavigation } from "react-router-dom";
 import { z } from "zod";
@@ -22,7 +22,6 @@ function SignIn() {
     handleSubmit,
     formState: { errors, isSubmitting },
     setError,
-    control,
     watch,
   } = useForm<SignInFormData>({
     mode: "onSubmit",
@@ -30,13 +29,11 @@ function SignIn() {
     defaultValues: {
       email: "",
       password: "",
-      remember: false,
     },
   });
 
   const emailVal = watch("email");
   const passwordVal = watch("password");
-  const rememberVal = watch("remember");
 
   if (navigation.state === "loading")
     return (
@@ -142,24 +139,7 @@ function SignIn() {
                   />
                 </div>
               </div>
-              <div className="flex items-center justify-between text-sm">
-                <Controller
-                  control={control}
-                  name="remember"
-                  render={({ field: { onChange, onBlur } }) => (
-                    <Checkbox
-                      checked={!!rememberVal}
-                      onChange={onChange}
-                      onBlur={onBlur}
-                    >
-                      Remember me
-                    </Checkbox>
-                  )}
-                />
-                <a href="#" className="text-gray-600 hover:underline">
-                  Forgot password?
-                </a>
-              </div>
+
               <Button
                 size="lg"
                 radius="sm"

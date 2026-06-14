@@ -1,6 +1,5 @@
 import { Button, Skeleton } from "@heroui/react";
 import { useState } from "react";
-import { PiExportBold } from "react-icons/pi";
 import { TbWriting } from "react-icons/tb";
 import Header from "../../components/shared/header";
 import AddRecordModal from "./add-record-modal";
@@ -31,13 +30,13 @@ const WarehouseHeader = ({
         description="Live inventory monitoring and stock movement tracking."
         right={
           <div className="flex justify-end items-end gap-2.5">
-            <Button
+            {/* <Button
               size="lg"
               className="text-primary bg-white text-xl font-medium px-3"
               startContent={<PiExportBold />}
             >
               Export Report
-            </Button>
+            </Button> */}
 
             <Button
               className="bg-primary text-white text-xl font-medium px-3"

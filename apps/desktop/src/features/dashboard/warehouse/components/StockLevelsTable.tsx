@@ -2,7 +2,6 @@ import {
   Button,
   Card,
   CardBody,
-  CardFooter,
   CardHeader,
   Divider,
   Dropdown,
@@ -24,7 +23,6 @@ import Chip from "@repo/ui/components/chip";
 import { NumberFormatter } from "@repo/utils";
 import type { ReactNode } from "react";
 import { MdOutlineEdit } from "react-icons/md";
-import { Link } from "react-router-dom";
 import type { InventoryItemDto, StockStatus } from "../types/inventory.types";
 
 const STOCK_FILTER_OPTIONS: { key: string; label: string }[] = [
@@ -210,12 +208,6 @@ const StockLevelsTable = ({
       {pagination ? (
         <div className="border-t border-default-100 px-2">{pagination}</div>
       ) : null}
-      <Divider />
-      <CardFooter className="p-5">
-        <Link to={""} className="text-center w-full text-blue-700 font-medium">
-          View All Inventory
-        </Link>
-      </CardFooter>
     </Card>
   );
 };
