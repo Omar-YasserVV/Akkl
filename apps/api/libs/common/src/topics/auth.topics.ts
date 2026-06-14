@@ -7,4 +7,5 @@ export const AUTH_TOPICS = {
   RESET_PASSWORD: 'reset-password',
   CREATE_EMPLOYEE: 'create-employee',
   GET_USER_PROFILE: 'get-user-profile',
+  UPDATE_USER_PROFILE: 'update-user-profile',
 } as const;

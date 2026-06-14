@@ -1,4 +1,4 @@
-import { authApis, User } from "@repo/utils";
+import { authApis, SignupPayload, User } from "@repo/utils";
 import { useRouter, useSegments } from "expo-router";
 import {
   createContext,
@@ -8,11 +8,23 @@ import {
   useState,
 } from "react";
 
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
 interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
   isLoading: boolean;
-  login: (credentials: any) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<void>;
+  signup: (payload: SignupPayload) => Promise<void>;
+  forgotPassword: (email: string) => Promise<void>;
+  resetPassword: (payload: {
+    email: string;
+    otp: string;
+    newPassword: string;
+  }) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -46,7 +58,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       // Session provider routes to restaurant/branch selection or tabs
       router.replace("/select-restaurant");
     }
-  }, [isAuthenticated, segments, isLoading]);
+  }, [isAuthenticated, segments, isLoading, router]);
 
   const handleAuthCheck = async () => {
     try {
@@ -68,7 +80,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     }
   };
 
-  const handleLogin = async (credentials: any) => {
+  const handleLogin = async (credentials: LoginCredentials) => {
     try {
       setIsLoading(true);
       const response = await authApis.login(credentials);
@@ -83,6 +95,33 @@ export function AuthProvider({ children }: PropsWithChildren) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSignup = async (payload: SignupPayload) => {
+    try {
+      setIsLoading(true);
+      const response = await authApis.signup(payload);
+      const userData = response?.data?.user;
+      setUser(userData);
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error("Signup failed:", error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (email: string) => {
+    await authApis.forgotPassword(email);
+  };
+
+  const handleResetPassword = async (payload: {
+    email: string;
+    otp: string;
+    newPassword: string;
+  }) => {
+    await authApis.resetPassword(payload);
   };
 
   const handleLogout = async () => {
@@ -107,6 +146,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
         isLoading,
         user,
         login: handleLogin,
+        signup: handleSignup,
+        forgotPassword: handleForgotPassword,
+        resetPassword: handleResetPassword,
         logout: handleLogout,
       }}
     >

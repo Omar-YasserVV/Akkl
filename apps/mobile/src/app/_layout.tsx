@@ -52,6 +52,7 @@ function NavigationTree() {
           <Stack.Screen name="reservation" />
           <Stack.Screen name="restaurant/[id]" />
           <Stack.Screen name="item/[id]" />
+          <Stack.Screen name="settings" />
         </Stack>
         <StatusBar style="auto" />
       </SafeAreaProvider>

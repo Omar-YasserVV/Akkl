@@ -1,4 +1,5 @@
 import { useAuth } from "@/context/auth-context";
+import { appHref } from "@/lib/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -24,6 +25,10 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
+function errorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Failed to sign in.";
+}
+
 export default function SignInScreen() {
   const { login, isLoading } = useAuth();
   const router = useRouter();
@@ -45,10 +50,8 @@ export default function SignInScreen() {
     try {
       setApiError(null);
       await login(data);
-    } catch (err: any) {
-      setApiError(
-        err?.response?.data?.message || err?.message || "Failed to sign in.",
-      );
+    } catch (err) {
+      setApiError(errorMessage(err));
     }
   };
 
@@ -60,7 +63,7 @@ export default function SignInScreen() {
           Login here
         </Text>
         <Text className="text-xl font-semibold text-center leading-6 px-4 text-gray-600">
-          Welcome back you've{"\n"}been missed!
+          Welcome back you&apos;ve{"\n"}been missed!
         </Text>
       </View>
 
@@ -138,7 +141,11 @@ export default function SignInScreen() {
         </View>
       </View>
 
-      <TouchableOpacity className="self-end mb-8" disabled={isLoading}>
+      <TouchableOpacity
+        className="self-end mb-8"
+        disabled={isLoading}
+        onPress={() => router.push(appHref("/(auth)/forgot-password"))}
+      >
         <Text className="text-sm font-semibold text-primary">
           Forgot your password?
         </Text>
@@ -158,6 +165,16 @@ export default function SignInScreen() {
           </Text>
         </TouchableOpacity>
       </View>
+
+      <TouchableOpacity
+        onPress={() => router.push("/(auth)/sign-up")}
+        disabled={isLoading}
+        className="items-center mb-8"
+      >
+        <Text className="text-sm font-semibold text-gray-700">
+          Create new account
+        </Text>
+      </TouchableOpacity>
 
       {/* FULL SCREEN SUBMISSION LOADER OVERLAY */}
       {isLoading && (

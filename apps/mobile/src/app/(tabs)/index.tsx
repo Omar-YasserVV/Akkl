@@ -1,6 +1,8 @@
 import { BottomTabInset } from "@/constants/theme";
+import { ProfileAvatar } from "@/components/settings/ProfileAvatar";
 import { useLocation } from "@/context/location-context";
 import { useSession } from "@/context/session-context";
+import { useProfile } from "@/hooks/profile/useProfile";
 import { getDisplayPrice } from "@/utils/menuItem";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -47,6 +49,7 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { lat, lng } = useLocation();
   const { restaurant, branch } = useSession();
+  const { data: user } = useProfile();
   const [home, setHome] = useState<DiscoveryHome | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -152,7 +155,12 @@ export default function HomeScreen() {
             activeOpacity={0.85}
             className="ml-4"
           >
-            <Ionicons name="person-circle-outline" size={34} color="#424957" />
+            <ProfileAvatar
+              imageUri={user?.image}
+              fullName={user?.fullName ?? "Guest User"}
+              seed={user?.username ?? user?.email ?? user?.fullName}
+              size={38}
+            />
           </TouchableOpacity>
         </View>
 

@@ -4,6 +4,7 @@ import {
   CreateStaffUserDto,
   LoginDto,
   SignupUserDto,
+  UpdateUserDto,
 } from '@app/common';
 import { JwtAuthGuard } from '@app/guards/jwt-auth.guard';
 import {
@@ -14,6 +15,7 @@ import {
   HttpStatus,
   Inject,
   OnModuleInit,
+  Patch,
   Post,
   Req,
   Res,
@@ -36,6 +38,7 @@ interface AuthResponse {
     username?: string;
     role?: string;
     image?: string;
+    phone?: string;
   };
 }
 
@@ -212,5 +215,26 @@ export class AuthController implements OnModuleInit {
     );
 
     return profile;
+  }
+
+  @Patch('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Update authenticated profile' })
+  async updateMe(
+    @Req() req: AuthenticatedRequest,
+    @Body() data: UpdateUserDto,
+  ): Promise<UserResponse> {
+    const userId = req.user.sub || req.user.id;
+
+    if (!userId) {
+      throw new HttpException('User ID not found', HttpStatus.UNAUTHORIZED);
+    }
+
+    return await lastValueFrom(
+      this.authClient.send<UserResponse>(AUTH_TOPICS.UPDATE_USER_PROFILE, {
+        id: userId,
+        data,
+      }),
+    );
   }
 }

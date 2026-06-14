@@ -5,6 +5,9 @@ export interface UserResponse {
   username?: string;
   role?: string;
   image?: string;
+  phone?: string;
+  gender?: string;
+  birthDate?: string;
   branchId?: string;
   branchName?: string;
   restaurantName?: string;

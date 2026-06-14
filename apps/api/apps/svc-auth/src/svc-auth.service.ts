@@ -3,6 +3,7 @@ import {
   CreateStaffUserDto,
   LoginDto,
   SignupUserDto,
+  UpdateUserDto,
 } from '@app/common';
 import { PrismaService } from '@app/db';
 import { BadRequestException, Injectable } from '@nestjs/common';
@@ -24,6 +25,20 @@ interface JwtPayload extends Omit<jwt.JwtPayload, 'sub'> {
   fullName?: string;
   image?: string;
 }
+
+const genderToDb = {
+  male: 'MALE',
+  female: 'FEMALE',
+  other: 'OTHER',
+  prefer_not_to_say: 'PREFER_NOT_TO_SAY',
+} as const;
+
+const genderFromDb = {
+  MALE: 'male',
+  FEMALE: 'female',
+  OTHER: 'other',
+  PREFER_NOT_TO_SAY: 'prefer_not_to_say',
+} as const;
 
 @Injectable()
 export class SvcAuthService {
@@ -91,6 +106,9 @@ export class SvcAuthService {
         id: user.id,
         email: user.email,
         fullName: user.fullName,
+        phone: user.phone,
+        gender: user.gender ? genderFromDb[user.gender] : undefined,
+        birthDate: user.birthDate?.toISOString(),
         role: user.role,
         image: user.image ?? undefined,
       },
@@ -128,6 +146,9 @@ export class SvcAuthService {
         email: newUser.email,
         fullName: newUser.fullName,
         username: newUser.username,
+        phone: newUser.phone,
+        gender: newUser.gender ? genderFromDb[newUser.gender] : undefined,
+        birthDate: newUser.birthDate?.toISOString(),
         role: newUser.role,
         image: newUser.image ?? undefined,
       },
@@ -174,6 +195,9 @@ export class SvcAuthService {
         id: newUser.id,
         email: newUser.email,
         fullName: newUser.fullName,
+        phone: newUser.phone,
+        gender: newUser.gender ? genderFromDb[newUser.gender] : undefined,
+        birthDate: newUser.birthDate?.toISOString(),
         role: newUser.role,
         image: newUser.image ?? undefined,
       },
@@ -301,10 +325,87 @@ export class SvcAuthService {
       fullName: user.fullName,
       username: user.username,
       role: user.role,
+      phone: user.phone,
+      gender: user.gender ? genderFromDb[user.gender] : undefined,
+      birthDate: user.birthDate?.toISOString(),
       image: user.image || undefined,
       branchId: user.branch?.id,
       branchName: user.branch?.name,
       restaurantName: user.branch?.restaurant?.name,
     };
+  }
+
+  async updateUserProfile(id: string, data: UpdateUserDto): Promise<UserResponse> {
+    const updateData: UpdateUserDto = {};
+
+    if (typeof data.fullName === 'string') {
+      updateData.fullName = data.fullName.trim();
+    }
+    if (typeof data.phone === 'string') {
+      updateData.phone = data.phone.trim();
+    }
+    if (typeof data.image === 'string') {
+      updateData.image = data.image.trim() || undefined;
+    }
+    if (typeof data.gender === 'string') {
+      updateData.gender = data.gender;
+    }
+    if (typeof data.birthDate === 'string') {
+      updateData.birthDate = data.birthDate;
+    }
+
+    if (
+      !updateData.fullName &&
+      !updateData.phone &&
+      !('image' in updateData) &&
+      !updateData.gender &&
+      !updateData.birthDate
+    ) {
+      return this.getUserProfile(id);
+    }
+
+    const birthDate = updateData.birthDate
+      ? new Date(updateData.birthDate)
+      : undefined;
+
+    if (birthDate && Number.isNaN(birthDate.getTime())) {
+      throw new RpcException({
+        message: 'Birth date is invalid',
+        status: 400,
+      });
+    }
+
+    try {
+      await this.prisma.user.update({
+        where: { id },
+        data: {
+          fullName: updateData.fullName,
+          phone: updateData.phone,
+          image: updateData.image,
+          gender: updateData.gender ? genderToDb[updateData.gender] : undefined,
+          birthDate,
+        },
+      });
+    } catch (error: unknown) {
+      const code = (error as { code?: string }).code;
+      if (code === 'P2025') {
+        throw new RpcException({
+          message: 'User profile not found',
+          status: 404,
+        });
+      }
+      if (code === 'P2002') {
+        throw new RpcException({
+          message: 'Phone number is already in use',
+          status: 409,
+        });
+      }
+      throw new RpcException({
+        message: 'Failed to update profile',
+        status: 500,
+      });
+    }
+
+    return this.getUserProfile(id);
   }
 }

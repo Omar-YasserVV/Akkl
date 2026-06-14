@@ -4,6 +4,7 @@ import {
   LoginDto,
   SignupUserDto,
   tokenDto,
+  UpdateUserDto,
 } from '@app/common';
 import { AUTH_TOPICS } from '@app/common/topics/auth.topics';
 import { BlackListService } from '@app/guards/services/blacklist.service';
@@ -68,5 +69,12 @@ export class SvcAuthController {
   @MessagePattern(AUTH_TOPICS.GET_USER_PROFILE)
   async getEmployeeProfile(@Payload() id: string) {
     return this.svcAuthService.getUserProfile(id);
+  }
+
+  @MessagePattern(AUTH_TOPICS.UPDATE_USER_PROFILE)
+  async updateUserProfile(
+    @Payload() payload: { id: string; data: UpdateUserDto },
+  ) {
+    return this.svcAuthService.updateUserProfile(payload.id, payload.data);
   }
 }
