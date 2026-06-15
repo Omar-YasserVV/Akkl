@@ -11,7 +11,7 @@ const Topbar = () => {
           as="button"
           className="transition-transform"
           name={user?.fullName}
-          src={user?.image}
+          src={user?.image ?? undefined}
         />
         <div className="flex flex-col items-end">
           <p className="text-sm font-semibold text-default-900">
