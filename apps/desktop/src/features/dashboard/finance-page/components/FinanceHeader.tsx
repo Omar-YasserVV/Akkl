@@ -1,32 +1,30 @@
 import Header from "@/features/dashboard/components/shared/header";
-import { Button, Select, SelectItem } from "@heroui/react";
-import { daysFilter } from "../constants/line-chart-constants";
+import {
+  Button,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+} from "@heroui/react";
+import { BiChevronDown } from "react-icons/bi";
+import { AnalyticsDaysAgo } from "../../overview/types/analytics";
 import { useAnalyticsStore } from "../store/finance";
 
-const numberToKeyMap: Record<number, string> = {
-  1: "day",
-  7: "week",
-  30: "month",
-};
-const keyToNumberMap: Record<string, number> = {
-  day: 1,
-  week: 7,
-  month: 30,
-};
-
 const FinanceHeader = () => {
+  const ranges: { label: string; value: AnalyticsDaysAgo }[] = [
+    { label: "Last 7 days", value: 7 },
+    { label: "Last 14 days", value: 14 },
+    { label: "Last 30 days", value: 30 },
+    { label: "Last 60 days", value: 60 },
+    { label: "Last 90 days", value: 90 },
+    { label: "Last 120 days", value: 120 },
+  ];
+
   const daysAgo = useAnalyticsStore((state) => state.daysAgo);
   const setDaysAgo = useAnalyticsStore((state) => state.setDaysAgo);
 
-  const selectedKey = numberToKeyMap[daysAgo] || "month";
-
-  const handleSelectionChange = (keys: any) => {
-    const currentKey = Array.from(keys)[0] as string;
-
-    if (currentKey && keyToNumberMap[currentKey]) {
-      setDaysAgo(keyToNumberMap[currentKey]);
-    }
-  };
+  const selectedLabel =
+    ranges.find((range) => range.value === daysAgo)?.label || "Select Range";
 
   return (
     <Header
@@ -34,26 +32,31 @@ const FinanceHeader = () => {
       description="Track revenue, expenses, and profitability."
       right={
         <div className="flex justify-end items-end gap-4">
-          <Select
-            className="w-36 text-center bg-white rounded-md"
-            items={daysFilter}
-            selectedKeys={[selectedKey]}
-            onSelectionChange={handleSelectionChange}
-            variant="bordered"
-            radius="md"
-            disallowEmptySelection
-            classNames={{
-              trigger: "border-1 border-default-200 shadow-none h-10 px-4",
-              value: "text-default-700 font-normal",
-            }}
-          >
-            {(filter) => (
-              <SelectItem key={filter.key}>{filter.label}</SelectItem>
-            )}
-          </Select>
-          <Button className="bg-primary rounded-md text-center px-4 text-md text-white py-3">
+          <Dropdown>
+            <DropdownTrigger ger>
+              <Button
+                endContent={<BiChevronDown />}
+                variant="bordered"
+                className="bg-white"
+              >
+                {selectedLabel}
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu aria-label="Select date range">
+              {ranges.map((range) => (
+                <DropdownItem
+                  key={range.value}
+                  onClick={() => setDaysAgo(range.value)}
+                  color={range.value === daysAgo ? "primary" : undefined}
+                >
+                  {range.label}
+                </DropdownItem>
+              ))}
+            </DropdownMenu>
+          </Dropdown>
+          {/* <Button className="bg-primary rounded-md text-center px-4 text-md text-white py-3">
             Export as PDF
-          </Button>
+          </Button> */}
         </div>
       }
     />
